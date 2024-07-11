@@ -1,5 +1,5 @@
 {
-  "name": "standalone-ng-example",
+  "name": "Angular Dynamic Hooks Example - Standalone with CLI",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -18,7 +18,7 @@
     "@angular/platform-browser": "^17.3.0",
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
-    "ngx-dynamic-hooks": "file:../../workspace/dist/ngx-dynamic-hooks",
+    "ngx-dynamic-hooks": "file:../../../workspace/dist/ngx-dynamic-hooks",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"
