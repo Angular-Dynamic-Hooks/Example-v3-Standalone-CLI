@@ -1,0 +1,57 @@
+@import "bootstrap/scss/bootstrap";
+
+body {
+  padding: 20px;
+  margin: 0px;
+  background-color: #393d46;
+  font-family: system-ui, sans-serif;
+  color: white;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+  .wrapper {
+    display: flex;
+    justify-content: center;
+  }
+
+    article {
+      max-width: 720px;
+      padding: 25px;
+      border-radius: 10px;
+      background-color: #464e5f;
+    }
+
+      h1 {
+        margin: 0px 0px 10px 0px;
+        font-size: 22px;
+      }
+
+      h2 {
+        font-size: 20px !important;
+      }
+
+      section {
+        margin: 30px 0px;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #99b7d029;
+      }
+
+        h2 {
+          font-size: 18px;
+          margin: 0px 0px 15px 0px;
+        }
+
+        p {
+          margin: 15px 0px 15px 0px;
+        }
+
+        a {
+          text-decoration-color: #c9c1c1;
+        }
+
+        a > code,
+        code {
+          color: #ffcf67;
+        }

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/components/notice/notice.component.scss"],
+  "sourcesContent": [".notice-component {\r\n    display: flex;\r\n    align-items: stretch;\r\n    color: white;\r\n    background-color: #3c7faf;\r\n    border-radius: 5px;\r\n    overflow: hidden;\r\n}\r\n\r\n    .notice-icon {\r\n        display: flex;\r\n        justify-content: center;\r\n        align-items: center;\r\n        width: 40px;\r\n        background-color: #0000002b;        \r\n        font-size: 16px;\r\n    }\r\n\r\n    .notice-content {\r\n        width: calc(100% - 30px);\r\n        padding: 0px 10px;\r\n        box-sizing: border-box;\r\n    }"],
+  "mappings": ";AAAA,CAAA;AACI,WAAA;AACA,eAAA;AACA,SAAA;AACA,oBAAA;AACA,iBAAA;AACA,YAAA;;AAGA,CAAA;AACI,WAAA;AACA,mBAAA;AACA,eAAA;AACA,SAAA;AACA,oBAAA,KAAA,CAAA,EAAA,CAAA,EAAA,CAAA,EAAA;AACA,aAAA;;AAGJ,CAAA;AACI,SAAA,KAAA,KAAA,EAAA;AACA,WAAA,IAAA;AACA,cAAA;;",
+  "names": []
+}

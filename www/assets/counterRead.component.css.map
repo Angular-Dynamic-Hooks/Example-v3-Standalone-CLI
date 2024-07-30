@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/components/counterRead/counterRead.component.scss"],
+  "sourcesContent": [".counter-read {\r\n    span {\r\n        padding: 2px 14px;\r\n        background-color: white;\r\n        color: black;\r\n        border-radius: 5px;\r\n    }\r\n}\r\n"],
+  "mappings": ";AACI,CAAA,aAAA;AACI,WAAA,IAAA;AACA,oBAAA;AACA,SAAA;AACA,iBAAA;;",
+  "names": []
+}

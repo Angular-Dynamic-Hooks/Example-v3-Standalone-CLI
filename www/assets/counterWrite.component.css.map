@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/components/counterWrite/counterWrite.component.scss"],
+  "sourcesContent": [".counter-write {\r\n    button {\r\n        position: relative;\r\n        top: 0px;\r\n        left: 0px;\r\n        padding: 5px 10px;\r\n        color: #fff;\r\n        background-color: #bf7550;\r\n        border: none;\r\n        border-radius: 5px;\r\n        box-shadow: 2px 2px #0000003d;\r\n        cursor: pointer;\r\n    }\r\n    button:hover {\r\n        filter: brightness(1.1);\r\n    }\r\n    button:active {\r\n        top: 1px;\r\n        left: 1px;\r\n        box-shadow: none;\r\n    }\r\n}\r\n"],
+  "mappings": ";AACI,CAAA,cAAA;AACI,YAAA;AACA,OAAA;AACA,QAAA;AACA,WAAA,IAAA;AACA,SAAA;AACA,oBAAA;AACA,UAAA;AACA,iBAAA;AACA,cAAA,IAAA,IAAA,KAAA,CAAA,EAAA,CAAA,EAAA,CAAA,EAAA;AACA,UAAA;;AAEJ,CAZA,cAYA,MAAA;AACI,UAAA,WAAA;;AAEJ,CAfA,cAeA,MAAA;AACI,OAAA;AACA,QAAA;AACA,cAAA;;",
+  "names": []
+}

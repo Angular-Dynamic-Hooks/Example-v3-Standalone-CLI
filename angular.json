@@ -17,7 +17,10 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/standalone-cli",
+            "outputPath": {
+              "base": "www/assets",
+              "browser": ""
+            },
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -30,7 +33,7 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "styles/styles.scss"
             ],
             "scripts": [],
             "preserveSymlinks": true
@@ -49,7 +52,7 @@
                   "maximumError": "4kb"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "none"
             },
             "development": {
               "optimization": false,
@@ -91,7 +94,7 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "styles/styles.scss"
             ],
             "scripts": []
           }
