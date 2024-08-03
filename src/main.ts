@@ -1,4 +1,4 @@
-import { parseHooks, createProviders, HookParserEntry } from 'ngx-dynamic-hooks';
+import { parseHooks, createProviders, HookParserEntry, observeElement } from 'ngx-dynamic-hooks';
 import { ExampleComponent } from './components/example/example.component';
 import { CounterService } from './services/counterService';
 import { CounterWriteComponent } from './components/counterWrite/counterWrite.component';
@@ -19,6 +19,12 @@ const parsers: HookParserEntry[] = [
 ];
 parseHooks(document.body, parsers);
 
-// Use providers scope for example 4
+// For example 4
 const scope = createProviders([CounterService]);
 scope.parseHooks(document.body, [CounterWriteComponent, CounterReadComponent]);
+
+// Optional: Automatically parse again when new element are added anywhere
+observeElement(document.body, parentElement => {
+  parseHooks(parentElement, parsers);
+  scope.parseHooks(parentElement, [CounterWriteComponent, CounterReadComponent]);
+});

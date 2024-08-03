@@ -4,13 +4,16 @@
   "scripts": {
     "start": "serve ./www",
     "build": "ng build --configuration development && rm ./www/assets/index.html",
-    "build-prod": "ng build && rm ./www/assets/index.html",
+    "build-prod": "ng build --configuration production && rm ./www/assets/index.html",
     "watch": "ng build --watch --configuration development"
   },
   "private": true,
   "dependencies": {
+    "@angular/cli": "^17.3.5",
     "@angular/common": "^17.3.0",
     "@angular/compiler": "^17.3.0",
+    "@angular/compiler-cli": "^17.3.0",
+    "@angular-devkit/build-angular": "^17.3.5",
     "@angular/core": "^17.3.0",
     "@angular/localize": "^17.3.0",
     "@angular/platform-browser": "^17.3.0",
@@ -22,11 +25,5 @@
     "serve": "^14.2.3",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"
-  },
-  "devDependencies": {
-    "@angular-devkit/build-angular": "^17.3.5",
-    "@angular/cli": "^17.3.5",
-    "@angular/compiler-cli": "^17.3.0",
-    "typescript": "~5.4.2"
   }
 }

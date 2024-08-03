@@ -2111,13 +2111,13 @@ function defaultIfEmpty(defaultValue) {
 }
 
 // node_modules/rxjs/dist/esm/internal/operators/take.js
-function take(count) {
-  return count <= 0 ? () => EMPTY : operate((source, subscriber) => {
+function take(count2) {
+  return count2 <= 0 ? () => EMPTY : operate((source, subscriber) => {
     let seen = 0;
     source.subscribe(createOperatorSubscriber(subscriber, (value) => {
-      if (++seen <= count) {
+      if (++seen <= count2) {
         subscriber.next(value);
-        if (count <= seen) {
+        if (count2 <= seen) {
           subscriber.complete();
         }
       }
@@ -2208,8 +2208,8 @@ function first(predicate, defaultValue) {
 }
 
 // node_modules/rxjs/dist/esm/internal/operators/skip.js
-function skip(count) {
-  return filter((_, index) => count <= index);
+function skip(count2) {
+  return filter((_, index) => count2 <= index);
 }
 
 // node_modules/rxjs/dist/esm/internal/operators/startWith.js
@@ -3075,13 +3075,13 @@ function newArray(size, value) {
   }
   return list;
 }
-function arraySplice(array, index, count) {
-  const length = array.length - count;
+function arraySplice(array, index, count2) {
+  const length = array.length - count2;
   while (index < length) {
-    array[index] = array[index + count];
+    array[index] = array[index + count2];
     index++;
   }
-  while (count--) {
+  while (count2--) {
     array.pop();
   }
 }
@@ -4988,10 +4988,10 @@ function setBindingIndex(value) {
 function nextBindingIndex() {
   return instructionState.lFrame.bindingIndex++;
 }
-function incrementBindingIndex(count) {
+function incrementBindingIndex(count2) {
   const lFrame = instructionState.lFrame;
   const index = lFrame.bindingIndex;
-  lFrame.bindingIndex = lFrame.bindingIndex + count;
+  lFrame.bindingIndex = lFrame.bindingIndex + count2;
   return index;
 }
 function isInI18nBlock() {
@@ -15416,14 +15416,14 @@ function generateBindingUpdateOpCodes(updateOpCodes, str, destinationNode, attrN
   return mask;
 }
 function countBindings(opCodes) {
-  let count = 0;
+  let count2 = 0;
   for (let i = 0; i < opCodes.length; i++) {
     const opCode = opCodes[i];
     if (typeof opCode === "number" && opCode < 0) {
-      count++;
+      count2++;
     }
   }
-  return count;
+  return count2;
 }
 function toMaskBit(bindingIndex) {
   return 1 << Math.min(bindingIndex, 31);
@@ -22842,11 +22842,11 @@ function getParentInjector(injector) {
   return parentNgModule.injector;
 }
 var NgForOfContext = class {
-  constructor($implicit, ngForOf, index, count) {
+  constructor($implicit, ngForOf, index, count2) {
     this.$implicit = $implicit;
     this.ngForOf = ngForOf;
     this.index = index;
-    this.count = count;
+    this.count = count2;
   }
   get first() {
     return this.index === 0;
@@ -25558,10 +25558,10 @@ var BrowserGetTestability = class {
     _global["getAllAngularRootElements"] = () => registry.getAllRootElements();
     const whenAllStable = (callback) => {
       const testabilities = _global["getAllAngularTestabilities"]();
-      let count = testabilities.length;
+      let count2 = testabilities.length;
       const decrement = function() {
-        count--;
-        if (count == 0) {
+        count2--;
+        if (count2 == 0) {
           callback();
         }
       };
@@ -27086,6 +27086,11 @@ var VERSION3 = new Version("17.3.12");
 var DYNAMICHOOKS_ALLSETTINGS = new InjectionToken("All of the settings registered in the whole app.");
 var DYNAMICHOOKS_ANCESTORSETTINGS = new InjectionToken("The settings collected from all ancestor injectors");
 var DYNAMICHOOKS_MODULESETTINGS = new InjectionToken("The settings for the currently loaded module.");
+var contentElementAttr = "__ngx_dynamic_hooks_content";
+var anchorElementTag = "dynamic-component-anchor";
+var anchorAttrHookId = "__ngx_dynamic_hooks_anchor_id";
+var anchorAttrParseToken = "__ngx_dynamic_hooks_anchor_parsetoken";
+var voidElementTags = ["area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"];
 var DynamicHooksInheritance;
 (function(DynamicHooksInheritance2) {
   DynamicHooksInheritance2[DynamicHooksInheritance2["All"] = 0] = "All";
@@ -27154,6 +27159,9 @@ function sortElements(arr, sortCallback, getElementCallback) {
     }
     return sortCallback(a, b);
   });
+}
+function isAngularManagedElement(element) {
+  return element?.__ngContext__ !== void 0;
 }
 var TextSelectorHookParser = class {
   constructor(config2, configResolver, tagHookFinder, bindingsValueManager) {
@@ -29211,10 +29219,6 @@ var SettingsResolver = _SettingsResolver;
     type: ParserEntryResolver
   }], null);
 })();
-var anchorElementTag = "dynamic-component-anchor";
-var anchorAttrHookId = "_ngx_dynamic_hooks_anchor_id";
-var anchorAttrParseToken = "_ngx_dynamic_hooks_anchor_parsetoken";
-var voidElementTags = ["area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"];
 var findInElementsNodePlaceholder = "_ngx_dynamic_hooks_node_placeholder";
 var _TextHookFinder = class _TextHookFinder {
   constructor(platformService, logger) {
@@ -29234,7 +29238,7 @@ var _TextHookFinder = class _TextHookFinder {
   findInElement(element, context2, parsers2, token, options, hookIndex) {
     for (const parser of parsers2) {
       if (typeof parser.findHooks === "function") {
-        this.checkElement(element, context2, parsers2, token, options, hookIndex, {});
+        this.checkElement(element, context2, parsers2, token, options, hookIndex);
         break;
       }
     }
@@ -29250,60 +29254,62 @@ var _TextHookFinder = class _TextHookFinder {
    * @param hookIndex - The hookIndex object to fill
    * @param extractedNodes - A recursively-used object holding all temporarily extracted nodes
    */
-  checkElement(element, context2, parsers2, token, options, hookIndex, extractedNodes = {}) {
+  checkElement(element, context2, parsers2, token, options, hookIndex, extractedNodes = {
+    counter: 0,
+    nodes: {}
+  }) {
     let childNodes = this.platformService.getChildNodes(element);
     let collectedText = "";
+    const collectedNodes = {};
     for (const childNode of childNodes) {
       if (this.platformService.isTextNode(childNode)) {
         collectedText += this.platformService.getTextContent(childNode);
       } else {
-        const nodeId = Object.keys(extractedNodes).length + 1;
-        extractedNodes[nodeId] = childNode;
+        const nodeId = extractedNodes.counter++;
         collectedText += `${findInElementsNodePlaceholder}__${nodeId}__`;
+        collectedNodes[nodeId] = childNode;
       }
     }
-    if (collectedText) {
-      const prevHookCount = Object.keys(hookIndex).length;
-      const result = this.find(collectedText, context2, parsers2, token, options, hookIndex);
-      if (prevHookCount < Object.keys(hookIndex).length) {
-        const tmpDiv = this.platformService.createElement("div");
-        this.platformService.setInnerContent(tmpDiv, result.content);
-        childNodes = this.platformService.getChildNodes(tmpDiv);
-        this.platformService.clearChildNodes(element);
-        for (const node of childNodes) {
-          this.platformService.appendChild(element, node);
-        }
-      }
+    const prevHookCount = Object.keys(hookIndex).length;
+    const result = this.find(collectedText, context2, parsers2, token, options, hookIndex);
+    if (Object.keys(hookIndex).length > prevHookCount) {
+      this.platformService.clearChildNodes(element);
+      this.platformService.setInnerContent(element, result.content);
+      childNodes = this.platformService.getChildNodes(element);
+      extractedNodes.nodes = __spreadValues(__spreadValues({}, extractedNodes.nodes), collectedNodes);
     }
-    for (const childNode of childNodes) {
-      if (this.platformService.isTextNode(childNode)) {
-        let text = this.platformService.getTextContent(childNode);
-        if (text) {
-          const matches = matchAll(text, new RegExp(`${findInElementsNodePlaceholder}__(\\d*)__`, "g"));
-          if (matches.length) {
-            const textReplacementNodes = [];
-            let currentPos = 0;
-            for (const match of matches) {
-              const textBefore = text.substring(currentPos, match.index);
-              const extractedNodeId = parseInt(match[1]);
-              if (textBefore) {
-                textReplacementNodes.push(this.platformService.createTextNode(textBefore));
+    if (Object.keys(extractedNodes.nodes).length) {
+      for (const childNode of childNodes) {
+        if (this.platformService.isTextNode(childNode)) {
+          let text = this.platformService.getTextContent(childNode);
+          if (text) {
+            const matches = matchAll(text, new RegExp(`${findInElementsNodePlaceholder}__(\\d*)__`, "g"));
+            if (matches.length) {
+              const textReplacementNodes = [];
+              let currentPos = 0;
+              for (const match of matches) {
+                const textBefore = text.substring(currentPos, match.index);
+                const extractedNodeId = parseInt(match[1]);
+                if (textBefore) {
+                  textReplacementNodes.push(this.platformService.createTextNode(textBefore));
+                }
+                if (extractedNodeId && extractedNodes.nodes[extractedNodeId]) {
+                  textReplacementNodes.push(extractedNodes.nodes[extractedNodeId]);
+                  delete extractedNodes.nodes[extractedNodeId];
+                }
+                currentPos = match.index + match[0].length;
               }
-              if (extractedNodeId && extractedNodes[extractedNodeId]) {
-                textReplacementNodes.push(extractedNodes[extractedNodeId]);
+              const textRemaining = text.substring(currentPos);
+              if (textRemaining) {
+                textReplacementNodes.push(this.platformService.createTextNode(textRemaining));
               }
-              currentPos = match.index + match[0].length;
+              const parent = this.platformService.getParentNode(childNode);
+              for (const replacementNode of textReplacementNodes) {
+                this.platformService.insertBefore(parent, replacementNode, childNode);
+              }
+              this.platformService.removeChild(parent, childNode);
+              childNodes = this.platformService.getChildNodes(parent);
             }
-            const textRemaining = text.substring(currentPos);
-            if (textRemaining) {
-              textReplacementNodes.push(this.platformService.createTextNode(textRemaining));
-            }
-            const parent = this.platformService.getParentNode(childNode);
-            for (const replacementNode of textReplacementNodes) {
-              this.platformService.insertBefore(parent, replacementNode, childNode);
-            }
-            this.platformService.removeChild(parent, childNode);
-            childNodes = this.platformService.getChildNodes(parent);
           }
         }
       }
@@ -29325,6 +29331,12 @@ var _TextHookFinder = class _TextHookFinder {
    * @param hookIndex - The hookIndex object to fill
    */
   find(content, context2, parsers2, token, options, hookIndex) {
+    if (content === "") {
+      return {
+        content,
+        hookIndex
+      };
+    }
     if (options.convertHTMLEntities) {
       content = this.convertHTMLEntities(content);
     }
@@ -29647,21 +29659,12 @@ var _ElementHookFinder = class _ElementHookFinder {
         this.logger.warn(["An element hook tried to use an element that was found by another hook before. There may be multiple parsers looking for the same elements. Ignoring duplicates.", parserResult.hookElement], options);
         continue;
       }
-      if (this.isAngularManagedElement(parserResult.hookElement)) {
-        this.logger.warn(["A hook element was found that is already a host or view element of an active Angular component. Ignoring.", parserResult.hookElement], options);
+      if (isAngularManagedElement(parserResult.hookElement)) {
         continue;
       }
       checkedParserResults.push(parserResult);
     }
     return checkedParserResults;
-  }
-  /**
-   * Indicates if an element is either a component host element or part of a component's view/template
-   *
-   * @param element - The element to inspect
-   */
-  isAngularManagedElement(element) {
-    return element.__ngContext__ !== void 0;
   }
 };
 _ElementHookFinder.\u0275fac = function ElementHookFinder_Factory(t) {
@@ -30584,13 +30587,12 @@ var _DynamicHooksService = class _DynamicHooksService {
       });
     }
     const token = Math.random().toString(36).substring(2, 12);
-    let contentElement;
+    let contentElement = typeof content === "string" ? this.platformService.createElement("div") : content;
+    this.platformService.setAttribute(contentElement, contentElementAttr, "1");
     if (typeof content === "string") {
-      contentElement = this.platformService.createElement("div");
       const result = this.textHookFinder.find(content, context2, usedParsers, token, usedOptions, targetHookIndex);
       this.platformService.setInnerContent(contentElement, result.content);
     } else {
-      contentElement = content;
       this.textHookFinder.findInElement(contentElement, context2, usedParsers, token, usedOptions, targetHookIndex);
     }
     targetHookIndex = this.elementHookFinder.find(contentElement, context2, usedParsers, token, usedOptions, targetHookIndex);
@@ -30598,6 +30600,8 @@ var _DynamicHooksService = class _DynamicHooksService {
       this.contentSanitizer.sanitize(contentElement, targetHookIndex, token);
     }
     if (targetElement && targetElement !== contentElement) {
+      this.platformService.removeAttribute(contentElement, contentElementAttr);
+      this.platformService.setAttribute(targetElement, contentElementAttr, "1");
       this.platformService.clearChildNodes(targetElement);
       for (const childNode of this.platformService.getChildNodes(contentElement)) {
         this.platformService.appendChild(targetElement, childNode);
@@ -30605,6 +30609,7 @@ var _DynamicHooksService = class _DynamicHooksService {
       contentElement = targetElement;
     }
     return this.componentCreator.init(contentElement, targetHookIndex, token, context2, usedOptions, usedEnvironmentInjector, usedInjector).pipe(first()).pipe(map((allComponentsLoaded) => {
+      this.platformService.removeAttribute(contentElement, contentElementAttr);
       return {
         element: contentElement,
         hookIndex: targetHookIndex,
@@ -30828,6 +30833,44 @@ var parseHooks = (_0, _1, ..._2) => __async(void 0, [_0, _1, ..._2], function* (
     });
   });
 });
+var observeElement = (content, callbackFn) => {
+  const observer = new MutationObserver((mutationsList, observer2) => {
+    let newNodes = [];
+    for (const mutation of mutationsList) {
+      mutation.addedNodes.forEach((addedNode) => newNodes.push(addedNode));
+      mutation.removedNodes.forEach((removedNode) => newNodes = newNodes.filter((newNode) => newNode !== removedNode));
+    }
+    newNodes = newNodes.filter(
+      (newNode) => newNode.nodeType === 1 && !isAngularManagedElement(newNode) || // Check HTMLElements
+      newNode.nodeType === 3 && !isAngularManagedElement(newNode.parentNode)
+      // Check text node parents
+    );
+    newNodes = newNodes.filter((newNode) => {
+      const element = newNode.nodeType === 1 ? newNode : newNode.parentElement;
+      return element.closest(`[${contentElementAttr}]`) === null;
+    });
+    if (newNodes.length) {
+      const commonParent = findClosestCommonParent(newNodes);
+      callbackFn(commonParent);
+    }
+  });
+  observer.observe(content, {
+    childList: true,
+    subtree: true
+  });
+  return observer;
+};
+var findClosestCommonParent = (elements) => {
+  if (elements.length === 0)
+    return null;
+  let parent = elements[0];
+  for (const element of elements) {
+    while (parent === element || !parent.contains(element)) {
+      parent = parent.parentElement;
+    }
+  }
+  return parent;
+};
 var _DynamicHooksComponent = class _DynamicHooksComponent {
   constructor(hostElement, dynamicHooksService, componentUpdater, platformService, environmentInjector, injector) {
     this.hostElement = hostElement;
@@ -31180,11 +31223,9 @@ var ExampleComponent = _ExampleComponent;
 var CounterService = class {
   constructor() {
     this.count = 1;
-    console.log("counterService construct");
   }
   increment() {
     this.count++;
-    console.log(this.count);
   }
 };
 
@@ -52933,8 +52974,8 @@ var _NgbTypeahead = class _NgbTypeahead {
           this._showHint();
         }
       }
-      const count = results ? results.length : 0;
-      this._live.say(count === 0 ? "No results available" : `${count} result${count === 1 ? "" : "s"} available`);
+      const count2 = results ? results.length : 0;
+      this._live.say(count2 === 0 ? "No results available" : `${count2} result${count2 === 1 ? "" : "s"} available`);
     });
   }
   _unsubscribeFromUserInput() {
@@ -53925,6 +53966,19 @@ var parsers = [
 parseHooks(document.body, parsers);
 var scope = createProviders([CounterService]);
 scope.parseHooks(document.body, [CounterWriteComponent, CounterReadComponent]);
+observeElement(document.body, (parentElement) => {
+  parseHooks(parentElement, parsers);
+  scope.parseHooks(parentElement, [CounterWriteComponent, CounterReadComponent]);
+});
+var firstSection = document.querySelector("section");
+var count = 0;
+setInterval(() => {
+  if (count < 4) {
+    count++;
+    const exampleComponentElement = document.createElement("app-example");
+    firstSection?.appendChild(exampleComponentElement);
+  }
+}, 1e3);
 /*! Bundled license information:
 
 @angular/core/fesm2022/primitives/signals.mjs:
