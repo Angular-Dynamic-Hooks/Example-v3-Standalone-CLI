@@ -2111,13 +2111,13 @@ function defaultIfEmpty(defaultValue) {
 }
 
 // node_modules/rxjs/dist/esm/internal/operators/take.js
-function take(count2) {
-  return count2 <= 0 ? () => EMPTY : operate((source, subscriber) => {
+function take(count) {
+  return count <= 0 ? () => EMPTY : operate((source, subscriber) => {
     let seen = 0;
     source.subscribe(createOperatorSubscriber(subscriber, (value) => {
-      if (++seen <= count2) {
+      if (++seen <= count) {
         subscriber.next(value);
-        if (count2 <= seen) {
+        if (count <= seen) {
           subscriber.complete();
         }
       }
@@ -2208,8 +2208,8 @@ function first(predicate, defaultValue) {
 }
 
 // node_modules/rxjs/dist/esm/internal/operators/skip.js
-function skip(count2) {
-  return filter((_, index) => count2 <= index);
+function skip(count) {
+  return filter((_, index) => count <= index);
 }
 
 // node_modules/rxjs/dist/esm/internal/operators/startWith.js
@@ -3075,13 +3075,13 @@ function newArray(size, value) {
   }
   return list;
 }
-function arraySplice(array, index, count2) {
-  const length = array.length - count2;
+function arraySplice(array, index, count) {
+  const length = array.length - count;
   while (index < length) {
-    array[index] = array[index + count2];
+    array[index] = array[index + count];
     index++;
   }
-  while (count2--) {
+  while (count--) {
     array.pop();
   }
 }
@@ -4988,10 +4988,10 @@ function setBindingIndex(value) {
 function nextBindingIndex() {
   return instructionState.lFrame.bindingIndex++;
 }
-function incrementBindingIndex(count2) {
+function incrementBindingIndex(count) {
   const lFrame = instructionState.lFrame;
   const index = lFrame.bindingIndex;
-  lFrame.bindingIndex = lFrame.bindingIndex + count2;
+  lFrame.bindingIndex = lFrame.bindingIndex + count;
   return index;
 }
 function isInI18nBlock() {
@@ -15416,14 +15416,14 @@ function generateBindingUpdateOpCodes(updateOpCodes, str, destinationNode, attrN
   return mask;
 }
 function countBindings(opCodes) {
-  let count2 = 0;
+  let count = 0;
   for (let i = 0; i < opCodes.length; i++) {
     const opCode = opCodes[i];
     if (typeof opCode === "number" && opCode < 0) {
-      count2++;
+      count++;
     }
   }
-  return count2;
+  return count;
 }
 function toMaskBit(bindingIndex) {
   return 1 << Math.min(bindingIndex, 31);
@@ -22842,11 +22842,11 @@ function getParentInjector(injector) {
   return parentNgModule.injector;
 }
 var NgForOfContext = class {
-  constructor($implicit, ngForOf, index, count2) {
+  constructor($implicit, ngForOf, index, count) {
     this.$implicit = $implicit;
     this.ngForOf = ngForOf;
     this.index = index;
-    this.count = count2;
+    this.count = count;
   }
   get first() {
     return this.index === 0;
@@ -25558,10 +25558,10 @@ var BrowserGetTestability = class {
     _global["getAllAngularRootElements"] = () => registry.getAllRootElements();
     const whenAllStable = (callback) => {
       const testabilities = _global["getAllAngularTestabilities"]();
-      let count2 = testabilities.length;
+      let count = testabilities.length;
       const decrement = function() {
-        count2--;
-        if (count2 == 0) {
+        count--;
+        if (count == 0) {
           callback();
         }
       };
@@ -52974,8 +52974,8 @@ var _NgbTypeahead = class _NgbTypeahead {
           this._showHint();
         }
       }
-      const count2 = results ? results.length : 0;
-      this._live.say(count2 === 0 ? "No results available" : `${count2} result${count2 === 1 ? "" : "s"} available`);
+      const count = results ? results.length : 0;
+      this._live.say(count === 0 ? "No results available" : `${count} result${count === 1 ? "" : "s"} available`);
     });
   }
   _unsubscribeFromUserInput() {
@@ -53970,15 +53970,6 @@ observeElement(document.body, (parentElement) => {
   parseHooks(parentElement, parsers);
   scope.parseHooks(parentElement, [CounterWriteComponent, CounterReadComponent]);
 });
-var firstSection = document.querySelector("section");
-var count = 0;
-setInterval(() => {
-  if (count < 4) {
-    count++;
-    const exampleComponentElement = document.createElement("app-example");
-    firstSection?.appendChild(exampleComponentElement);
-  }
-}, 1e3);
 /*! Bundled license information:
 
 @angular/core/fesm2022/primitives/signals.mjs:
