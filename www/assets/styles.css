@@ -6683,25 +6683,17 @@ fieldset:disabled .btn {
   }
 }
 .placeholder-wave {
-  -webkit-mask-image:
-    linear-gradient(
-      130deg,
-      #000 55%,
-      rgba(0, 0, 0, 0.8) 75%,
-      #000 95%);
   mask-image:
     linear-gradient(
       130deg,
       #000 55%,
       rgba(0, 0, 0, 0.8) 75%,
       #000 95%);
-  -webkit-mask-size: 200% 100%;
   mask-size: 200% 100%;
   animation: placeholder-wave 2s linear infinite;
 }
 @keyframes placeholder-wave {
   100% {
-    -webkit-mask-position: -200% 0%;
     mask-position: -200% 0%;
   }
 }

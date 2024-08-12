@@ -188,8 +188,7 @@ function consumerDestroy(node) {
 }
 function producerAddLiveConsumer(node, consumer, indexOfThis) {
   assertProducerNode(node);
-  assertConsumerNode(node);
-  if (node.liveConsumerNode.length === 0) {
+  if (node.liveConsumerNode.length === 0 && isConsumerNode(node)) {
     for (let i = 0; i < node.producerNode.length; i++) {
       node.producerIndexOfThis[i] = producerAddLiveConsumer(node.producerNode[i], node, i);
     }
@@ -199,11 +198,10 @@ function producerAddLiveConsumer(node, consumer, indexOfThis) {
 }
 function producerRemoveLiveConsumerAtIndex(node, idx) {
   assertProducerNode(node);
-  assertConsumerNode(node);
   if (typeof ngDevMode !== "undefined" && ngDevMode && idx >= node.liveConsumerNode.length) {
     throw new Error(`Assertion error: active consumer index ${idx} is out of bounds of ${node.liveConsumerNode.length} consumers)`);
   }
-  if (node.liveConsumerNode.length === 1) {
+  if (node.liveConsumerNode.length === 1 && isConsumerNode(node)) {
     for (let i = 0; i < node.producerNode.length; i++) {
       producerRemoveLiveConsumerAtIndex(node.producerNode[i], node.producerIndexOfThis[i]);
     }
@@ -231,6 +229,9 @@ function assertConsumerNode(node) {
 function assertProducerNode(node) {
   node.liveConsumerNode ??= [];
   node.liveConsumerIndexOfThis ??= [];
+}
+function isConsumerNode(node) {
+  return node.producerNode !== void 0;
 }
 function createComputed(computation) {
   const node = Object.create(COMPUTED_NODE);
@@ -378,7 +379,9 @@ var Subscription = class _Subscription {
     let errors;
     if (!this.closed) {
       this.closed = true;
-      const { _parentage } = this;
+      const {
+        _parentage
+      } = this;
       if (_parentage) {
         this._parentage = null;
         if (Array.isArray(_parentage)) {
@@ -389,7 +392,9 @@ var Subscription = class _Subscription {
           _parentage.remove(this);
         }
       }
-      const { initialTeardown: initialFinalizer } = this;
+      const {
+        initialTeardown: initialFinalizer
+      } = this;
       if (isFunction(initialFinalizer)) {
         try {
           initialFinalizer();
@@ -397,7 +402,9 @@ var Subscription = class _Subscription {
           errors = e instanceof UnsubscriptionError ? e.errors : [e];
         }
       }
-      const { _finalizers } = this;
+      const {
+        _finalizers
+      } = this;
       if (_finalizers) {
         this._finalizers = null;
         for (const finalizer of _finalizers) {
@@ -435,15 +442,21 @@ var Subscription = class _Subscription {
     }
   }
   _hasParent(parent) {
-    const { _parentage } = this;
+    const {
+      _parentage
+    } = this;
     return _parentage === parent || Array.isArray(_parentage) && _parentage.includes(parent);
   }
   _addParent(parent) {
-    const { _parentage } = this;
+    const {
+      _parentage
+    } = this;
     this._parentage = Array.isArray(_parentage) ? (_parentage.push(parent), _parentage) : _parentage ? [_parentage, parent] : parent;
   }
   _removeParent(parent) {
-    const { _parentage } = this;
+    const {
+      _parentage
+    } = this;
     if (_parentage === parent) {
       this._parentage = null;
     } else if (Array.isArray(_parentage)) {
@@ -451,7 +464,9 @@ var Subscription = class _Subscription {
     }
   }
   remove(teardown) {
-    const { _finalizers } = this;
+    const {
+      _finalizers
+    } = this;
     _finalizers && arrRemove(_finalizers, teardown);
     if (teardown instanceof _Subscription) {
       teardown._removeParent(this);
@@ -487,14 +502,18 @@ var config = {
 // node_modules/rxjs/dist/esm/internal/scheduler/timeoutProvider.js
 var timeoutProvider = {
   setTimeout(handler, timeout, ...args) {
-    const { delegate } = timeoutProvider;
+    const {
+      delegate
+    } = timeoutProvider;
     if (delegate === null || delegate === void 0 ? void 0 : delegate.setTimeout) {
       return delegate.setTimeout(handler, timeout, ...args);
     }
     return setTimeout(handler, timeout, ...args);
   },
   clearTimeout(handle) {
-    const { delegate } = timeoutProvider;
+    const {
+      delegate
+    } = timeoutProvider;
     return ((delegate === null || delegate === void 0 ? void 0 : delegate.clearTimeout) || clearTimeout)(handle);
   },
   delegate: void 0
@@ -503,7 +522,9 @@ var timeoutProvider = {
 // node_modules/rxjs/dist/esm/internal/util/reportUnhandledError.js
 function reportUnhandledError(err) {
   timeoutProvider.setTimeout(() => {
-    const { onUnhandledError } = config;
+    const {
+      onUnhandledError
+    } = config;
     if (onUnhandledError) {
       onUnhandledError(err);
     } else {
@@ -538,11 +559,17 @@ function errorContext(cb) {
   if (config.useDeprecatedSynchronousErrorHandling) {
     const isRoot = !context;
     if (isRoot) {
-      context = { errorThrown: false, error: null };
+      context = {
+        errorThrown: false,
+        error: null
+      };
     }
     cb();
     if (isRoot) {
-      const { errorThrown, error } = context;
+      const {
+        errorThrown,
+        error
+      } = context;
       context = null;
       if (errorThrown) {
         throw error;
@@ -633,7 +660,9 @@ var ConsumerObserver = class {
     this.partialObserver = partialObserver;
   }
   next(value) {
-    const { partialObserver } = this;
+    const {
+      partialObserver
+    } = this;
     if (partialObserver.next) {
       try {
         partialObserver.next(value);
@@ -643,7 +672,9 @@ var ConsumerObserver = class {
     }
   }
   error(err) {
-    const { partialObserver } = this;
+    const {
+      partialObserver
+    } = this;
     if (partialObserver.error) {
       try {
         partialObserver.error(err);
@@ -655,7 +686,9 @@ var ConsumerObserver = class {
     }
   }
   complete() {
-    const { partialObserver } = this;
+    const {
+      partialObserver
+    } = this;
     if (partialObserver.complete) {
       try {
         partialObserver.complete();
@@ -703,7 +736,9 @@ function defaultErrorHandler(err) {
   throw err;
 }
 function handleStoppedNotification(notification, subscriber) {
-  const { onStoppedNotification } = config;
+  const {
+    onStoppedNotification
+  } = config;
   onStoppedNotification && timeoutProvider.setTimeout(() => onStoppedNotification(notification, subscriber));
 }
 var EMPTY_OBSERVER = {
@@ -750,7 +785,10 @@ var Observable = class _Observable {
   subscribe(observerOrNext, error, complete) {
     const subscriber = isSubscriber(observerOrNext) ? observerOrNext : new SafeSubscriber(observerOrNext, error, complete);
     errorContext(() => {
-      const { operator, source } = this;
+      const {
+        operator,
+        source
+      } = this;
       subscriber.add(operator ? operator.call(subscriber, source) : source ? this._subscribe(subscriber) : this._trySubscribe(subscriber));
     });
     return subscriber;
@@ -869,7 +907,9 @@ var OperatorSubscriber = class extends Subscriber {
   unsubscribe() {
     var _a;
     if (!this.shouldUnsubscribe || this.shouldUnsubscribe()) {
-      const { closed } = this;
+      const {
+        closed
+      } = this;
       super.unsubscribe();
       !closed && ((_a = this.onFinalize) === null || _a === void 0 ? void 0 : _a.call(this));
     }
@@ -923,7 +963,9 @@ var Subject = class extends Observable {
       if (!this.isStopped) {
         this.hasError = this.isStopped = true;
         this.thrownError = err;
-        const { observers } = this;
+        const {
+          observers
+        } = this;
         while (observers.length) {
           observers.shift().error(err);
         }
@@ -935,7 +977,9 @@ var Subject = class extends Observable {
       this._throwIfClosed();
       if (!this.isStopped) {
         this.isStopped = true;
-        const { observers } = this;
+        const {
+          observers
+        } = this;
         while (observers.length) {
           observers.shift().complete();
         }
@@ -960,7 +1004,11 @@ var Subject = class extends Observable {
     return this._innerSubscribe(subscriber);
   }
   _innerSubscribe(subscriber) {
-    const { hasError, isStopped, observers } = this;
+    const {
+      hasError,
+      isStopped,
+      observers
+    } = this;
     if (hasError || isStopped) {
       return EMPTY_SUBSCRIPTION;
     }
@@ -972,7 +1020,11 @@ var Subject = class extends Observable {
     });
   }
   _checkFinalizedStatuses(subscriber) {
-    const { hasError, thrownError, isStopped } = this;
+    const {
+      hasError,
+      thrownError,
+      isStopped
+    } = this;
     if (hasError) {
       subscriber.error(thrownError);
     } else if (isStopped) {
@@ -1027,7 +1079,11 @@ var BehaviorSubject = class extends Subject {
     return subscription;
   }
   getValue() {
-    const { hasError, thrownError, _value } = this;
+    const {
+      hasError,
+      thrownError,
+      _value
+    } = this;
     if (hasError) {
       throw thrownError;
     }
@@ -1061,7 +1117,13 @@ var ReplaySubject = class extends Subject {
     this._windowTime = Math.max(1, _windowTime);
   }
   next(value) {
-    const { isStopped, _buffer, _infiniteTimeWindow, _timestampProvider, _windowTime } = this;
+    const {
+      isStopped,
+      _buffer,
+      _infiniteTimeWindow,
+      _timestampProvider,
+      _windowTime
+    } = this;
     if (!isStopped) {
       _buffer.push(value);
       !_infiniteTimeWindow && _buffer.push(_timestampProvider.now() + _windowTime);
@@ -1073,7 +1135,10 @@ var ReplaySubject = class extends Subject {
     this._throwIfClosed();
     this._trimBuffer();
     const subscription = this._innerSubscribe(subscriber);
-    const { _infiniteTimeWindow, _buffer } = this;
+    const {
+      _infiniteTimeWindow,
+      _buffer
+    } = this;
     const copy = _buffer.slice();
     for (let i = 0; i < copy.length && !subscriber.closed; i += _infiniteTimeWindow ? 1 : 2) {
       subscriber.next(copy[i]);
@@ -1082,7 +1147,12 @@ var ReplaySubject = class extends Subject {
     return subscription;
   }
   _trimBuffer() {
-    const { _bufferSize, _timestampProvider, _buffer, _infiniteTimeWindow } = this;
+    const {
+      _bufferSize,
+      _timestampProvider,
+      _buffer,
+      _infiniteTimeWindow
+    } = this;
     const adjustedBufferSize = (_infiniteTimeWindow ? 1 : 2) * _bufferSize;
     _bufferSize < Infinity && adjustedBufferSize < _buffer.length && _buffer.splice(0, _buffer.length - adjustedBufferSize);
     if (!_infiniteTimeWindow) {
@@ -1109,14 +1179,18 @@ var Action = class extends Subscription {
 // node_modules/rxjs/dist/esm/internal/scheduler/intervalProvider.js
 var intervalProvider = {
   setInterval(handler, timeout, ...args) {
-    const { delegate } = intervalProvider;
+    const {
+      delegate
+    } = intervalProvider;
     if (delegate === null || delegate === void 0 ? void 0 : delegate.setInterval) {
       return delegate.setInterval(handler, timeout, ...args);
     }
     return setInterval(handler, timeout, ...args);
   },
   clearInterval(handle) {
-    const { delegate } = intervalProvider;
+    const {
+      delegate
+    } = intervalProvider;
     return ((delegate === null || delegate === void 0 ? void 0 : delegate.clearInterval) || clearInterval)(handle);
   },
   delegate: void 0
@@ -1186,8 +1260,13 @@ var AsyncAction = class extends Action {
   }
   unsubscribe() {
     if (!this.closed) {
-      const { id, scheduler } = this;
-      const { actions } = scheduler;
+      const {
+        id,
+        scheduler
+      } = this;
+      const {
+        actions
+      } = scheduler;
       this.work = this.state = this.scheduler = null;
       this.pending = false;
       arrRemove(actions, this);
@@ -1220,7 +1299,9 @@ var AsyncScheduler = class extends Scheduler {
     this._active = false;
   }
   flush(action) {
-    const { actions } = this;
+    const {
+      actions
+    } = this;
     if (this._active) {
       actions.push(action);
       return;
@@ -1298,24 +1379,23 @@ function __awaiter(thisArg, _arguments, P, generator) {
 }
 function __values(o) {
   var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-  if (m)
-    return m.call(o);
-  if (o && typeof o.length === "number")
-    return {
-      next: function() {
-        if (o && i >= o.length)
-          o = void 0;
-        return { value: o && o[i++], done: !o };
-      }
-    };
+  if (m) return m.call(o);
+  if (o && typeof o.length === "number") return {
+    next: function() {
+      if (o && i >= o.length) o = void 0;
+      return {
+        value: o && o[i++],
+        done: !o
+      };
+    }
+  };
   throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 }
 function __await(v) {
   return this instanceof __await ? (this.v = v, this) : new __await(v);
 }
 function __asyncGenerator(thisArg, _arguments, generator) {
-  if (!Symbol.asyncIterator)
-    throw new TypeError("Symbol.asyncIterator is not defined.");
+  if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
   var g = generator.apply(thisArg, _arguments || []), i, q = [];
   return i = {}, verb("next"), verb("throw"), verb("return", awaitReturn), i[Symbol.asyncIterator] = function() {
     return this;
@@ -1332,8 +1412,7 @@ function __asyncGenerator(thisArg, _arguments, generator) {
           q.push([n, v, a, b]) > 1 || resume(n, v);
         });
       };
-      if (f)
-        i[n] = f(i[n]);
+      if (f) i[n] = f(i[n]);
     }
   }
   function resume(n, v) {
@@ -1353,13 +1432,11 @@ function __asyncGenerator(thisArg, _arguments, generator) {
     resume("throw", value);
   }
   function settle(f, v) {
-    if (f(v), q.shift(), q.length)
-      resume(q[0][0], q[0][1]);
+    if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]);
   }
 }
 function __asyncValues(o) {
-  if (!Symbol.asyncIterator)
-    throw new TypeError("Symbol.asyncIterator is not defined.");
+  if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
   var m = o[Symbol.asyncIterator], i;
   return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
     return this;
@@ -1373,7 +1450,10 @@ function __asyncValues(o) {
   }
   function settle(resolve, reject, d, v) {
     Promise.resolve(v).then(function(v2) {
-      resolve({ value: v2, done: d });
+      resolve({
+        value: v2,
+        done: d
+      });
     }, reject);
   }
 }
@@ -1421,7 +1501,10 @@ function readableStreamLikeToAsyncGenerator(readableStream) {
     const reader = readableStream.getReader();
     try {
       while (true) {
-        const { value, done } = yield __await(reader.read());
+        const {
+          value,
+          done
+        } = yield __await(reader.read());
         if (done) {
           return yield __await(void 0);
         }
@@ -1522,14 +1605,14 @@ function process(asyncIterable, subscriber) {
         }
       }
     } catch (e_1_1) {
-      e_1 = { error: e_1_1 };
+      e_1 = {
+        error: e_1_1
+      };
     } finally {
       try {
-        if (asyncIterable_1_1 && !asyncIterable_1_1.done && (_a = asyncIterable_1.return))
-          yield _a.call(asyncIterable_1);
+        if (asyncIterable_1_1 && !asyncIterable_1_1.done && (_a = asyncIterable_1.return)) yield _a.call(asyncIterable_1);
       } finally {
-        if (e_1)
-          throw e_1.error;
+        if (e_1) throw e_1.error;
       }
     }
     subscriber.complete();
@@ -1603,7 +1686,10 @@ function scheduleIterable(input2, scheduler) {
         let value;
         let done;
         try {
-          ({ value, done } = iterator2.next());
+          ({
+            value,
+            done
+          } = iterator2.next());
         } catch (err) {
           subscriber.error(err);
           return;
@@ -1726,7 +1812,9 @@ function map(project, thisArg) {
 }
 
 // node_modules/rxjs/dist/esm/internal/util/mapOneOrManyArgs.js
-var { isArray } = Array;
+var {
+  isArray
+} = Array;
 function callOrApply(fn2, args) {
   return isArray(args) ? fn2(...args) : fn2(args);
 }
@@ -1735,13 +1823,22 @@ function mapOneOrManyArgs(fn2) {
 }
 
 // node_modules/rxjs/dist/esm/internal/util/argsArgArrayOrObject.js
-var { isArray: isArray2 } = Array;
-var { getPrototypeOf, prototype: objectProto, keys: getKeys } = Object;
+var {
+  isArray: isArray2
+} = Array;
+var {
+  getPrototypeOf,
+  prototype: objectProto,
+  keys: getKeys
+} = Object;
 function argsArgArrayOrObject(args) {
   if (args.length === 1) {
     const first2 = args[0];
     if (isArray2(first2)) {
-      return { args: first2, keys: null };
+      return {
+        args: first2,
+        keys: null
+      };
     }
     if (isPOJO(first2)) {
       const keys = getKeys(first2);
@@ -1751,7 +1848,10 @@ function argsArgArrayOrObject(args) {
       };
     }
   }
-  return { args, keys: null };
+  return {
+    args,
+    keys: null
+  };
 }
 function isPOJO(obj) {
   return obj && typeof obj === "object" && getPrototypeOf(obj) === objectProto;
@@ -1766,7 +1866,10 @@ function createObject(keys, values) {
 function combineLatest(...args) {
   const scheduler = popScheduler(args);
   const resultSelector = popResultSelector(args);
-  const { args: observables, keys } = argsArgArrayOrObject(args);
+  const {
+    args: observables,
+    keys
+  } = argsArgArrayOrObject(args);
   if (observables.length === 0) {
     return from([], scheduler);
   }
@@ -1776,7 +1879,9 @@ function combineLatest(...args) {
 function combineLatestInit(observables, scheduler, valueTransform = identity) {
   return (subscriber) => {
     maybeSchedule(scheduler, () => {
-      const { length } = observables;
+      const {
+        length
+      } = observables;
       const values = new Array(length);
       let active = length;
       let remainingFirstValues = length;
@@ -1892,9 +1997,14 @@ function concat(...args) {
 // node_modules/rxjs/dist/esm/internal/observable/forkJoin.js
 function forkJoin(...args) {
   const resultSelector = popResultSelector(args);
-  const { args: sources, keys } = argsArgArrayOrObject(args);
+  const {
+    args: sources,
+    keys
+  } = argsArgArrayOrObject(args);
   const result = new Observable((subscriber) => {
-    const { length } = sources;
+    const {
+      length
+    } = sources;
     if (!length) {
       subscriber.complete();
       return;
@@ -2004,7 +2114,9 @@ function merge(...args) {
 var NEVER = new Observable(noop);
 
 // node_modules/rxjs/dist/esm/internal/util/argsOrArgArray.js
-var { isArray: isArray3 } = Array;
+var {
+  isArray: isArray3
+} = Array;
 function argsOrArgArray(args) {
   return args.length === 1 && isArray3(args[0]) ? args[0] : args;
 }
@@ -2252,7 +2364,11 @@ function takeUntil(notifier) {
 
 // node_modules/rxjs/dist/esm/internal/operators/tap.js
 function tap(observerOrNext, error, complete) {
-  const tapObserver = isFunction(observerOrNext) || error || complete ? { next: observerOrNext, error, complete } : observerOrNext;
+  const tapObserver = isFunction(observerOrNext) || error || complete ? {
+    next: observerOrNext,
+    error,
+    complete
+  } : observerOrNext;
   return tapObserver ? operate((source, subscriber) => {
     var _a;
     (_a = tapObserver.subscribe) === null || _a === void 0 ? void 0 : _a.call(tapObserver);
@@ -2307,8 +2423,592 @@ function withLatestFrom(...inputs) {
   });
 }
 
+// node_modules/@angular/core/fesm2022/primitives/event-dispatch.mjs
+var Property = {
+  /**
+   * The parsed value of the jsaction attribute is stored in this
+   * property on the DOM node. The parsed value is an Object. The
+   * property names of the object are the events; the values are the
+   * names of the actions. This property is attached even on nodes
+   * that don't have a jsaction attribute as an optimization, because
+   * property lookup is faster than attribute access.
+   */
+  JSACTION: "__jsaction",
+  /**
+   * The owner property references an a logical owner for a DOM node. JSAction
+   * will follow this reference instead of parentNode when traversing the DOM
+   * to find jsaction attributes. This allows overlaying a logical structure
+   * over a document where the DOM structure can't reflect that structure.
+   */
+  OWNER: "__owner"
+};
+function get(element) {
+  return element[Property.JSACTION];
+}
+function getDefaulted(element) {
+  const cache = get(element) ?? {};
+  set(element, cache);
+  return cache;
+}
+function set(element, actionMap) {
+  element[Property.JSACTION] = actionMap;
+}
+var EventType = {
+  /**
+   * Mouse middle click, introduced in Chrome 55 and not yet supported on
+   * other browsers.
+   */
+  AUXCLICK: "auxclick",
+  /**
+   * The change event fired by browsers when the `value` attribute of input,
+   * select, and textarea elements are changed.
+   */
+  CHANGE: "change",
+  /**
+   * The click event. In addEvent() refers to all click events, in the
+   * jsaction attribute it refers to the unmodified click and Enter/Space
+   * keypress events.  In the latter case, a jsaction click will be triggered,
+   * for accessibility reasons.  See clickmod and clickonly, below.
+   */
+  CLICK: "click",
+  /**
+   * Specifies the jsaction for a modified click event (i.e. a mouse
+   * click with the modifier key Cmd/Ctrl pressed). This event isn't
+   * separately enabled in addEvent(), because in the DOM, it's just a
+   * click event.
+   */
+  CLICKMOD: "clickmod",
+  /**
+   * Specifies the jsaction for a click-only event.  Click-only doesn't take
+   * into account the case where an element with focus receives an Enter/Space
+   * keypress.  This event isn't separately enabled in addEvent().
+   */
+  CLICKONLY: "clickonly",
+  /**
+   * The dblclick event.
+   */
+  DBLCLICK: "dblclick",
+  /**
+   * Focus doesn't bubble, but you can use it in addEvent() and
+   * jsaction anyway. EventContract does the right thing under the
+   * hood.
+   */
+  FOCUS: "focus",
+  /**
+   * This event only exists in IE. For addEvent() and jsaction, use
+   * focus instead; EventContract does the right thing even though
+   * focus doesn't bubble.
+   */
+  FOCUSIN: "focusin",
+  /**
+   * Analog to focus.
+   */
+  BLUR: "blur",
+  /**
+   * Analog to focusin.
+   */
+  FOCUSOUT: "focusout",
+  /**
+   * Submit doesn't bubble, so it cannot be used with event
+   * contract. However, the browser helpfully fires a click event on
+   * the submit button of a form (even if the form is not submitted by
+   * a click on the submit button). So you should handle click on the
+   * submit button instead.
+   */
+  SUBMIT: "submit",
+  /**
+   * The keydown event. In addEvent() and non-click jsaction it represents the
+   * regular DOM keydown event. It represents click actions in non-Gecko
+   * browsers.
+   */
+  KEYDOWN: "keydown",
+  /**
+   * The keypress event. In addEvent() and non-click jsaction it represents the
+   * regular DOM keypress event. It represents click actions in Gecko browsers.
+   */
+  KEYPRESS: "keypress",
+  /**
+   * The keyup event. In addEvent() and non-click jsaction it represents the
+   * regular DOM keyup event. It represents click actions in non-Gecko
+   * browsers.
+   */
+  KEYUP: "keyup",
+  /**
+   * The mouseup event. Can either be used directly or used implicitly to
+   * capture mouseup events. In addEvent(), it represents a regular DOM
+   * mouseup event.
+   */
+  MOUSEUP: "mouseup",
+  /**
+   * The mousedown event. Can either be used directly or used implicitly to
+   * capture mouseenter events. In addEvent(), it represents a regular DOM
+   * mouseover event.
+   */
+  MOUSEDOWN: "mousedown",
+  /**
+   * The mouseover event. Can either be used directly or used implicitly to
+   * capture mouseenter events. In addEvent(), it represents a regular DOM
+   * mouseover event.
+   */
+  MOUSEOVER: "mouseover",
+  /**
+   * The mouseout event. Can either be used directly or used implicitly to
+   * capture mouseover events. In addEvent(), it represents a regular DOM
+   * mouseout event.
+   */
+  MOUSEOUT: "mouseout",
+  /**
+   * The mouseenter event. Does not bubble and fires individually on each
+   * element being entered within a DOM tree.
+   */
+  MOUSEENTER: "mouseenter",
+  /**
+   * The mouseleave event. Does not bubble and fires individually on each
+   * element being entered within a DOM tree.
+   */
+  MOUSELEAVE: "mouseleave",
+  /**
+   * The mousemove event.
+   */
+  MOUSEMOVE: "mousemove",
+  /**
+   * The pointerup event. Can either be used directly or used implicitly to
+   * capture pointerup events. In addEvent(), it represents a regular DOM
+   * pointerup event.
+   */
+  POINTERUP: "pointerup",
+  /**
+   * The pointerdown event. Can either be used directly or used implicitly to
+   * capture pointerenter events. In addEvent(), it represents a regular DOM
+   * mouseover event.
+   */
+  POINTERDOWN: "pointerdown",
+  /**
+   * The pointerover event. Can either be used directly or used implicitly to
+   * capture pointerenter events. In addEvent(), it represents a regular DOM
+   * pointerover event.
+   */
+  POINTEROVER: "pointerover",
+  /**
+   * The pointerout event. Can either be used directly or used implicitly to
+   * capture pointerover events. In addEvent(), it represents a regular DOM
+   * pointerout event.
+   */
+  POINTEROUT: "pointerout",
+  /**
+   * The pointerenter event. Does not bubble and fires individually on each
+   * element being entered within a DOM tree.
+   */
+  POINTERENTER: "pointerenter",
+  /**
+   * The pointerleave event. Does not bubble and fires individually on each
+   * element being entered within a DOM tree.
+   */
+  POINTERLEAVE: "pointerleave",
+  /**
+   * The pointermove event.
+   */
+  POINTERMOVE: "pointermove",
+  /**
+   * The pointercancel event.
+   */
+  POINTERCANCEL: "pointercancel",
+  /**
+   * The gotpointercapture event is fired when
+   * Element.setPointerCapture(pointerId) is called on a mouse input, or
+   * implicitly when a touch input begins.
+   */
+  GOTPOINTERCAPTURE: "gotpointercapture",
+  /**
+   * The lostpointercapture event is fired when
+   * Element.releasePointerCapture(pointerId) is called, or implicitly after a
+   * touch input ends.
+   */
+  LOSTPOINTERCAPTURE: "lostpointercapture",
+  /**
+   * The error event. The error event doesn't bubble, but you can use it in
+   * addEvent() and jsaction anyway. EventContract does the right thing under
+   * the hood (except in IE8 which does not use error events).
+   */
+  ERROR: "error",
+  /**
+   * The load event. The load event doesn't bubble, but you can use it in
+   * addEvent() and jsaction anyway. EventContract does the right thing
+   * under the hood.
+   */
+  LOAD: "load",
+  /**
+   * The unload event.
+   */
+  UNLOAD: "unload",
+  /**
+   * The touchstart event. Bubbles, will only ever fire in browsers with
+   * touch support.
+   */
+  TOUCHSTART: "touchstart",
+  /**
+   * The touchend event. Bubbles, will only ever fire in browsers with
+   * touch support.
+   */
+  TOUCHEND: "touchend",
+  /**
+   * The touchmove event. Bubbles, will only ever fire in browsers with
+   * touch support.
+   */
+  TOUCHMOVE: "touchmove",
+  /**
+   * The input event.
+   */
+  INPUT: "input",
+  /**
+   * The scroll event.
+   */
+  SCROLL: "scroll",
+  /**
+   * The toggle event. The toggle event doesn't bubble, but you can use it in
+   * addEvent() and jsaction anyway. EventContract does the right thing
+   * under the hood.
+   */
+  TOGGLE: "toggle",
+  /**
+   * A custom event. The actual custom event type is declared as the 'type'
+   * field in the event details. Supported in Firefox 6+, IE 9+, and all Chrome
+   * versions.
+   *
+   * This is an internal name. Users should use jsaction's fireCustomEvent to
+   * fire custom events instead of relying on this type to create them.
+   */
+  CUSTOM: "_custom"
+};
+var MOUSE_SPECIAL_EVENT_TYPES = [EventType.MOUSEENTER, EventType.MOUSELEAVE, "pointerenter", "pointerleave"];
+var BUBBLE_EVENT_TYPES = [
+  EventType.CLICK,
+  EventType.DBLCLICK,
+  EventType.FOCUSIN,
+  EventType.FOCUSOUT,
+  EventType.KEYDOWN,
+  EventType.KEYUP,
+  EventType.KEYPRESS,
+  EventType.MOUSEOVER,
+  EventType.MOUSEOUT,
+  EventType.SUBMIT,
+  EventType.TOUCHSTART,
+  EventType.TOUCHEND,
+  EventType.TOUCHMOVE,
+  "touchcancel",
+  "auxclick",
+  "change",
+  "compositionstart",
+  "compositionupdate",
+  "compositionend",
+  "beforeinput",
+  "input",
+  "select",
+  "copy",
+  "cut",
+  "paste",
+  "mousedown",
+  "mouseup",
+  "wheel",
+  "contextmenu",
+  "dragover",
+  "dragenter",
+  "dragleave",
+  "drop",
+  "dragstart",
+  "dragend",
+  "pointerdown",
+  "pointermove",
+  "pointerup",
+  "pointercancel",
+  "pointerover",
+  "pointerout",
+  "gotpointercapture",
+  "lostpointercapture",
+  // Video events.
+  "ended",
+  "loadedmetadata",
+  // Page visibility events.
+  "pagehide",
+  "pageshow",
+  "visibilitychange",
+  // Content visibility events.
+  "beforematch"
+];
+var CAPTURE_EVENT_TYPES = [EventType.FOCUS, EventType.BLUR, EventType.ERROR, EventType.LOAD, EventType.TOGGLE];
+var EARLY_EVENT_TYPES = BUBBLE_EVENT_TYPES.concat(CAPTURE_EVENT_TYPES);
+var isEarlyEventType = (eventType) => EARLY_EVENT_TYPES.indexOf(eventType) >= 0;
+var MAC_ENTER = 3;
+var ENTER = 13;
+var SPACE = 32;
+var KeyCode = {
+  MAC_ENTER,
+  ENTER,
+  SPACE
+};
+function getBrowserEventType(eventType) {
+  if (eventType === EventType.MOUSEENTER) {
+    return EventType.MOUSEOVER;
+  } else if (eventType === EventType.MOUSELEAVE) {
+    return EventType.MOUSEOUT;
+  } else if (eventType === EventType.POINTERENTER) {
+    return EventType.POINTEROVER;
+  } else if (eventType === EventType.POINTERLEAVE) {
+    return EventType.POINTEROUT;
+  }
+  return eventType;
+}
+var isMac = typeof navigator !== "undefined" && /Macintosh/.test(navigator.userAgent);
+var isWebKit = typeof navigator !== "undefined" && !/Opera/.test(navigator.userAgent) && /WebKit/.test(navigator.userAgent);
+var isIe = typeof navigator !== "undefined" && (/MSIE/.test(navigator.userAgent) || /Trident/.test(navigator.userAgent));
+var isGecko = typeof navigator !== "undefined" && !/Opera|WebKit/.test(navigator.userAgent) && /Gecko/.test(navigator.product);
+var ACTION_KEY_TO_KEYCODE = {
+  "Enter": KeyCode.ENTER,
+  " ": KeyCode.SPACE
+};
+var IDENTIFIER_TO_KEY_TRIGGER_MAPPING = {
+  "A": KeyCode.ENTER,
+  "BUTTON": 0,
+  "CHECKBOX": KeyCode.SPACE,
+  "COMBOBOX": KeyCode.ENTER,
+  "FILE": 0,
+  "GRIDCELL": KeyCode.ENTER,
+  "LINK": KeyCode.ENTER,
+  "LISTBOX": KeyCode.ENTER,
+  "MENU": 0,
+  "MENUBAR": 0,
+  "MENUITEM": 0,
+  "MENUITEMCHECKBOX": 0,
+  "MENUITEMRADIO": 0,
+  "OPTION": 0,
+  "RADIO": KeyCode.SPACE,
+  "RADIOGROUP": KeyCode.SPACE,
+  "RESET": 0,
+  "SUBMIT": 0,
+  "SWITCH": KeyCode.SPACE,
+  "TAB": 0,
+  "TREE": KeyCode.ENTER,
+  "TREEITEM": KeyCode.ENTER
+};
+var isIos = typeof navigator !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
+function setEventType(eventInfo, eventType) {
+  eventInfo.eventType = eventType;
+}
+function setIsReplay(eventInfo, replay) {
+  eventInfo.eirp = replay;
+}
+function cloneEventInfo(eventInfo) {
+  return {
+    eventType: eventInfo.eventType,
+    event: eventInfo.event,
+    targetElement: eventInfo.targetElement,
+    eic: eventInfo.eic,
+    eia: eventInfo.eia,
+    timeStamp: eventInfo.timeStamp,
+    eirp: eventInfo.eirp,
+    eiack: eventInfo.eiack,
+    eir: eventInfo.eir
+  };
+}
+function createEventInfoFromParameters(eventType, event, targetElement, container, timestamp, action, isReplay, a11yClickKey) {
+  return {
+    eventType,
+    event,
+    targetElement,
+    eic: container,
+    timeStamp: timestamp,
+    eia: action,
+    eirp: isReplay,
+    eiack: a11yClickKey
+  };
+}
+var DEFAULT_EVENT_TYPE = EventType.CLICK;
+var Restriction;
+(function(Restriction2) {
+  Restriction2[Restriction2["I_AM_THE_JSACTION_FRAMEWORK"] = 0] = "I_AM_THE_JSACTION_FRAMEWORK";
+})(Restriction || (Restriction = {}));
+var PROPAGATION_STOPPED_SYMBOL = Symbol.for("propagationStopped");
+function removeAllEventListeners(earlyJsactionData) {
+  if (!earlyJsactionData) {
+    return;
+  }
+  removeEventListeners(earlyJsactionData.c, earlyJsactionData.et, earlyJsactionData.h);
+  removeEventListeners(earlyJsactionData.c, earlyJsactionData.etc, earlyJsactionData.h, true);
+}
+function removeEventListeners(container, eventTypes, earlyEventHandler, capture) {
+  for (let i = 0; i < eventTypes.length; i++) {
+    container.removeEventListener(
+      eventTypes[i],
+      earlyEventHandler,
+      /* useCapture */
+      capture
+    );
+  }
+}
+var MOUSE_SPECIAL_SUPPORT = false;
+var _EventContract = class _EventContract {
+  constructor(containerManager) {
+    this.eventHandlers = {};
+    this.browserEventTypeToExtraEventTypes = {};
+    this.dispatcher = null;
+    this.queuedEventInfos = [];
+    this.containerManager = containerManager;
+  }
+  handleEvent(eventType, event, container) {
+    const eventInfo = createEventInfoFromParameters(
+      /* eventType= */
+      eventType,
+      /* event= */
+      event,
+      /* targetElement= */
+      event.target,
+      /* container= */
+      container,
+      /* timestamp= */
+      Date.now()
+    );
+    this.handleEventInfo(eventInfo);
+  }
+  /**
+   * Handle an `EventInfo`.
+   */
+  handleEventInfo(eventInfo) {
+    if (!this.dispatcher) {
+      setIsReplay(eventInfo, true);
+      this.queuedEventInfos?.push(eventInfo);
+      return;
+    }
+    this.dispatcher(eventInfo);
+  }
+  /**
+   * Enables jsaction handlers to be called for the event type given by
+   * name.
+   *
+   * If the event is already registered, this does nothing.
+   *
+   * @param prefixedEventType If supplied, this event is used in
+   *     the actual browser event registration instead of the name that is
+   *     exposed to jsaction. Use this if you e.g. want users to be able
+   *     to subscribe to jsaction="transitionEnd:foo" while the underlying
+   *     event is webkitTransitionEnd in one browser and mozTransitionEnd
+   *     in another.
+   */
+  addEvent(eventType, prefixedEventType) {
+    if (eventType in this.eventHandlers || !this.containerManager) {
+      return;
+    }
+    if (!_EventContract.MOUSE_SPECIAL_SUPPORT && MOUSE_SPECIAL_EVENT_TYPES.indexOf(eventType) >= 0) {
+      return;
+    }
+    const eventHandler = (eventType2, event, container) => {
+      this.handleEvent(eventType2, event, container);
+    };
+    this.eventHandlers[eventType] = eventHandler;
+    const browserEventType = getBrowserEventType(prefixedEventType || eventType);
+    if (browserEventType !== eventType) {
+      const eventTypes = this.browserEventTypeToExtraEventTypes[browserEventType] || [];
+      eventTypes.push(eventType);
+      this.browserEventTypeToExtraEventTypes[browserEventType] = eventTypes;
+    }
+    this.containerManager.addEventListener(browserEventType, (element) => {
+      return (event) => {
+        eventHandler(eventType, event, element);
+      };
+    });
+  }
+  /**
+   * Gets the queued early events and replay them using the appropriate handler
+   * in the provided event contract. Once all the events are replayed, it cleans
+   * up the early contract.
+   */
+  replayEarlyEvents(earlyJsactionData = window._ejsa) {
+    if (!earlyJsactionData) {
+      return;
+    }
+    this.replayEarlyEventInfos(earlyJsactionData.q);
+    removeAllEventListeners(earlyJsactionData);
+    delete window._ejsa;
+  }
+  /**
+   * Replays all the early `EventInfo` objects, dispatching them through the normal
+   * `EventContract` flow.
+   */
+  replayEarlyEventInfos(earlyEventInfos) {
+    for (let i = 0; i < earlyEventInfos.length; i++) {
+      const earlyEventInfo = earlyEventInfos[i];
+      const eventTypes = this.getEventTypesForBrowserEventType(earlyEventInfo.eventType);
+      for (let j = 0; j < eventTypes.length; j++) {
+        const eventInfo = cloneEventInfo(earlyEventInfo);
+        setEventType(eventInfo, eventTypes[j]);
+        this.handleEventInfo(eventInfo);
+      }
+    }
+  }
+  /**
+   * Returns all JSAction event types that have been registered for a given
+   * browser event type.
+   */
+  getEventTypesForBrowserEventType(browserEventType) {
+    const eventTypes = [];
+    if (this.eventHandlers[browserEventType]) {
+      eventTypes.push(browserEventType);
+    }
+    if (this.browserEventTypeToExtraEventTypes[browserEventType]) {
+      eventTypes.push(...this.browserEventTypeToExtraEventTypes[browserEventType]);
+    }
+    return eventTypes;
+  }
+  /**
+   * Returns the event handler function for a given event type.
+   */
+  handler(eventType) {
+    return this.eventHandlers[eventType];
+  }
+  /**
+   * Cleans up the event contract. This resets all of the `EventContract`'s
+   * internal state. Users are responsible for not using this `EventContract`
+   * after it has been cleaned up.
+   */
+  cleanUp() {
+    this.containerManager.cleanUp();
+    this.containerManager = null;
+    this.eventHandlers = {};
+    this.browserEventTypeToExtraEventTypes = {};
+    this.dispatcher = null;
+    this.queuedEventInfos = [];
+  }
+  /**
+   * Register a dispatcher function. Event info of each event mapped to
+   * a jsaction is passed for handling to this callback. The queued
+   * events are passed as well to the dispatcher for later replaying
+   * once the dispatcher is registered. Clears the event queue to null.
+   *
+   * @param dispatcher The dispatcher function.
+   * @param restriction
+   */
+  registerDispatcher(dispatcher, restriction) {
+    this.ecrd(dispatcher, restriction);
+  }
+  /**
+   * Unrenamed alias for registerDispatcher. Necessary for any codebases that
+   * split the `EventContract` and `Dispatcher` code into different compilation
+   * units.
+   */
+  ecrd(dispatcher, restriction) {
+    this.dispatcher = dispatcher;
+    if (this.queuedEventInfos?.length) {
+      for (let i = 0; i < this.queuedEventInfos.length; i++) {
+        this.handleEventInfo(this.queuedEventInfos[i]);
+      }
+      this.queuedEventInfos = null;
+    }
+  }
+};
+_EventContract.MOUSE_SPECIAL_SUPPORT = MOUSE_SPECIAL_SUPPORT;
+var EventContract = _EventContract;
+
 // node_modules/@angular/core/fesm2022/core.mjs
-var ERROR_DETAILS_PAGE_BASE_URL = "https://angular.io/errors";
+var ERROR_DETAILS_PAGE_BASE_URL = "https://angular.dev/errors";
 var XSS_SECURITY_URL = "https://g.co/ng/security#xss";
 var RuntimeError = class extends Error {
   constructor(code, message) {
@@ -2353,7 +3053,9 @@ function createInputSignal(initialValue, options) {
   return inputValueFn;
 }
 function noSideEffects(fn2) {
-  return { toString: fn2 }.toString();
+  return {
+    toString: fn2
+  }.toString();
 }
 var ANNOTATIONS = "__annotations__";
 var PARAMETERS = "__parameters__";
@@ -2368,12 +3070,12 @@ function makeDecorator(name, props, parentClass, additionalProcessing, typeFn) {
       }
       const annotationInstance = new DecoratorFactory(...args);
       return function TypeDecorator(cls) {
-        if (typeFn)
-          typeFn(cls, ...args);
-        const annotations = cls.hasOwnProperty(ANNOTATIONS) ? cls[ANNOTATIONS] : Object.defineProperty(cls, ANNOTATIONS, { value: [] })[ANNOTATIONS];
+        if (typeFn) typeFn(cls, ...args);
+        const annotations = cls.hasOwnProperty(ANNOTATIONS) ? cls[ANNOTATIONS] : Object.defineProperty(cls, ANNOTATIONS, {
+          value: []
+        })[ANNOTATIONS];
         annotations.push(annotationInstance);
-        if (additionalProcessing)
-          additionalProcessing(cls);
+        if (additionalProcessing) additionalProcessing(cls);
         return cls;
       };
     }
@@ -2407,7 +3109,9 @@ function makeParamDecorator(name, props, parentClass) {
       ParamDecorator.annotation = annotationInstance;
       return ParamDecorator;
       function ParamDecorator(cls, unusedKey, index) {
-        const parameters = cls.hasOwnProperty(PARAMETERS) ? cls[PARAMETERS] : Object.defineProperty(cls, PARAMETERS, { value: [] })[PARAMETERS];
+        const parameters = cls.hasOwnProperty(PARAMETERS) ? cls[PARAMETERS] : Object.defineProperty(cls, PARAMETERS, {
+          value: []
+        })[PARAMETERS];
         while (parameters.length <= index) {
           parameters.push(null);
         }
@@ -2437,11 +3141,12 @@ function makePropDecorator(name, props, parentClass, additionalProcessing) {
           throw new Error("Standard Angular field decorators are not supported in JIT mode.");
         }
         const constructor = target.constructor;
-        const meta = constructor.hasOwnProperty(PROP_METADATA) ? constructor[PROP_METADATA] : Object.defineProperty(constructor, PROP_METADATA, { value: {} })[PROP_METADATA];
+        const meta = constructor.hasOwnProperty(PROP_METADATA) ? constructor[PROP_METADATA] : Object.defineProperty(constructor, PROP_METADATA, {
+          value: {}
+        })[PROP_METADATA];
         meta[name2] = meta.hasOwnProperty(name2) && meta[name2] || [];
         meta[name2].unshift(decoratorInstance);
-        if (additionalProcessing)
-          additionalProcessing(target, name2, ...args);
+        if (additionalProcessing) additionalProcessing(target, name2, ...args);
       }
       return PropDecorator;
     }
@@ -2547,7 +3252,9 @@ function stringify(token) {
 function concatStringsWithSpace(before, after) {
   return before == null || before === "" ? after === null ? "" : after : after == null || after === "" ? before : before + " " + after;
 }
-var __forward_ref__ = getClosureSafeProperty({ __forward_ref__: getClosureSafeProperty });
+var __forward_ref__ = getClosureSafeProperty({
+  __forward_ref__: getClosureSafeProperty
+});
 function forwardRef(forwardRefFn) {
   forwardRefFn.__forward_ref__ = forwardRef;
   forwardRefFn.toString = function() {
@@ -2647,8 +3354,7 @@ function assertIndexInRange(arr, index) {
   }
 }
 function assertOneOf(value, ...validValues) {
-  if (validValues.indexOf(value) !== -1)
-    return true;
+  if (validValues.indexOf(value) !== -1) return true;
   throwError(`Expected value to be one of ${JSON.stringify(validValues)} but was ${JSON.stringify(value)}.`);
 }
 function assertNotReactive(fn2) {
@@ -2665,7 +3371,10 @@ function \u0275\u0275defineInjectable(opts) {
   };
 }
 function \u0275\u0275defineInjector(options) {
-  return { providers: options.providers || [], imports: options.imports || [] };
+  return {
+    providers: options.providers || [],
+    imports: options.imports || []
+  };
 }
 function getInjectableDef(type) {
   return getOwnDefinition(type, NG_PROV_DEF) || getOwnDefinition(type, NG_INJECTABLE_DEF);
@@ -2686,10 +3395,18 @@ This will become an error in a future version of Angular. Please add @Injectable
 function getInjectorDef(type) {
   return type && (type.hasOwnProperty(NG_INJ_DEF) || type.hasOwnProperty(NG_INJECTOR_DEF)) ? type[NG_INJ_DEF] : null;
 }
-var NG_PROV_DEF = getClosureSafeProperty({ \u0275prov: getClosureSafeProperty });
-var NG_INJ_DEF = getClosureSafeProperty({ \u0275inj: getClosureSafeProperty });
-var NG_INJECTABLE_DEF = getClosureSafeProperty({ ngInjectableDef: getClosureSafeProperty });
-var NG_INJECTOR_DEF = getClosureSafeProperty({ ngInjectorDef: getClosureSafeProperty });
+var NG_PROV_DEF = getClosureSafeProperty({
+  \u0275prov: getClosureSafeProperty
+});
+var NG_INJ_DEF = getClosureSafeProperty({
+  \u0275inj: getClosureSafeProperty
+});
+var NG_INJECTABLE_DEF = getClosureSafeProperty({
+  ngInjectableDef: getClosureSafeProperty
+});
+var NG_INJECTOR_DEF = getClosureSafeProperty({
+  ngInjectorDef: getClosureSafeProperty
+});
 var InjectionToken = class {
   /**
    * @param _desc   Description for the token,
@@ -2761,7 +3478,11 @@ function emitProviderConfiguredEvent(eventProvider, isViewProvider = false) {
   injectorProfiler({
     type: 2,
     context: getInjectorProfilerContext(),
-    providerRecord: { token, provider, isViewProvider }
+    providerRecord: {
+      token,
+      provider,
+      isViewProvider
+    }
   });
 }
 function emitInstanceCreatedByInjectorEvent(instance) {
@@ -2769,7 +3490,9 @@ function emitInstanceCreatedByInjectorEvent(instance) {
   injectorProfiler({
     type: 1,
     context: getInjectorProfilerContext(),
-    instance: { value: instance }
+    instance: {
+      value: instance
+    }
   });
 }
 function emitInjectEvent(token, value, flags) {
@@ -2777,12 +3500,19 @@ function emitInjectEvent(token, value, flags) {
   injectorProfiler({
     type: 0,
     context: getInjectorProfilerContext(),
-    service: { token, value, flags }
+    service: {
+      token,
+      value,
+      flags
+    }
   });
 }
 function runInInjectorProfilerContext(injector, token, callback) {
   !ngDevMode && throwError("runInInjectorProfilerContext should never be called in production mode");
-  const prevInjectContext = setInjectorProfilerContext({ injector, token });
+  const prevInjectContext = setInjectorProfilerContext({
+    injector,
+    token
+  });
   try {
     callback();
   } finally {
@@ -2792,23 +3522,34 @@ function runInInjectorProfilerContext(injector, token, callback) {
 function isEnvironmentProviders(value) {
   return value && !!value.\u0275providers;
 }
-var NG_COMP_DEF = getClosureSafeProperty({ \u0275cmp: getClosureSafeProperty });
-var NG_DIR_DEF = getClosureSafeProperty({ \u0275dir: getClosureSafeProperty });
-var NG_PIPE_DEF = getClosureSafeProperty({ \u0275pipe: getClosureSafeProperty });
-var NG_MOD_DEF = getClosureSafeProperty({ \u0275mod: getClosureSafeProperty });
-var NG_FACTORY_DEF = getClosureSafeProperty({ \u0275fac: getClosureSafeProperty });
-var NG_ELEMENT_ID = getClosureSafeProperty({ __NG_ELEMENT_ID__: getClosureSafeProperty });
-var NG_ENV_ID = getClosureSafeProperty({ __NG_ENV_ID__: getClosureSafeProperty });
+var NG_COMP_DEF = getClosureSafeProperty({
+  \u0275cmp: getClosureSafeProperty
+});
+var NG_DIR_DEF = getClosureSafeProperty({
+  \u0275dir: getClosureSafeProperty
+});
+var NG_PIPE_DEF = getClosureSafeProperty({
+  \u0275pipe: getClosureSafeProperty
+});
+var NG_MOD_DEF = getClosureSafeProperty({
+  \u0275mod: getClosureSafeProperty
+});
+var NG_FACTORY_DEF = getClosureSafeProperty({
+  \u0275fac: getClosureSafeProperty
+});
+var NG_ELEMENT_ID = getClosureSafeProperty({
+  __NG_ELEMENT_ID__: getClosureSafeProperty
+});
+var NG_ENV_ID = getClosureSafeProperty({
+  __NG_ENV_ID__: getClosureSafeProperty
+});
 function renderStringify(value) {
-  if (typeof value === "string")
-    return value;
-  if (value == null)
-    return "";
+  if (typeof value === "string") return value;
+  if (value == null) return "";
   return String(value);
 }
 function stringifyForError(value) {
-  if (typeof value === "function")
-    return value.name || value.toString();
+  if (typeof value === "function") return value.name || value.toString();
   if (typeof value === "object" && value != null && typeof value.type === "function") {
     return value.type.name || value.type.toString();
   }
@@ -2861,10 +3602,8 @@ function injectRootLimpMode(token, notFoundValue, flags) {
   if (injectableDef && injectableDef.providedIn == "root") {
     return injectableDef.value === void 0 ? injectableDef.value = injectableDef.factory() : injectableDef.value;
   }
-  if (flags & InjectFlags.Optional)
-    return null;
-  if (notFoundValue !== void 0)
-    return notFoundValue;
+  if (flags & InjectFlags.Optional) return null;
+  if (notFoundValue !== void 0) return notFoundValue;
   throwProviderNotFoundError(token, "Injector");
 }
 function assertInjectImplementationNotEqual(fn2) {
@@ -2984,8 +3723,9 @@ function formatError(text, obj, injectorErrorName, source = null) {
 }
 var Inject = attachInjectFlag(
   // Disable tslint because `DecoratorFlags` is a const enum which gets inlined.
-  // tslint:disable-next-line: no-toplevel-property-access
-  makeParamDecorator("Inject", (token) => ({ token })),
+  makeParamDecorator("Inject", (token) => ({
+    token
+  })),
   -1
   /* DecoratorFlags.Inject */
 );
@@ -3033,8 +3773,7 @@ function getFactoryDef(type, throwNotFound) {
   return hasFactoryDef ? type[NG_FACTORY_DEF] : null;
 }
 function arrayEquals(a, b, identityAccessor) {
-  if (a.length !== b.length)
-    return false;
+  if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
     let valueA = a[i];
     let valueB = b[i];
@@ -3189,8 +3928,7 @@ function classIndexOf(className, classToSearch, startingIndex) {
   let end2 = className.length;
   while (true) {
     const foundIndex = className.indexOf(classToSearch, startingIndex);
-    if (foundIndex === -1)
-      return foundIndex;
+    if (foundIndex === -1) return foundIndex;
     if (foundIndex === 0 || className.charCodeAt(foundIndex - 1) <= 32) {
       const length = classToSearch.length;
       if (foundIndex + length === end2 || className.charCodeAt(foundIndex + length) <= 32) {
@@ -3291,10 +4029,8 @@ function mergeHostAttribute(dst, marker, key1, key2, value) {
       }
     }
     i++;
-    if (key2 !== null)
-      i++;
-    if (value !== null)
-      i++;
+    if (key2 !== null) i++;
+    if (value !== null) i++;
   }
   if (markerInsertPosition !== -1) {
     dst.splice(markerInsertPosition, 0, marker);
@@ -3351,33 +4087,28 @@ function isNodeMatchingSelector(tNode, selector, isProjectionMode) {
       if (!skipToNextSelector && !isPositive(mode) && !isPositive(current)) {
         return false;
       }
-      if (skipToNextSelector && isPositive(current))
-        continue;
+      if (skipToNextSelector && isPositive(current)) continue;
       skipToNextSelector = false;
       mode = current | mode & 1;
       continue;
     }
-    if (skipToNextSelector)
-      continue;
+    if (skipToNextSelector) continue;
     if (mode & 4) {
       mode = 2 | mode & 1;
       if (current !== "" && !hasTagAndTypeMatch(tNode, current, isProjectionMode) || current === "" && selector.length === 1) {
-        if (isPositive(mode))
-          return false;
+        if (isPositive(mode)) return false;
         skipToNextSelector = true;
       }
     } else if (mode & 8) {
       if (nodeAttrs === null || !isCssClassMatching(tNode, nodeAttrs, current, isProjectionMode)) {
-        if (isPositive(mode))
-          return false;
+        if (isPositive(mode)) return false;
         skipToNextSelector = true;
       }
     } else {
       const selectorAttrValue = selector[++i];
       const attrIndexInNode = findAttrIndexInNode(current, nodeAttrs, isInlineTemplate(tNode), isProjectionMode);
       if (attrIndexInNode === -1) {
-        if (isPositive(mode))
-          return false;
+        if (isPositive(mode)) return false;
         skipToNextSelector = true;
         continue;
       }
@@ -3390,8 +4121,7 @@ function isNodeMatchingSelector(tNode, selector, isProjectionMode) {
           nodeAttrValue = nodeAttrs[attrIndexInNode + 1].toLowerCase();
         }
         if (mode & 2 && selectorAttrValue !== nodeAttrValue) {
-          if (isPositive(mode))
-            return false;
+          if (isPositive(mode)) return false;
           skipToNextSelector = true;
         }
       }
@@ -3403,8 +4133,7 @@ function isPositive(mode) {
   return (mode & 1) === 0;
 }
 function findAttrIndexInNode(name, attrs, isInlineTemplate2, isProjectionMode) {
-  if (attrs === null)
-    return -1;
+  if (attrs === null) return -1;
   let i = 0;
   if (isProjectionMode || !isInlineTemplate2) {
     let bindingsMode = false;
@@ -3472,29 +4201,26 @@ function matchTemplateAttribute(attrs, name) {
     i++;
     while (i < attrs.length) {
       const attr = attrs[i];
-      if (typeof attr === "number")
-        return -1;
-      if (attr === name)
-        return i;
+      if (typeof attr === "number") return -1;
+      if (attr === name) return i;
       i++;
     }
   }
   return -1;
 }
 function isSelectorInSelectorList(selector, list) {
-  selectorListLoop:
-    for (let i = 0; i < list.length; i++) {
-      const currentSelectorInList = list[i];
-      if (selector.length !== currentSelectorInList.length) {
-        continue;
-      }
-      for (let j = 0; j < selector.length; j++) {
-        if (selector[j] !== currentSelectorInList[j]) {
-          continue selectorListLoop;
-        }
-      }
-      return true;
+  selectorListLoop: for (let i = 0; i < list.length; i++) {
+    const currentSelectorInList = list[i];
+    if (selector.length !== currentSelectorInList.length) {
+      continue;
     }
+    for (let j = 0; j < selector.length; j++) {
+      if (selector[j] !== currentSelectorInList[j]) {
+        continue selectorListLoop;
+      }
+    }
+    return true;
+  }
   return false;
 }
 function maybeWrapInNotSelector(isNegativeMode, chunk) {
@@ -3551,13 +4277,15 @@ function extractAttrsAndClassesFromSelector(selector) {
         classes.push(valueOrMarker);
       }
     } else {
-      if (!isPositive(mode))
-        break;
+      if (!isPositive(mode)) break;
       mode = valueOrMarker;
     }
     i++;
   }
-  return { attrs, classes };
+  return {
+    attrs,
+    classes
+  };
 }
 function \u0275\u0275defineComponent(componentDefinition) {
   return noSideEffects(() => {
@@ -3623,8 +4351,7 @@ function \u0275\u0275defineNgModule(def) {
   });
 }
 function parseAndConvertBindingsForDefinition(obj, declaredInputs) {
-  if (obj == null)
-    return EMPTY_OBJ;
+  if (obj == null) return EMPTY_OBJ;
   const newLookup = {};
   for (const minifiedKey in obj) {
     if (obj.hasOwnProperty(minifiedKey)) {
@@ -3764,11 +4491,6 @@ function getComponentId(componentDef) {
   }
   return compId;
 }
-function makeEnvironmentProviders(providers) {
-  return {
-    \u0275providers: providers
-  };
-}
 function importProvidersFrom(...sources) {
   return {
     \u0275providers: internalImportProvidersFrom(true, sources),
@@ -3802,7 +4524,10 @@ function internalImportProvidersFrom(checkForStandaloneCmp, ...sources) {
 }
 function processInjectorTypesWithProviders(typesWithProviders, visitor) {
   for (let i = 0; i < typesWithProviders.length; i++) {
-    const { ngModule, providers } = typesWithProviders[i];
+    const {
+      ngModule,
+      providers
+    } = typesWithProviders[i];
     deepForEachProvider(providers, (provider) => {
       ngDevMode && validateProvider(provider, providers || EMPTY_ARRAY, ngModule);
       visitor(provider, ngModule);
@@ -3811,8 +4536,7 @@ function processInjectorTypesWithProviders(typesWithProviders, visitor) {
 }
 function walkProviderTree(container, visitor, parents, dedup) {
   container = resolveForwardRef(container);
-  if (!container)
-    return false;
+  if (!container) return false;
   let defType = null;
   let injDef = getInjectorDef(container);
   const cmpDef = !injDef && getComponentDef(container);
@@ -3867,9 +4591,21 @@ function walkProviderTree(container, visitor, parents, dedup) {
     }
     if (!isDuplicate) {
       const factory = getFactoryDef(defType) || (() => new defType());
-      visitor({ provide: defType, useFactory: factory, deps: EMPTY_ARRAY }, defType);
-      visitor({ provide: INJECTOR_DEF_TYPES, useValue: defType, multi: true }, defType);
-      visitor({ provide: ENVIRONMENT_INITIALIZER, useValue: () => \u0275\u0275inject(defType), multi: true }, defType);
+      visitor({
+        provide: defType,
+        useFactory: factory,
+        deps: EMPTY_ARRAY
+      }, defType);
+      visitor({
+        provide: INJECTOR_DEF_TYPES,
+        useValue: defType,
+        multi: true
+      }, defType);
+      visitor({
+        provide: ENVIRONMENT_INITIALIZER,
+        useValue: () => \u0275\u0275inject(defType),
+        multi: true
+      }, defType);
     }
     const defProviders = injDef.providers;
     if (defProviders != null && !isDuplicate) {
@@ -3905,7 +4641,10 @@ function deepForEachProvider(providers, fn2) {
     }
   }
 }
-var USE_VALUE$1 = getClosureSafeProperty({ provide: String, useValue: getClosureSafeProperty });
+var USE_VALUE$1 = getClosureSafeProperty({
+  provide: String,
+  useValue: getClosureSafeProperty
+});
 function isValueProvider(value) {
   return value !== null && typeof value == "object" && USE_VALUE$1 in value;
 }
@@ -3997,7 +4736,10 @@ var R3Injector = class extends EnvironmentInjector {
     const previousInjectImplementation = setInjectImplementation(void 0);
     let prevInjectContext;
     if (ngDevMode) {
-      prevInjectContext = setInjectorProfilerContext({ injector: this, token: null });
+      prevInjectContext = setInjectorProfilerContext({
+        injector: this,
+        token: null
+      });
     }
     try {
       return fn2();
@@ -4015,7 +4757,10 @@ var R3Injector = class extends EnvironmentInjector {
     flags = convertToBitFlags(flags);
     let prevInjectContext;
     if (ngDevMode) {
-      prevInjectContext = setInjectorProfilerContext({ injector: this, token });
+      prevInjectContext = setInjectorProfilerContext({
+        injector: this,
+        token
+      });
     }
     const previousInjector = setCurrentInjector(this);
     const previousInjectImplementation = setInjectImplementation(void 0);
@@ -4068,7 +4813,10 @@ var R3Injector = class extends EnvironmentInjector {
     const previousInjectImplementation = setInjectImplementation(void 0);
     let prevInjectContext;
     if (ngDevMode) {
-      prevInjectContext = setInjectorProfilerContext({ injector: this, token: null });
+      prevInjectContext = setInjectorProfilerContext({
+        injector: this,
+        token: null
+      });
     }
     try {
       const initializers = this.get(ENVIRONMENT_INITIALIZER, EMPTY_ARRAY, InjectFlags.Self);
@@ -4723,7 +5471,10 @@ function rememberChangeHistoryAndInvokeOnChangesHook() {
 function ngOnChangesSetInput(instance, inputSignalNode, value, publicName, privateName) {
   const declaredName = this.declaredInputs[publicName];
   ngDevMode && assertString(declaredName, "Name of input in ngOnChanges has to be a string");
-  const simpleChangesStore = getSimpleChangesStore(instance) || setSimpleChangesStore(instance, { previous: EMPTY_OBJ, current: null });
+  const simpleChangesStore = getSimpleChangesStore(instance) || setSimpleChangesStore(instance, {
+    previous: EMPTY_OBJ,
+    current: null
+  });
   const current = simpleChangesStore.current || (simpleChangesStore.current = {});
   const previous = simpleChangesStore.previous;
   const previousChange = previous[declaredName];
@@ -4748,10 +5499,6 @@ var profiler = function(event, instance, hookOrListener) {
 };
 var SVG_NAMESPACE = "svg";
 var MATH_ML_NAMESPACE = "math";
-var _ensureDirtyViewsAreAlwaysReachable = false;
-function getEnsureDirtyViewsAreAlwaysReachable() {
-  return _ensureDirtyViewsAreAlwaysReachable;
-}
 function unwrapRNode(value) {
   while (Array.isArray(value)) {
     value = value[HOST];
@@ -4760,8 +5507,7 @@ function unwrapRNode(value) {
 }
 function unwrapLView(value) {
   while (Array.isArray(value)) {
-    if (typeof value[TYPE] === "object")
-      return value;
+    if (typeof value[TYPE] === "object") return value;
     value = value[HOST];
   }
   return null;
@@ -4804,8 +5550,7 @@ function viewAttachedToContainer(view) {
   return isLContainer(view[PARENT]);
 }
 function getConstant(consts, index) {
-  if (index === null || index === void 0)
-    return null;
+  if (index === null || index === void 0) return null;
   ngDevMode && assertIndexInRange(consts, index);
   return consts[index];
 }
@@ -4834,22 +5579,21 @@ function requiresRefreshOrTraversal(lView) {
 }
 function updateAncestorTraversalFlagsOnAttach(lView) {
   lView[ENVIRONMENT].changeDetectionScheduler?.notify(
-    1
-    /* NotificationType.AfterRenderHooks */
+    7
+    /* NotificationSource.ViewAttached */
   );
+  if (lView[FLAGS] & 64) {
+    lView[FLAGS] |= 1024;
+  }
   if (requiresRefreshOrTraversal(lView)) {
     markAncestorsForTraversal(lView);
-  } else if (lView[FLAGS] & 64) {
-    if (getEnsureDirtyViewsAreAlwaysReachable()) {
-      lView[FLAGS] |= 1024;
-      markAncestorsForTraversal(lView);
-    } else {
-      lView[ENVIRONMENT].changeDetectionScheduler?.notify();
-    }
   }
 }
 function markAncestorsForTraversal(lView) {
-  lView[ENVIRONMENT].changeDetectionScheduler?.notify();
+  lView[ENVIRONMENT].changeDetectionScheduler?.notify(
+    0
+    /* NotificationSource.MarkAncestorsForTraversal */
+  );
   let parent = getLViewParent(lView);
   while (parent !== null) {
     if (parent[FLAGS] & 8192) {
@@ -4872,8 +5616,7 @@ function storeLViewOnDestroy(lView, onDestroyCallback) {
   lView[ON_DESTROY_HOOKS].push(onDestroyCallback);
 }
 function removeLViewOnDestroy(lView, onDestroyCallback) {
-  if (lView[ON_DESTROY_HOOKS] === null)
-    return;
+  if (lView[ON_DESTROY_HOOKS] === null) return;
   const destroyCBIdx = lView[ON_DESTROY_HOOKS].indexOf(onDestroyCallback);
   if (destroyCBIdx !== -1) {
     lView[ON_DESTROY_HOOKS].splice(destroyCBIdx, 1);
@@ -4889,7 +5632,14 @@ var instructionState = {
   bindingsEnabled: true,
   skipHydrationRootTNode: null
 };
-var _isInCheckNoChangesMode = false;
+var CheckNoChangesMode;
+(function(CheckNoChangesMode2) {
+  CheckNoChangesMode2[CheckNoChangesMode2["Off"] = 0] = "Off";
+  CheckNoChangesMode2[CheckNoChangesMode2["Exhaustive"] = 1] = "Exhaustive";
+  CheckNoChangesMode2[CheckNoChangesMode2["OnlyDirtyViews"] = 2] = "OnlyDirtyViews";
+})(CheckNoChangesMode || (CheckNoChangesMode = {}));
+var _checkNoChangesMode = 0;
+var _isRefreshingViews = false;
 function getElementDepthCount() {
   return instructionState.lFrame.elementDepthCount;
 }
@@ -4965,11 +5715,21 @@ function getContextLView() {
 }
 function isInCheckNoChangesMode() {
   !ngDevMode && throwError("Must never be called in production mode");
-  return _isInCheckNoChangesMode;
+  return _checkNoChangesMode !== CheckNoChangesMode.Off;
+}
+function isExhaustiveCheckNoChanges() {
+  !ngDevMode && throwError("Must never be called in production mode");
+  return _checkNoChangesMode === CheckNoChangesMode.Exhaustive;
 }
 function setIsInCheckNoChangesMode(mode) {
   !ngDevMode && throwError("Must never be called in production mode");
-  _isInCheckNoChangesMode = mode;
+  _checkNoChangesMode = mode;
+}
+function isRefreshingViews() {
+  return _isRefreshingViews;
+}
+function setIsRefreshingViews(mode) {
+  _isRefreshingViews = mode;
 }
 function getBindingRoot() {
   const lFrame = instructionState.lFrame;
@@ -5043,8 +5803,7 @@ function enterDI(lView, tNode, flags) {
       parentTNode = parentTNode.parent;
       if (parentTNode === null && !(flags & InjectFlags.Host)) {
         parentTNode = getDeclarationTNode(parentLView);
-        if (parentTNode === null)
-          break;
+        if (parentTNode === null) break;
         ngDevMode && assertDefined(parentLView, "Parent LView should be defined");
         parentLView = parentLView[DECLARATION_VIEW];
         if (parentTNode.type & (2 | 8)) {
@@ -5180,7 +5939,11 @@ function lastNodeWasCreated(flag) {
 }
 function registerPreOrderHooks(directiveIndex, directiveDef, tView) {
   ngDevMode && assertFirstCreatePass(tView);
-  const { ngOnChanges, ngOnInit, ngDoCheck } = directiveDef.type.prototype;
+  const {
+    ngOnChanges,
+    ngOnInit,
+    ngDoCheck
+  } = directiveDef.type.prototype;
   if (ngOnChanges) {
     const wrappedOnChanges = NgOnChangesFeatureImpl(directiveDef);
     (tView.preOrderHooks ??= []).push(directiveIndex, wrappedOnChanges);
@@ -5200,7 +5963,13 @@ function registerPostOrderHooks(tView, tNode) {
     const directiveDef = tView.data[i];
     ngDevMode && assertDefined(directiveDef, "Expecting DirectiveDef");
     const lifecycleHooks = directiveDef.type.prototype;
-    const { ngAfterContentInit, ngAfterContentChecked, ngAfterViewInit, ngAfterViewChecked, ngOnDestroy } = lifecycleHooks;
+    const {
+      ngAfterContentInit,
+      ngAfterContentChecked,
+      ngAfterViewInit,
+      ngAfterViewChecked,
+      ngOnDestroy
+    } = lifecycleHooks;
     if (ngAfterContentInit) {
       (tView.contentHooks ??= []).push(-i, ngAfterContentInit);
     }
@@ -5312,6 +6081,7 @@ function toTNodeTypeAsString(tNodeType) {
   tNodeType & 16 && (text += "|Projection");
   tNodeType & 32 && (text += "|IcuContainer");
   tNodeType & 64 && (text += "|Placeholder");
+  tNodeType & 128 && (text += "|LetDeclaration");
   return text.length > 0 ? text.substring(1) : text;
 }
 function hasClassInput(tNode) {
@@ -5327,16 +6097,25 @@ function assertTNodeType(tNode, expectedTypes, message) {
   }
 }
 function assertPureTNodeType(type) {
-  if (!(type === 2 || //
-  type === 1 || //
-  type === 4 || //
-  type === 8 || //
-  type === 32 || //
-  type === 16 || //
-  type === 64)) {
+  if (!(type === 2 || type === 1 || type === 4 || type === 8 || type === 32 || type === 16 || type === 64 || type === 128)) {
     throwError(`Expected TNodeType to have only a single type selected, but got ${toTNodeTypeAsString(type)}.`);
   }
 }
+var NOT_FOUND_CHECK_ONLY_ELEMENT_INJECTOR = {};
+var ChainedInjector = class {
+  constructor(injector, parentInjector) {
+    this.injector = injector;
+    this.parentInjector = parentInjector;
+  }
+  get(token, notFoundValue, flags) {
+    flags = convertToBitFlags(flags);
+    const value = this.injector.get(token, NOT_FOUND_CHECK_ONLY_ELEMENT_INJECTOR, flags);
+    if (value !== NOT_FOUND_CHECK_ONLY_ELEMENT_INJECTOR || notFoundValue === NOT_FOUND_CHECK_ONLY_ELEMENT_INJECTOR) {
+      return value;
+    }
+    return this.parentInjector.get(token, notFoundValue, flags);
+  }
+};
 function hasParentInjector(parentLocation) {
   return parentLocation !== NO_PARENT_INJECTOR;
 }
@@ -5360,6 +6139,9 @@ function getParentInjectorView(location2, startView) {
     viewOffset--;
   }
   return parentView;
+}
+function isRouterOutletInjector(currentInjector) {
+  return currentInjector instanceof ChainedInjector && typeof currentInjector.injector.__ngOutletInjector === "function";
 }
 var includeViewProviders = true;
 function setIncludeViewProviders(v) {
@@ -5476,8 +6258,7 @@ function injectAttributeImpl(tNode, attrNameToInject) {
     let i = 0;
     while (i < attrsLength) {
       const value = attrs[i];
-      if (isNameOnlyAttributeMarker(value))
-        break;
+      if (isNameOnlyAttributeMarker(value)) break;
       if (value === 0) {
         i = i + 2;
       } else if (typeof value === "number") {
@@ -5681,7 +6462,10 @@ function getNodeInjectable(lView, tView, index, tNode) {
     if (ngDevMode) {
       const token = tData[index].type || tData[index];
       const injector = new NodeInjector(tNode, lView);
-      prevInjectContext = setInjectorProfilerContext({ injector, token });
+      prevInjectContext = setInjectorProfilerContext({
+        injector,
+        token
+      });
     }
     const previousInjectImplementation = factory.injectImpl ? setInjectImplementation(factory.injectImpl) : null;
     const success = enterDI(lView, tNode, InjectFlags.Default);
@@ -5813,7 +6597,10 @@ function getTNodeFromLView(lView) {
 function \u0275\u0275injectAttribute(attrNameToInject) {
   return injectAttributeImpl(getCurrentTNode(), attrNameToInject);
 }
-var Attribute = makeParamDecorator("Attribute", (attributeName2) => ({ attributeName: attributeName2, __NG_ELEMENT_ID__: () => \u0275\u0275injectAttribute(attributeName2) }));
+var Attribute2 = makeParamDecorator("Attribute", (attributeName2) => ({
+  attributeName: attributeName2,
+  __NG_ELEMENT_ID__: () => \u0275\u0275injectAttribute(attributeName2)
+}));
 var _reflect = null;
 function getReflect() {
   return _reflect = _reflect || new ReflectionCapabilities();
@@ -5850,7 +6637,7 @@ function reflectDependency(dep) {
         meta.host = true;
       } else if (param instanceof Inject) {
         meta.token = param.token;
-      } else if (param instanceof Attribute) {
+      } else if (param instanceof Attribute2) {
         if (param.attributeName === void 0) {
           throw new RuntimeError(204, ngDevMode && `Attribute name must be defined.`);
         }
@@ -5873,7 +6660,11 @@ function compileInjectable(type, meta) {
     Object.defineProperty(type, NG_PROV_DEF, {
       get: () => {
         if (ngInjectableDef === null) {
-          const compiler = getCompilerFacade({ usage: 0, kind: "injectable", type });
+          const compiler = getCompilerFacade({
+            usage: 0,
+            kind: "injectable",
+            type
+          });
           ngInjectableDef = compiler.compileInjectable(angularCoreDiEnv, `ng:///${type.name}/\u0275prov.js`, getInjectableMetadata(type, meta));
         }
         return ngInjectableDef;
@@ -5884,7 +6675,11 @@ function compileInjectable(type, meta) {
     Object.defineProperty(type, NG_FACTORY_DEF, {
       get: () => {
         if (ngFactoryDef === null) {
-          const compiler = getCompilerFacade({ usage: 0, kind: "injectable", type });
+          const compiler = getCompilerFacade({
+            usage: 0,
+            kind: "injectable",
+            type
+          });
           ngFactoryDef = compiler.compileFactory(angularCoreDiEnv, `ng:///${type.name}/\u0275fac.js`, {
             name: type.name,
             type,
@@ -5901,7 +6696,10 @@ function compileInjectable(type, meta) {
     });
   }
 }
-var USE_VALUE = getClosureSafeProperty({ provide: String, useValue: getClosureSafeProperty });
+var USE_VALUE = getClosureSafeProperty({
+  provide: String,
+  useValue: getClosureSafeProperty
+});
 function isUseClassProvider(meta) {
   return meta.useClass !== void 0;
 }
@@ -5915,7 +6713,9 @@ function isUseExistingProvider(meta) {
   return meta.useExisting !== void 0;
 }
 function getInjectableMetadata(type, srcMeta) {
-  const meta = srcMeta || { providedIn: null };
+  const meta = srcMeta || {
+    providedIn: null
+  };
   const compilerMeta = {
     name: type.name,
     type,
@@ -5943,25 +6743,26 @@ function createInjector(defType, parent = null, additionalProviders = null, name
   return injector;
 }
 function createInjectorWithoutInjectorInstances(defType, parent = null, additionalProviders = null, name, scopes2 = /* @__PURE__ */ new Set()) {
-  const providers = [
-    additionalProviders || EMPTY_ARRAY,
-    importProvidersFrom(defType)
-  ];
+  const providers = [additionalProviders || EMPTY_ARRAY, importProvidersFrom(defType)];
   name = name || (typeof defType === "object" ? void 0 : stringify(defType));
   return new R3Injector(providers, parent || getNullInjector(), name || null, scopes2);
 }
 var _Injector = class _Injector {
   static create(options, parent) {
     if (Array.isArray(options)) {
-      return createInjector({ name: "" }, parent, options, "");
+      return createInjector({
+        name: ""
+      }, parent, options, "");
     } else {
       const name = options.name ?? "";
-      return createInjector({ name }, options.parent, options.providers, name);
+      return createInjector({
+        name
+      }, options.parent, options.providers, name);
     }
   }
 };
 _Injector.THROW_IF_NOT_FOUND = THROW_IF_NOT_FOUND;
-_Injector.NULL = /* @__PURE__ */ new NullInjector();
+_Injector.NULL = new NullInjector();
 _Injector.\u0275prov = \u0275\u0275defineInjectable({
   token: _Injector,
   providedIn: "any",
@@ -5969,9 +6770,503 @@ _Injector.\u0275prov = \u0275\u0275defineInjectable({
 });
 _Injector.__NG_ELEMENT_ID__ = -1;
 var Injector = _Injector;
+var HOST_TAG_NAME = new InjectionToken(ngDevMode ? "HOST_TAG_NAME" : "");
+HOST_TAG_NAME.__NG_ELEMENT_ID__ = (flags) => {
+  const tNode = getCurrentTNode();
+  if (tNode === null) {
+    throw new RuntimeError(204, ngDevMode && "HOST_TAG_NAME can only be injected in directives and components during construction time (in a class constructor or as a class field initializer)");
+  }
+  if (tNode.type & 2) {
+    return tNode.value;
+  }
+  if (flags & InjectFlags.Optional) {
+    return null;
+  }
+  throw new RuntimeError(204, ngDevMode && `HOST_TAG_NAME was used on ${getDevModeNodeName(tNode)} which doesn't have an underlying element in the DOM. This is invalid, and so the dependency should be marked as optional.`);
+};
+function getDevModeNodeName(tNode) {
+  if (tNode.type & 8) {
+    return "an <ng-container>";
+  } else if (tNode.type & 4) {
+    return "an <ng-template>";
+  } else if (tNode.type & 128) {
+    return "an @let declaration";
+  } else {
+    return "a node";
+  }
+}
 var ERROR_ORIGINAL_ERROR = "ngOriginalError";
 function getOriginalError(error) {
   return error[ERROR_ORIGINAL_ERROR];
+}
+var _DestroyRef = class _DestroyRef {
+};
+_DestroyRef.__NG_ELEMENT_ID__ = injectDestroyRef;
+_DestroyRef.__NG_ENV_ID__ = (injector) => injector;
+var DestroyRef = _DestroyRef;
+var NodeInjectorDestroyRef = class extends DestroyRef {
+  constructor(_lView) {
+    super();
+    this._lView = _lView;
+  }
+  onDestroy(callback) {
+    storeLViewOnDestroy(this._lView, callback);
+    return () => removeLViewOnDestroy(this._lView, callback);
+  }
+};
+function injectDestroyRef() {
+  return new NodeInjectorDestroyRef(getLView());
+}
+var _PendingTasks = class _PendingTasks {
+  constructor() {
+    this.taskId = 0;
+    this.pendingTasks = /* @__PURE__ */ new Set();
+    this.hasPendingTasks = new BehaviorSubject(false);
+  }
+  get _hasPendingTasks() {
+    return this.hasPendingTasks.value;
+  }
+  add() {
+    if (!this._hasPendingTasks) {
+      this.hasPendingTasks.next(true);
+    }
+    const taskId = this.taskId++;
+    this.pendingTasks.add(taskId);
+    return taskId;
+  }
+  remove(taskId) {
+    this.pendingTasks.delete(taskId);
+    if (this.pendingTasks.size === 0 && this._hasPendingTasks) {
+      this.hasPendingTasks.next(false);
+    }
+  }
+  ngOnDestroy() {
+    this.pendingTasks.clear();
+    if (this._hasPendingTasks) {
+      this.hasPendingTasks.next(false);
+    }
+  }
+};
+_PendingTasks.\u0275prov = \u0275\u0275defineInjectable({
+  token: _PendingTasks,
+  providedIn: "root",
+  factory: () => new _PendingTasks()
+});
+var PendingTasks = _PendingTasks;
+var _ExperimentalPendingTasks = class _ExperimentalPendingTasks {
+  constructor() {
+    this.internalPendingTasks = inject(PendingTasks);
+  }
+  /**
+   * Adds a new task that should block application's stability.
+   * @returns A cleanup function that removes a task when called.
+   */
+  add() {
+    const taskId = this.internalPendingTasks.add();
+    return () => this.internalPendingTasks.remove(taskId);
+  }
+};
+_ExperimentalPendingTasks.\u0275prov = \u0275\u0275defineInjectable({
+  token: _ExperimentalPendingTasks,
+  providedIn: "root",
+  factory: () => new _ExperimentalPendingTasks()
+});
+var ExperimentalPendingTasks = _ExperimentalPendingTasks;
+var EventEmitter_ = class extends Subject {
+  constructor(isAsync = false) {
+    super();
+    this.destroyRef = void 0;
+    this.pendingTasks = void 0;
+    this.__isAsync = isAsync;
+    if (isInInjectionContext()) {
+      this.destroyRef = inject(DestroyRef, {
+        optional: true
+      }) ?? void 0;
+      this.pendingTasks = inject(PendingTasks, {
+        optional: true
+      }) ?? void 0;
+    }
+  }
+  emit(value) {
+    const prevConsumer = setActiveConsumer(null);
+    try {
+      super.next(value);
+    } finally {
+      setActiveConsumer(prevConsumer);
+    }
+  }
+  subscribe(observerOrNext, error, complete) {
+    let nextFn = observerOrNext;
+    let errorFn = error || (() => null);
+    let completeFn = complete;
+    if (observerOrNext && typeof observerOrNext === "object") {
+      const observer = observerOrNext;
+      nextFn = observer.next?.bind(observer);
+      errorFn = observer.error?.bind(observer);
+      completeFn = observer.complete?.bind(observer);
+    }
+    if (this.__isAsync) {
+      errorFn = this.wrapInTimeout(errorFn);
+      if (nextFn) {
+        nextFn = this.wrapInTimeout(nextFn);
+      }
+      if (completeFn) {
+        completeFn = this.wrapInTimeout(completeFn);
+      }
+    }
+    const sink = super.subscribe({
+      next: nextFn,
+      error: errorFn,
+      complete: completeFn
+    });
+    if (observerOrNext instanceof Subscription) {
+      observerOrNext.add(sink);
+    }
+    return sink;
+  }
+  wrapInTimeout(fn2) {
+    return (value) => {
+      const taskId = this.pendingTasks?.add();
+      setTimeout(() => {
+        fn2(value);
+        if (taskId !== void 0) {
+          this.pendingTasks?.remove(taskId);
+        }
+      });
+    };
+  }
+};
+var EventEmitter = EventEmitter_;
+function noop2(...args) {
+}
+function scheduleCallbackWithRafRace(callback) {
+  let timeoutId;
+  let animationFrameId;
+  function cleanup() {
+    callback = noop2;
+    try {
+      if (animationFrameId !== void 0 && typeof cancelAnimationFrame === "function") {
+        cancelAnimationFrame(animationFrameId);
+      }
+      if (timeoutId !== void 0) {
+        clearTimeout(timeoutId);
+      }
+    } catch {
+    }
+  }
+  timeoutId = setTimeout(() => {
+    callback();
+    cleanup();
+  });
+  if (typeof requestAnimationFrame === "function") {
+    animationFrameId = requestAnimationFrame(() => {
+      callback();
+      cleanup();
+    });
+  }
+  return () => cleanup();
+}
+function scheduleCallbackWithMicrotask(callback) {
+  queueMicrotask(() => callback());
+  return () => {
+    callback = noop2;
+  };
+}
+var AsyncStackTaggingZoneSpec = class {
+  constructor(namePrefix, consoleAsyncStackTaggingImpl = console) {
+    this.name = "asyncStackTagging for " + namePrefix;
+    this.createTask = consoleAsyncStackTaggingImpl?.createTask ?? (() => null);
+  }
+  onScheduleTask(delegate, _current, target, task) {
+    task.consoleTask = this.createTask(`Zone - ${task.source || task.type}`);
+    return delegate.scheduleTask(target, task);
+  }
+  onInvokeTask(delegate, _currentZone, targetZone, task, applyThis, applyArgs) {
+    let ret;
+    if (task.consoleTask) {
+      ret = task.consoleTask.run(() => delegate.invokeTask(targetZone, task, applyThis, applyArgs));
+    } else {
+      ret = delegate.invokeTask(targetZone, task, applyThis, applyArgs);
+    }
+    return ret;
+  }
+};
+var NgZone = class _NgZone {
+  constructor({
+    enableLongStackTrace = false,
+    shouldCoalesceEventChangeDetection = false,
+    shouldCoalesceRunChangeDetection = false
+  }) {
+    this.hasPendingMacrotasks = false;
+    this.hasPendingMicrotasks = false;
+    this.isStable = true;
+    this.onUnstable = new EventEmitter(false);
+    this.onMicrotaskEmpty = new EventEmitter(false);
+    this.onStable = new EventEmitter(false);
+    this.onError = new EventEmitter(false);
+    if (typeof Zone == "undefined") {
+      throw new RuntimeError(908, ngDevMode && `In this configuration Angular requires Zone.js`);
+    }
+    Zone.assertZonePatched();
+    const self = this;
+    self._nesting = 0;
+    self._outer = self._inner = Zone.current;
+    if (ngDevMode) {
+      self._inner = self._inner.fork(new AsyncStackTaggingZoneSpec("Angular"));
+    }
+    if (Zone["TaskTrackingZoneSpec"]) {
+      self._inner = self._inner.fork(new Zone["TaskTrackingZoneSpec"]());
+    }
+    if (enableLongStackTrace && Zone["longStackTraceZoneSpec"]) {
+      self._inner = self._inner.fork(Zone["longStackTraceZoneSpec"]);
+    }
+    self.shouldCoalesceEventChangeDetection = !shouldCoalesceRunChangeDetection && shouldCoalesceEventChangeDetection;
+    self.shouldCoalesceRunChangeDetection = shouldCoalesceRunChangeDetection;
+    self.callbackScheduled = false;
+    forkInnerZoneWithAngularBehavior(self);
+  }
+  /**
+    This method checks whether the method call happens within an Angular Zone instance.
+  */
+  static isInAngularZone() {
+    return typeof Zone !== "undefined" && Zone.current.get("isAngularZone") === true;
+  }
+  /**
+    Assures that the method is called within the Angular Zone, otherwise throws an error.
+  */
+  static assertInAngularZone() {
+    if (!_NgZone.isInAngularZone()) {
+      throw new RuntimeError(909, ngDevMode && "Expected to be in Angular Zone, but it is not!");
+    }
+  }
+  /**
+    Assures that the method is called outside of the Angular Zone, otherwise throws an error.
+  */
+  static assertNotInAngularZone() {
+    if (_NgZone.isInAngularZone()) {
+      throw new RuntimeError(909, ngDevMode && "Expected to not be in Angular Zone, but it is!");
+    }
+  }
+  /**
+   * Executes the `fn` function synchronously within the Angular zone and returns value returned by
+   * the function.
+   *
+   * Running functions via `run` allows you to reenter Angular zone from a task that was executed
+   * outside of the Angular zone (typically started via {@link #runOutsideAngular}).
+   *
+   * Any future tasks or microtasks scheduled from within this function will continue executing from
+   * within the Angular zone.
+   *
+   * If a synchronous error happens it will be rethrown and not reported via `onError`.
+   */
+  run(fn2, applyThis, applyArgs) {
+    return this._inner.run(fn2, applyThis, applyArgs);
+  }
+  /**
+   * Executes the `fn` function synchronously within the Angular zone as a task and returns value
+   * returned by the function.
+   *
+   * Running functions via `run` allows you to reenter Angular zone from a task that was executed
+   * outside of the Angular zone (typically started via {@link #runOutsideAngular}).
+   *
+   * Any future tasks or microtasks scheduled from within this function will continue executing from
+   * within the Angular zone.
+   *
+   * If a synchronous error happens it will be rethrown and not reported via `onError`.
+   */
+  runTask(fn2, applyThis, applyArgs, name) {
+    const zone = this._inner;
+    const task = zone.scheduleEventTask("NgZoneEvent: " + name, fn2, EMPTY_PAYLOAD, noop2, noop2);
+    try {
+      return zone.runTask(task, applyThis, applyArgs);
+    } finally {
+      zone.cancelTask(task);
+    }
+  }
+  /**
+   * Same as `run`, except that synchronous errors are caught and forwarded via `onError` and not
+   * rethrown.
+   */
+  runGuarded(fn2, applyThis, applyArgs) {
+    return this._inner.runGuarded(fn2, applyThis, applyArgs);
+  }
+  /**
+   * Executes the `fn` function synchronously in Angular's parent zone and returns value returned by
+   * the function.
+   *
+   * Running functions via {@link #runOutsideAngular} allows you to escape Angular's zone and do
+   * work that
+   * doesn't trigger Angular change-detection or is subject to Angular's error handling.
+   *
+   * Any future tasks or microtasks scheduled from within this function will continue executing from
+   * outside of the Angular zone.
+   *
+   * Use {@link #run} to reenter the Angular zone and do work that updates the application model.
+   */
+  runOutsideAngular(fn2) {
+    return this._outer.run(fn2);
+  }
+};
+var EMPTY_PAYLOAD = {};
+function checkStable(zone) {
+  if (zone._nesting == 0 && !zone.hasPendingMicrotasks && !zone.isStable) {
+    try {
+      zone._nesting++;
+      zone.onMicrotaskEmpty.emit(null);
+    } finally {
+      zone._nesting--;
+      if (!zone.hasPendingMicrotasks) {
+        try {
+          zone.runOutsideAngular(() => zone.onStable.emit(null));
+        } finally {
+          zone.isStable = true;
+        }
+      }
+    }
+  }
+}
+function delayChangeDetectionForEvents(zone) {
+  if (zone.isCheckStableRunning || zone.callbackScheduled) {
+    return;
+  }
+  zone.callbackScheduled = true;
+  Zone.root.run(() => {
+    scheduleCallbackWithRafRace(() => {
+      zone.callbackScheduled = false;
+      updateMicroTaskStatus(zone);
+      zone.isCheckStableRunning = true;
+      checkStable(zone);
+      zone.isCheckStableRunning = false;
+    });
+  });
+  updateMicroTaskStatus(zone);
+}
+function forkInnerZoneWithAngularBehavior(zone) {
+  const delayChangeDetectionForEventsDelegate = () => {
+    delayChangeDetectionForEvents(zone);
+  };
+  zone._inner = zone._inner.fork({
+    name: "angular",
+    properties: {
+      "isAngularZone": true
+    },
+    onInvokeTask: (delegate, current, target, task, applyThis, applyArgs) => {
+      if (shouldBeIgnoredByZone(applyArgs)) {
+        return delegate.invokeTask(target, task, applyThis, applyArgs);
+      }
+      try {
+        onEnter(zone);
+        return delegate.invokeTask(target, task, applyThis, applyArgs);
+      } finally {
+        if (zone.shouldCoalesceEventChangeDetection && task.type === "eventTask" || zone.shouldCoalesceRunChangeDetection) {
+          delayChangeDetectionForEventsDelegate();
+        }
+        onLeave(zone);
+      }
+    },
+    onInvoke: (delegate, current, target, callback, applyThis, applyArgs, source) => {
+      try {
+        onEnter(zone);
+        return delegate.invoke(target, callback, applyThis, applyArgs, source);
+      } finally {
+        if (zone.shouldCoalesceRunChangeDetection && // Do not delay change detection when the task is the scheduler's tick.
+        // We need to synchronously trigger the stability logic so that the
+        // zone-based scheduler can prevent a duplicate ApplicationRef.tick
+        // by first checking if the scheduler tick is running. This does seem a bit roundabout,
+        // but we _do_ still want to trigger all the correct events when we exit the zone.run
+        // (`onMicrotaskEmpty` and `onStable` _should_ emit; developers can have code which
+        // relies on these events happening after change detection runs).
+        // Note: `zone.callbackScheduled` is already in delayChangeDetectionForEventsDelegate
+        // but is added here as well to prevent reads of applyArgs when not necessary
+        !zone.callbackScheduled && !isSchedulerTick(applyArgs)) {
+          delayChangeDetectionForEventsDelegate();
+        }
+        onLeave(zone);
+      }
+    },
+    onHasTask: (delegate, current, target, hasTaskState) => {
+      delegate.hasTask(target, hasTaskState);
+      if (current === target) {
+        if (hasTaskState.change == "microTask") {
+          zone._hasPendingMicrotasks = hasTaskState.microTask;
+          updateMicroTaskStatus(zone);
+          checkStable(zone);
+        } else if (hasTaskState.change == "macroTask") {
+          zone.hasPendingMacrotasks = hasTaskState.macroTask;
+        }
+      }
+    },
+    onHandleError: (delegate, current, target, error) => {
+      delegate.handleError(target, error);
+      zone.runOutsideAngular(() => zone.onError.emit(error));
+      return false;
+    }
+  });
+}
+function updateMicroTaskStatus(zone) {
+  if (zone._hasPendingMicrotasks || (zone.shouldCoalesceEventChangeDetection || zone.shouldCoalesceRunChangeDetection) && zone.callbackScheduled === true) {
+    zone.hasPendingMicrotasks = true;
+  } else {
+    zone.hasPendingMicrotasks = false;
+  }
+}
+function onEnter(zone) {
+  zone._nesting++;
+  if (zone.isStable) {
+    zone.isStable = false;
+    zone.onUnstable.emit(null);
+  }
+}
+function onLeave(zone) {
+  zone._nesting--;
+  checkStable(zone);
+}
+var NoopNgZone = class {
+  constructor() {
+    this.hasPendingMicrotasks = false;
+    this.hasPendingMacrotasks = false;
+    this.isStable = true;
+    this.onUnstable = new EventEmitter();
+    this.onMicrotaskEmpty = new EventEmitter();
+    this.onStable = new EventEmitter();
+    this.onError = new EventEmitter();
+  }
+  run(fn2, applyThis, applyArgs) {
+    return fn2.apply(applyThis, applyArgs);
+  }
+  runGuarded(fn2, applyThis, applyArgs) {
+    return fn2.apply(applyThis, applyArgs);
+  }
+  runOutsideAngular(fn2) {
+    return fn2();
+  }
+  runTask(fn2, applyThis, applyArgs, name) {
+    return fn2.apply(applyThis, applyArgs);
+  }
+};
+function shouldBeIgnoredByZone(applyArgs) {
+  return hasApplyArgsData(applyArgs, "__ignore_ng_zone__");
+}
+function isSchedulerTick(applyArgs) {
+  return hasApplyArgsData(applyArgs, "__scheduler_tick__");
+}
+function hasApplyArgsData(applyArgs, key) {
+  if (!Array.isArray(applyArgs)) {
+    return false;
+  }
+  if (applyArgs.length !== 1) {
+    return false;
+  }
+  return applyArgs[0]?.data?.[key] === true;
+}
+function getNgZone(ngZoneToUse = "zone.js", options) {
+  if (ngZoneToUse === "noop") {
+    return new NoopNgZone();
+  }
+  if (ngZoneToUse === "zone.js") {
+    return new NgZone(options);
+  }
+  return ngZoneToUse;
 }
 var ErrorHandler = class {
   constructor() {
@@ -5996,33 +7291,18 @@ var ErrorHandler = class {
 var INTERNAL_APPLICATION_ERROR_HANDLER = new InjectionToken(typeof ngDevMode === "undefined" || ngDevMode ? "internal error handler" : "", {
   providedIn: "root",
   factory: () => {
+    const zone = inject(NgZone);
     const userErrorHandler = inject(ErrorHandler);
-    return userErrorHandler.handleError.bind(void 0);
+    return (e) => zone.runOutsideAngular(() => userErrorHandler.handleError(e));
   }
 });
-var _DestroyRef = class _DestroyRef {
-};
-_DestroyRef.__NG_ELEMENT_ID__ = injectDestroyRef;
-_DestroyRef.__NG_ENV_ID__ = (injector) => injector;
-var DestroyRef = _DestroyRef;
-var NodeInjectorDestroyRef = class extends DestroyRef {
-  constructor(_lView) {
-    super();
-    this._lView = _lView;
-  }
-  onDestroy(callback) {
-    storeLViewOnDestroy(this._lView, callback);
-    return () => removeLViewOnDestroy(this._lView, callback);
-  }
-};
-function injectDestroyRef() {
-  return new NodeInjectorDestroyRef(getLView());
-}
 var OutputEmitterRef = class {
   constructor() {
     this.destroyed = false;
     this.listeners = null;
-    this.errorHandler = inject(ErrorHandler, { optional: true });
+    this.errorHandler = inject(ErrorHandler, {
+      optional: true
+    });
     this.destroyRef = inject(DestroyRef);
     this.destroyRef.onDestroy(() => {
       this.destroyed = true;
@@ -6093,55 +7373,6 @@ var ElementRef = _ElementRef;
 function unwrapElementRef(value) {
   return value instanceof ElementRef ? value.nativeElement : value;
 }
-var EventEmitter_ = class extends Subject {
-  constructor(isAsync = false) {
-    super();
-    this.destroyRef = void 0;
-    this.__isAsync = isAsync;
-    if (isInInjectionContext()) {
-      this.destroyRef = inject(DestroyRef, { optional: true }) ?? void 0;
-    }
-  }
-  emit(value) {
-    const prevConsumer = setActiveConsumer(null);
-    try {
-      super.next(value);
-    } finally {
-      setActiveConsumer(prevConsumer);
-    }
-  }
-  subscribe(observerOrNext, error, complete) {
-    let nextFn = observerOrNext;
-    let errorFn = error || (() => null);
-    let completeFn = complete;
-    if (observerOrNext && typeof observerOrNext === "object") {
-      const observer = observerOrNext;
-      nextFn = observer.next?.bind(observer);
-      errorFn = observer.error?.bind(observer);
-      completeFn = observer.complete?.bind(observer);
-    }
-    if (this.__isAsync) {
-      errorFn = _wrapInTimeout(errorFn);
-      if (nextFn) {
-        nextFn = _wrapInTimeout(nextFn);
-      }
-      if (completeFn) {
-        completeFn = _wrapInTimeout(completeFn);
-      }
-    }
-    const sink = super.subscribe({ next: nextFn, error: errorFn, complete: completeFn });
-    if (observerOrNext instanceof Subscription) {
-      observerOrNext.add(sink);
-    }
-    return sink;
-  }
-};
-function _wrapInTimeout(fn2) {
-  return (value) => {
-    setTimeout(fn2, void 0, value);
-  };
-}
-var EventEmitter = EventEmitter_;
 function symbolIterator() {
   return this._results[Symbol.iterator]();
 }
@@ -6168,8 +7399,7 @@ var _QueryList = class _QueryList {
     this.first = void 0;
     this.last = void 0;
     const proto = _QueryList.prototype;
-    if (!proto[Symbol.iterator])
-      proto[Symbol.iterator] = symbolIterator;
+    if (!proto[Symbol.iterator]) proto[Symbol.iterator] = symbolIterator;
   }
   /**
    * Returns the QueryList entry at `index`.
@@ -6250,8 +7480,7 @@ var _QueryList = class _QueryList {
    * Triggers a change event by emitting on the `changes` {@link EventEmitter}.
    */
   notifyOnChanges() {
-    if (this._changes !== void 0 && (this._changesDetected || !this._emitDistinctChangesOnly))
-      this._changes.emit(this);
+    if (this._changes !== void 0 && (this._changesDetected || !this._emitDistinctChangesOnly)) this._changes.emit(this);
   }
   /** @internal */
   onDirty(cb) {
@@ -6475,8 +7704,7 @@ function findViaDirective(lView, directiveInstance) {
 }
 function getDirectivesAtNodeIndex(nodeIndex, lView) {
   const tNode = lView[TVIEW].data[nodeIndex];
-  if (tNode.directiveStart === 0)
-    return EMPTY_ARRAY;
+  if (tNode.directiveStart === 0) return EMPTY_ARRAY;
   const results = [];
   for (let i = tNode.directiveStart; i < tNode.directiveEnd; i++) {
     const directiveInstance = lView[i];
@@ -6488,7 +7716,10 @@ function getDirectivesAtNodeIndex(nodeIndex, lView) {
 }
 function getComponentAtNodeIndex(nodeIndex, lView) {
   const tNode = lView[TVIEW].data[nodeIndex];
-  const { directiveStart, componentOffset } = tNode;
+  const {
+    directiveStart,
+    componentOffset
+  } = tNode;
   return componentOffset > -1 ? lView[directiveStart + componentOffset] : null;
 }
 function getRootView(componentOrLView) {
@@ -6520,8 +7751,7 @@ function getNearestLContainer(viewOrContainer) {
 function getComponent$1(element) {
   ngDevMode && assertDomElement(element);
   const context2 = getLContext(element);
-  if (context2 === null)
-    return null;
+  if (context2 === null) return null;
   if (context2.component === void 0) {
     const lView = context2.lView;
     if (lView === null) {
@@ -6540,8 +7770,7 @@ function getContext(element) {
 function getOwningComponent(elementOrDir) {
   const context2 = getLContext(elementOrDir);
   let lView = context2 ? context2.lView : null;
-  if (lView === null)
-    return null;
+  if (lView === null) return null;
   let parent;
   while (lView[TVIEW].type === 2 && (parent = getLViewParent(lView))) {
     lView = parent;
@@ -6555,8 +7784,7 @@ function getRootComponents(elementOrDir) {
 function getInjector(elementOrDir) {
   const context2 = getLContext(elementOrDir);
   const lView = context2 ? context2.lView : null;
-  if (lView === null)
-    return Injector.NULL;
+  if (lView === null) return Injector.NULL;
   const tNode = lView[TVIEW].data[context2.nodeIndex];
   return new NodeInjector(tNode, lView);
 }
@@ -6580,7 +7808,9 @@ function getDirectives(node) {
   return context2.directives === null ? [] : [...context2.directives];
 }
 function getDirectiveMetadata$1(directiveOrComponentInstance) {
-  const { constructor } = directiveOrComponentInstance;
+  const {
+    constructor
+  } = directiveOrComponentInstance;
   if (!constructor) {
     throw new Error("Unable to find the instance constructor");
   }
@@ -6597,7 +7827,10 @@ function getDirectiveMetadata$1(directiveOrComponentInstance) {
   const directiveDef = getDirectiveDef(constructor);
   if (directiveDef) {
     const inputs = extractInputDebugMetadata(directiveDef.inputs);
-    return { inputs, outputs: directiveDef.outputs };
+    return {
+      inputs,
+      outputs: directiveDef.outputs
+    };
   }
   return null;
 }
@@ -6608,8 +7841,7 @@ function getListeners(element) {
   ngDevMode && assertDomElement(element);
   const lContext = getLContext(element);
   const lView = lContext === null ? null : lContext.lView;
-  if (lView === null)
-    return [];
+  if (lView === null) return [];
   const tView = lView[TVIEW];
   const lCleanup = lView[CLEANUP];
   const tCleanup = tView.cleanup;
@@ -6626,7 +7858,13 @@ function getListeners(element) {
         const type = typeof useCaptureOrIndx === "boolean" || useCaptureOrIndx >= 0 ? "dom" : "output";
         const useCapture = typeof useCaptureOrIndx === "boolean" ? useCaptureOrIndx : false;
         if (element == listenerElement) {
-          listeners.push({ element, name, callback, useCapture, type });
+          listeners.push({
+            element,
+            name,
+            callback,
+            useCapture,
+            type
+          });
         }
       }
     }
@@ -6635,8 +7873,7 @@ function getListeners(element) {
   return listeners;
 }
 function sortListeners(a, b) {
-  if (a.name == b.name)
-    return 0;
+  if (a.name == b.name) return 0;
   return a.name < b.name ? -1 : 1;
 }
 function assertDomElement(value) {
@@ -6701,7 +7938,10 @@ var IMAGE_CONFIG_DEFAULTS = {
   disableImageSizeWarning: false,
   disableImageLazyLoadWarning: false
 };
-var IMAGE_CONFIG = new InjectionToken(ngDevMode ? "ImageConfig" : "", { providedIn: "root", factory: () => IMAGE_CONFIG_DEFAULTS });
+var IMAGE_CONFIG = new InjectionToken(ngDevMode ? "ImageConfig" : "", {
+  providedIn: "root",
+  factory: () => IMAGE_CONFIG_DEFAULTS
+});
 function makeStateKey(key) {
   return key;
 }
@@ -6769,8 +8009,7 @@ var _TransferState = class _TransferState {
     return JSON.stringify(this.store).replace(/</g, "\\u003C");
   }
 };
-_TransferState.\u0275prov = /** @pureOrBreakMyCode */
-\u0275\u0275defineInjectable({
+_TransferState.\u0275prov = \u0275\u0275defineInjectable({
   token: _TransferState,
   providedIn: "root",
   factory: initTransferState
@@ -6813,6 +8052,8 @@ var PRESERVE_HOST_CONTENT = new InjectionToken(typeof ngDevMode === "undefined" 
   factory: () => PRESERVE_HOST_CONTENT_DEFAULT
 });
 var IS_I18N_HYDRATION_ENABLED = new InjectionToken(typeof ngDevMode === "undefined" || !!ngDevMode ? "IS_I18N_HYDRATION_ENABLED" : "");
+var IS_EVENT_REPLAY_ENABLED = new InjectionToken(typeof ngDevMode === "undefined" || !!ngDevMode ? "IS_EVENT_REPLAY_ENABLED" : "");
+var IS_GLOBAL_EVENT_DELEGATION_ENABLED = new InjectionToken(typeof ngDevMode === "undefined" || !!ngDevMode ? "IS_GLOBAL_EVENT_DELEGATION_ENABLED" : "");
 var policy$1;
 function getPolicy$1() {
   if (policy$1 === void 0) {
@@ -6901,8 +8142,7 @@ function unwrapSafeValue(value) {
 function allowSanitizationBypassAndThrow(value, type) {
   const actualType = getSanitizationBypassType(value);
   if (actualType != null && actualType !== type) {
-    if (actualType === "ResourceURL" && type === "URL")
-      return true;
+    if (actualType === "ResourceURL" && type === "URL") return true;
     throw new Error(`Required a safe ${type}, got a ${actualType} (see ${XSS_SECURITY_URL})`);
   }
   return actualType === type;
@@ -6940,7 +8180,7 @@ var DOMParserHelper = class {
       if (body === null) {
         return this.inertDocumentHelper.getInertBodyElement(html);
       }
-      body.removeChild(body.firstChild);
+      body.firstChild?.remove();
       return body;
     } catch {
       return null;
@@ -6968,8 +8208,7 @@ function isDOMParserAvailable() {
 var SAFE_URL_PATTERN = /^(?!javascript:)(?:[a-z0-9+.-]+:|[^&:\/?#]*(?:[\/?#]|$))/i;
 function _sanitizeUrl(url) {
   url = String(url);
-  if (url.match(SAFE_URL_PATTERN))
-    return url;
+  if (url.match(SAFE_URL_PATTERN)) return url;
   if (typeof ngDevMode === "undefined" || ngDevMode) {
     console.warn(`WARNING: sanitizing unsafe URL value ${url} (see ${XSS_SECURITY_URL})`);
   }
@@ -6977,16 +8216,14 @@ function _sanitizeUrl(url) {
 }
 function tagSet(tags) {
   const res = {};
-  for (const t of tags.split(","))
-    res[t] = true;
+  for (const t of tags.split(",")) res[t] = true;
   return res;
 }
 function merge2(...sets) {
   const res = {};
   for (const s of sets) {
     for (const v in s) {
-      if (s.hasOwnProperty(v))
-        res[v] = true;
+      if (s.hasOwnProperty(v)) res[v] = true;
     }
   }
   return res;
@@ -7065,8 +8302,7 @@ var SanitizingHtmlSerializer = class {
         continue;
       }
       let value = elAttr.value;
-      if (URI_ATTRS[lower])
-        value = _sanitizeUrl(value);
+      if (URI_ATTRS[lower]) value = _sanitizeUrl(value);
       this.buf.push(" ", attrName, '="', encodeEntities(value), '"');
     }
     this.buf.push(">");
@@ -7147,7 +8383,7 @@ function _sanitizeHtml(defaultDoc, unsafeHtmlInput) {
     if (inertBodyElement) {
       const parent = getTemplateContent(inertBodyElement) || inertBodyElement;
       while (parent.firstChild) {
-        parent.removeChild(parent.firstChild);
+        parent.firstChild.remove();
       }
     }
   }
@@ -7305,8 +8541,7 @@ var NO_ERRORS_SCHEMA = {
 var shouldThrowErrorOnUnknownElement = false;
 var shouldThrowErrorOnUnknownProperty = false;
 function validateElementIsKnown(element, lView, tagName, schemas, hasDirectives) {
-  if (schemas === null)
-    return;
+  if (schemas === null) return;
   if (!hasDirectives && tagName !== null) {
     const isUnknown = (
       // Note that we can't check for `typeof HTMLUnknownElement === 'function'` because
@@ -7335,8 +8570,7 @@ function validateElementIsKnown(element, lView, tagName, schemas, hasDirectives)
   }
 }
 function isPropertyValid(element, propName, tagName, schemas) {
-  if (schemas === null)
-    return true;
+  if (schemas === null) return true;
   if (matchingSchemas(schemas, tagName) || propName in element || isAnimationProp(propName)) {
     return true;
   }
@@ -7381,8 +8615,7 @@ function getDeclarationComponentDef(lView) {
   !ngDevMode && throwError("Must never be called in production mode");
   const declarationLView = lView[DECLARATION_COMPONENT_VIEW];
   const context2 = declarationLView[CONTEXT];
-  if (!context2)
-    return null;
+  if (!context2) return null;
   return context2.constructor ? getComponentDef(context2.constructor) : null;
 }
 function isHostComponentStandalone(lView) {
@@ -7396,12 +8629,7 @@ function getTemplateLocationDetails(lView) {
   const componentClassName = hostComponentDef?.type?.name;
   return componentClassName ? ` (used in the '${componentClassName}' component template)` : "";
 }
-var KNOWN_CONTROL_FLOW_DIRECTIVES = /* @__PURE__ */ new Map([
-  ["ngIf", "NgIf"],
-  ["ngFor", "NgFor"],
-  ["ngSwitchCase", "NgSwitchCase"],
-  ["ngSwitchDefault", "NgSwitchDefault"]
-]);
+var KNOWN_CONTROL_FLOW_DIRECTIVES = /* @__PURE__ */ new Map([["ngIf", "NgIf"], ["ngFor", "NgFor"], ["ngSwitchCase", "NgSwitchCase"], ["ngSwitchDefault", "NgSwitchDefault"]]);
 function matchingSchemas(schemas, tagName) {
   if (schemas !== null) {
     for (let i = 0; i < schemas.length; i++) {
@@ -7477,7 +8705,11 @@ function constructDetailsForInterpolation(lView, rootIndex, expressionIndex, met
     oldValue += `${lView[slotIdx]}${chunks[i]}`;
     newValue += `${slotIdx === expressionIndex ? changedValue : lView[slotIdx]}${chunks[i]}`;
   }
-  return { propName, oldValue, newValue };
+  return {
+    propName,
+    oldValue,
+    newValue
+  };
 }
 function getExpressionChangedErrorDetails(lView, bindingIndex, oldValue, newValue) {
   const tData = lView[TVIEW].data;
@@ -7486,7 +8718,11 @@ function getExpressionChangedErrorDetails(lView, bindingIndex, oldValue, newValu
     if (metadata.indexOf(INTERPOLATION_DELIMITER) > -1) {
       return constructDetailsForInterpolation(lView, bindingIndex, bindingIndex, metadata, newValue);
     }
-    return { propName: metadata, oldValue, newValue };
+    return {
+      propName: metadata,
+      oldValue,
+      newValue
+    };
   }
   if (metadata === null) {
     let idx = bindingIndex - 1;
@@ -7501,7 +8737,11 @@ function getExpressionChangedErrorDetails(lView, bindingIndex, oldValue, newValu
       }
     }
   }
-  return { propName: void 0, oldValue, newValue };
+  return {
+    propName: void 0,
+    oldValue,
+    newValue
+  };
 }
 var RendererStyleFlags2;
 (function(RendererStyleFlags22) {
@@ -7577,8 +8817,8 @@ function addViewToDOM(tView, parentTNode, renderer, lView, parentNativeNode, bef
 }
 function detachViewFromDOM(tView, lView) {
   lView[ENVIRONMENT].changeDetectionScheduler?.notify(
-    1
-    /* NotificationType.AfterRenderHooks */
+    8
+    /* NotificationSource.ViewDetachedFromDOM */
   );
   applyView(tView, lView, lView[RENDERER], 2, null, null);
 }
@@ -7594,8 +8834,7 @@ function destroyViewTree(rootView) {
     } else {
       ngDevMode && assertLContainer(lViewOrLContainer);
       const firstView = lViewOrLContainer[CONTAINER_HEADER_OFFSET];
-      if (firstView)
-        next = firstView;
+      if (firstView) next = firstView;
     }
     if (!next) {
       while (lViewOrLContainer && !lViewOrLContainer[NEXT] && lViewOrLContainer !== rootView) {
@@ -7604,8 +8843,7 @@ function destroyViewTree(rootView) {
         }
         lViewOrLContainer = lViewOrLContainer[PARENT];
       }
-      if (lViewOrLContainer === null)
-        lViewOrLContainer = rootView;
+      if (lViewOrLContainer === null) lViewOrLContainer = rootView;
       if (isLView(lViewOrLContainer)) {
         cleanUpView(lViewOrLContainer[TVIEW], lViewOrLContainer);
       }
@@ -7645,14 +8883,18 @@ function trackMovedView(declarationContainer, lView) {
   ngDevMode && assertDefined(lView, "LView required");
   ngDevMode && assertLContainer(declarationContainer);
   const movedViews = declarationContainer[MOVED_VIEWS];
-  const insertedLContainer = lView[PARENT];
-  ngDevMode && assertLContainer(insertedLContainer);
-  const insertedComponentLView = insertedLContainer[PARENT][DECLARATION_COMPONENT_VIEW];
-  ngDevMode && assertDefined(insertedComponentLView, "Missing insertedComponentLView");
-  const declaredComponentLView = lView[DECLARATION_COMPONENT_VIEW];
-  ngDevMode && assertDefined(declaredComponentLView, "Missing declaredComponentLView");
-  if (declaredComponentLView !== insertedComponentLView) {
+  const parent = lView[PARENT];
+  ngDevMode && assertDefined(parent, "missing parent");
+  if (isLView(parent)) {
     declarationContainer[FLAGS] |= LContainerFlags.HasTransplantedViews;
+  } else {
+    const insertedComponentLView = parent[PARENT][DECLARATION_COMPONENT_VIEW];
+    ngDevMode && assertDefined(insertedComponentLView, "Missing insertedComponentLView");
+    const declaredComponentLView = lView[DECLARATION_COMPONENT_VIEW];
+    ngDevMode && assertDefined(declaredComponentLView, "Missing declaredComponentLView");
+    if (declaredComponentLView !== insertedComponentLView) {
+      declarationContainer[FLAGS] |= LContainerFlags.HasTransplantedViews;
+    }
   }
   if (movedViews === null) {
     declarationContainer[MOVED_VIEWS] = [lView];
@@ -7665,12 +8907,10 @@ function detachMovedView(declarationContainer, lView) {
   ngDevMode && assertDefined(declarationContainer[MOVED_VIEWS], "A projected view should belong to a non-empty projected views collection");
   const movedViews = declarationContainer[MOVED_VIEWS];
   const declarationViewIndex = movedViews.indexOf(lView);
-  ngDevMode && assertLContainer(lView[PARENT]);
   movedViews.splice(declarationViewIndex, 1);
 }
 function detachView(lContainer, removeIndex) {
-  if (lContainer.length <= CONTAINER_HEADER_OFFSET)
-    return;
+  if (lContainer.length <= CONTAINER_HEADER_OFFSET) return;
   const indexInContainer = CONTAINER_HEADER_OFFSET + removeIndex;
   const viewToDetach = lContainer[indexInContainer];
   if (viewToDetach) {
@@ -7802,7 +9042,7 @@ function getParentRElement(tView, tNode, lView) {
 }
 function getClosestRElement(tView, tNode, lView) {
   let parentTNode = tNode;
-  while (parentTNode !== null && parentTNode.type & (8 | 32)) {
+  while (parentTNode !== null && parentTNode.type & (8 | 32 | 128)) {
     tNode = parentTNode;
     parentTNode = tNode.parent;
   }
@@ -7814,10 +9054,14 @@ function getClosestRElement(tView, tNode, lView) {
       3 | 4
       /* TNodeType.Container */
     );
-    const { componentOffset } = parentTNode;
+    const {
+      componentOffset
+    } = parentTNode;
     if (componentOffset > -1) {
       ngDevMode && assertTNodeForLView(parentTNode, lView);
-      const { encapsulation } = tView.data[parentTNode.directiveStart + componentOffset];
+      const {
+        encapsulation
+      } = tView.data[parentTNode.directiveStart + componentOffset];
       if (encapsulation === ViewEncapsulation$1.None || encapsulation === ViewEncapsulation$1.Emulated) {
         return null;
       }
@@ -7840,9 +9084,6 @@ function nativeAppendOrInsertBefore(renderer, parent, child, beforeNode, isMove)
   } else {
     nativeAppendChild(renderer, parent, child);
   }
-}
-function nativeRemoveChild(renderer, parent, child, isHostElement) {
-  renderer.removeChild(parent, child, isHostElement);
 }
 function nativeParentNode(renderer, node) {
   return renderer.parentNode(node);
@@ -7885,8 +9126,8 @@ function getFirstNativeNode(lView, tNode) {
   if (tNode !== null) {
     ngDevMode && assertTNodeType(
       tNode,
-      3 | 12 | 32 | 16
-      /* TNodeType.Projection */
+      3 | 12 | 32 | 16 | 128
+      /* TNodeType.LetDeclaration */
     );
     const tNodeType = tNode.type;
     if (tNodeType & 3) {
@@ -7905,6 +9146,8 @@ function getFirstNativeNode(lView, tNode) {
           return unwrapRNode(rNodeOrLContainer);
         }
       }
+    } else if (tNodeType & 128) {
+      return getFirstNativeNode(lView, tNode.next);
     } else if (tNodeType & 32) {
       let nextRNode = icuContainerIterate(tNode, lView);
       let rNode = nextRNode();
@@ -7948,14 +9191,15 @@ function getBeforeNodeForView(viewIndexInContainer, lContainer) {
 }
 function nativeRemoveNode(renderer, rNode, isHostElement) {
   ngDevMode && ngDevMode.rendererRemoveNode++;
-  const nativeParent = nativeParentNode(renderer, rNode);
-  if (nativeParent) {
-    nativeRemoveChild(renderer, nativeParent, rNode, isHostElement);
-  }
+  renderer.removeChild(null, rNode, isHostElement);
 }
 function applyNodes(renderer, action, tNode, lView, parentRElement, beforeNode, isProjection) {
   while (tNode != null) {
     ngDevMode && assertTNodeForLView(tNode, lView);
+    if (tNode.type === 128) {
+      tNode = tNode.next;
+      continue;
+    }
     ngDevMode && assertTNodeType(
       tNode,
       3 | 12 | 16 | 32
@@ -8075,7 +9319,11 @@ function writeDirectClass(renderer, element, newValue) {
   ngDevMode && ngDevMode.rendererSetClassName++;
 }
 function setupStaticAttributes(renderer, element, tNode) {
-  const { mergedAttrs, classes, styles } = tNode;
+  const {
+    mergedAttrs,
+    classes,
+    styles
+  } = tNode;
   if (mergedAttrs !== null) {
     setUpAttributes(renderer, element, mergedAttrs);
   }
@@ -8086,7 +9334,9 @@ function setupStaticAttributes(renderer, element, tNode) {
     writeDirectStyle(renderer, element, styles);
   }
 }
-var NO_CHANGE = typeof ngDevMode === "undefined" || ngDevMode ? { __brand__: "NO_CHANGE" } : {};
+var NO_CHANGE = typeof ngDevMode === "undefined" || ngDevMode ? {
+  __brand__: "NO_CHANGE"
+} : {};
 function \u0275\u0275advance(delta = 1) {
   ngDevMode && assertGreaterThan(delta, 0, "Can only advance forward");
   selectIndexInternal(getTView(), getLView(), getSelectedIndex() + delta, !!ngDevMode && isInCheckNoChangesMode());
@@ -8149,8 +9399,7 @@ function writeToDirectiveInput(def, instance, publicName, privateName, flags, va
 }
 function processHostBindingOpCodes(tView, lView) {
   const hostBindingOpCodes = tView.hostBindingOpCodes;
-  if (hostBindingOpCodes === null)
-    return;
+  if (hostBindingOpCodes === null) return;
   try {
     for (let i = 0; i < hostBindingOpCodes.length; i++) {
       const opCode = hostBindingOpCodes[i];
@@ -8239,8 +9488,7 @@ function createTNodeAtIndex(tView, index, type, name, attrs) {
   return tNode;
 }
 function allocExpando(tView, lView, numSlotsToAlloc, initialValue) {
-  if (numSlotsToAlloc === 0)
-    return -1;
+  if (numSlotsToAlloc === 0) return -1;
   if (ngDevMode) {
     assertFirstCreatePass(tView);
     assertSame(tView, lView[TVIEW], "`LView` must be associated with `TView`!");
@@ -8293,8 +9541,7 @@ function executeContentQueries(tView, tNode, lView) {
   }
 }
 function createDirectivesInstances(tView, lView, tNode) {
-  if (!getBindingsEnabled())
-    return;
+  if (!getBindingsEnabled()) return;
   instantiateAllDirectives(tView, lView, tNode, getNativeByTNode(tNode, lView));
   if ((tNode.flags & 64) === 64) {
     invokeDirectivesHostBindings(tView, lView, tNode);
@@ -8521,18 +9768,12 @@ function initializeInputAndOutputAliases(tView, tNode, hostDirectiveDefinitionMa
   tNode.outputs = outputsStore;
 }
 function mapPropName(name) {
-  if (name === "class")
-    return "className";
-  if (name === "for")
-    return "htmlFor";
-  if (name === "formaction")
-    return "formAction";
-  if (name === "innerHtml")
-    return "innerHTML";
-  if (name === "readonly")
-    return "readOnly";
-  if (name === "tabindex")
-    return "tabIndex";
+  if (name === "class") return "className";
+  if (name === "for") return "htmlFor";
+  if (name === "formaction") return "formAction";
+  if (name === "innerHtml") return "innerHTML";
+  if (name === "readonly") return "readOnly";
+  if (name === "tabindex") return "tabIndex";
   return name;
 }
 function elementPropertyInternal(tView, tNode, lView, propName, value, renderer, sanitizer, nativeOnly) {
@@ -8542,8 +9783,7 @@ function elementPropertyInternal(tView, tNode, lView, propName, value, renderer,
   let dataValue;
   if (!nativeOnly && inputData != null && (dataValue = inputData[propName])) {
     setInputsForProperty(tView, lView, dataValue, propName, value);
-    if (isComponentHost(tNode))
-      markDirtyIfOnPush(lView, tNode.index);
+    if (isComponentHost(tNode)) markDirtyIfOnPush(lView, tNode.index);
     if (ngDevMode) {
       setNgReflectProperties(lView, element, tNode.type, dataValue, value);
     }
@@ -8582,7 +9822,9 @@ function setNgReflectProperty(lView, element, type, attrName, value) {
       renderer.setAttribute(element, attrName, debugValue);
     }
   } else {
-    const textContent = escapeCommentText(`bindings=${JSON.stringify({ [attrName]: debugValue }, null, 2)}`);
+    const textContent = escapeCommentText(`bindings=${JSON.stringify({
+      [attrName]: debugValue
+    }, null, 2)}`);
     renderer.setValue(element, textContent);
   }
 }
@@ -8596,7 +9838,9 @@ function setNgReflectProperties(lView, element, type, dataValue, value) {
 function resolveDirectives(tView, lView, tNode, localRefs) {
   ngDevMode && assertFirstCreatePass(tView);
   if (getBindingsEnabled()) {
-    const exportsMap = localRefs === null ? null : { "": -1 };
+    const exportsMap = localRefs === null ? null : {
+      "": -1
+    };
     const matchResult = findDirectiveDefMatches(tView, tNode);
     let directiveDefs;
     let hostDirectiveDefs;
@@ -8608,8 +9852,7 @@ function resolveDirectives(tView, lView, tNode, localRefs) {
     if (directiveDefs !== null) {
       initializeDirectives(tView, lView, tNode, directiveDefs, exportsMap, hostDirectiveDefs);
     }
-    if (exportsMap)
-      cacheMatchingLocalNames(tNode, localRefs, exportsMap);
+    if (exportsMap) cacheMatchingLocalNames(tNode, localRefs, exportsMap);
   }
   tNode.mergedAttrs = mergeHostAttrs(tNode.mergedAttrs, tNode.attrs);
 }
@@ -8621,8 +9864,7 @@ function initializeDirectives(tView, lView, tNode, directives, exportsMap, hostD
   initTNodeFlags(tNode, tView.data.length, directives.length);
   for (let i = 0; i < directives.length; i++) {
     const def = directives[i];
-    if (def.providersResolver)
-      def.providersResolver(def);
+    if (def.providersResolver) def.providersResolver(def);
   }
   let preOrderHooksFound = false;
   let preOrderCheckHooksFound = false;
@@ -8633,10 +9875,8 @@ function initializeDirectives(tView, lView, tNode, directives, exportsMap, hostD
     tNode.mergedAttrs = mergeHostAttrs(tNode.mergedAttrs, def.hostAttrs);
     configureViewWithDirective(tView, tNode, lView, directiveIdx, def);
     saveNameToExportMap(directiveIdx, def, exportsMap);
-    if (def.contentQueries !== null)
-      tNode.flags |= 4;
-    if (def.hostBindings !== null || def.hostAttrs !== null || def.hostVars !== 0)
-      tNode.flags |= 64;
+    if (def.contentQueries !== null) tNode.flags |= 4;
+    if (def.hostBindings !== null || def.hostAttrs !== null || def.hostVars !== 0) tNode.flags |= 64;
     const lifeCycleHooks = def.type.prototype;
     if (!preOrderHooksFound && (lifeCycleHooks.ngOnChanges || lifeCycleHooks.ngOnInit || lifeCycleHooks.ngDoCheck)) {
       (tView.preOrderHooks ??= []).push(tNode.index);
@@ -8789,8 +10029,7 @@ function cacheMatchingLocalNames(tNode, localRefs, exportsMap) {
     const localNames = tNode.localNames = [];
     for (let i = 0; i < localRefs.length; i += 2) {
       const index = exportsMap[localRefs[i + 1]];
-      if (index == null)
-        throw new RuntimeError(-301, ngDevMode && `Export of name '${localRefs[i + 1]}' not found!`);
+      if (index == null) throw new RuntimeError(-301, ngDevMode && `Export of name '${localRefs[i + 1]}' not found!`);
       localNames.push(localRefs[i], index);
     }
   }
@@ -8802,8 +10041,7 @@ function saveNameToExportMap(directiveIdx, def, exportsMap) {
         exportsMap[def.exportAs[i]] = directiveIdx;
       }
     }
-    if (isComponentDef(def))
-      exportsMap[""] = directiveIdx;
+    if (isComponentDef(def)) exportsMap[""] = directiveIdx;
   }
 }
 function initTNodeFlags(tNode, index, numberOfDirectives) {
@@ -8882,11 +10120,9 @@ function generateInitialInputs(inputs, directiveIndex, attrs) {
       i += 2;
       continue;
     }
-    if (typeof attrName === "number")
-      break;
+    if (typeof attrName === "number") break;
     if (inputs.hasOwnProperty(attrName)) {
-      if (inputsToStore === null)
-        inputsToStore = [];
+      if (inputsToStore === null) inputsToStore = [];
       const inputConfig = inputs[attrName];
       for (let j = 0; j < inputConfig.length; j += 3) {
         if (inputConfig[j] === directiveIndex) {
@@ -8980,10 +10216,10 @@ function storePropertyBindingMetadata(tData, tNode, propertyName, bindingIndex, 
   }
 }
 function getOrCreateLViewCleanup(view) {
-  return view[CLEANUP] || (view[CLEANUP] = []);
+  return view[CLEANUP] ??= [];
 }
 function getOrCreateTViewCleanup(tView) {
-  return tView.cleanup || (tView.cleanup = []);
+  return tView.cleanup ??= [];
 }
 function loadComponentRenderer(currentDef, tNode, lView) {
   if (currentDef === null || isComponentDef(currentDef)) {
@@ -9133,6 +10369,10 @@ function removeLViewFromLContainer(lContainer, index) {
 }
 function collectNativeNodes(tView, lView, tNode, result, isProjection = false) {
   while (tNode !== null) {
+    if (tNode.type === 128) {
+      tNode = isProjection ? tNode.projectionNext : tNode.next;
+      continue;
+    }
     ngDevMode && assertTNodeType(
       tNode,
       3 | 12 | 16 | 32
@@ -9205,7 +10445,31 @@ var REACTIVE_LVIEW_CONSUMER_NODE = __spreadProps(__spreadValues({}, REACTIVE_NOD
     this.lView[REACTIVE_TEMPLATE_CONSUMER] = this;
   }
 });
-var MAXIMUM_REFRESH_RERUNS = 100;
+function getOrCreateTemporaryConsumer(lView) {
+  const consumer = lView[REACTIVE_TEMPLATE_CONSUMER] ?? Object.create(TEMPORARY_CONSUMER_NODE);
+  consumer.lView = lView;
+  return consumer;
+}
+var TEMPORARY_CONSUMER_NODE = __spreadProps(__spreadValues({}, REACTIVE_NODE), {
+  consumerIsAlwaysLive: true,
+  consumerMarkedDirty: (node) => {
+    let parent = getLViewParent(node.lView);
+    while (parent && !viewShouldHaveReactiveConsumer(parent[TVIEW])) {
+      parent = getLViewParent(parent);
+    }
+    if (!parent) {
+      return;
+    }
+    markViewForRefresh(parent);
+  },
+  consumerOnSignalRead() {
+    this.lView[REACTIVE_TEMPLATE_CONSUMER] = this;
+  }
+});
+function viewShouldHaveReactiveConsumer(tView) {
+  return tView.type !== 2;
+}
+var MAXIMUM_REFRESH_RERUNS$1 = 100;
 function detectChangesInternal(lView, notifyErrorHandler = true, mode = 0) {
   const environment2 = lView[ENVIRONMENT];
   const rendererFactory = environment2.rendererFactory;
@@ -9228,41 +10492,60 @@ function detectChangesInternal(lView, notifyErrorHandler = true, mode = 0) {
   }
 }
 function detectChangesInViewWhileDirty(lView, mode) {
-  detectChangesInView$1(lView, mode);
-  let retries = 0;
-  while (requiresRefreshOrTraversal(lView)) {
-    if (retries === MAXIMUM_REFRESH_RERUNS) {
-      throw new RuntimeError(103, ngDevMode && "Infinite change detection while trying to refresh views. There may be components which each cause the other to require a refresh, causing an infinite loop.");
+  const lastIsRefreshingViewsValue = isRefreshingViews();
+  try {
+    setIsRefreshingViews(true);
+    detectChangesInView(lView, mode);
+    if (ngDevMode && isExhaustiveCheckNoChanges()) {
+      return;
     }
-    retries++;
-    detectChangesInView$1(
-      lView,
-      1
-      /* ChangeDetectionMode.Targeted */
-    );
+    let retries = 0;
+    while (requiresRefreshOrTraversal(lView)) {
+      if (retries === MAXIMUM_REFRESH_RERUNS$1) {
+        throw new RuntimeError(103, ngDevMode && "Infinite change detection while trying to refresh views. There may be components which each cause the other to require a refresh, causing an infinite loop.");
+      }
+      retries++;
+      detectChangesInView(
+        lView,
+        1
+        /* ChangeDetectionMode.Targeted */
+      );
+    }
+  } finally {
+    setIsRefreshingViews(lastIsRefreshingViewsValue);
   }
 }
-function checkNoChangesInternal(lView, notifyErrorHandler = true) {
-  setIsInCheckNoChangesMode(true);
+function checkNoChangesInternal(lView, mode, notifyErrorHandler = true) {
+  setIsInCheckNoChangesMode(mode);
   try {
     detectChangesInternal(lView, notifyErrorHandler);
   } finally {
-    setIsInCheckNoChangesMode(false);
+    setIsInCheckNoChangesMode(CheckNoChangesMode.Off);
   }
 }
 function refreshView(tView, lView, templateFn, context2) {
   ngDevMode && assertEqual(isCreationMode(lView), false, "Should be run in update mode");
   const flags = lView[FLAGS];
-  if ((flags & 256) === 256)
-    return;
+  if ((flags & 256) === 256) return;
   const isInCheckNoChangesPass = ngDevMode && isInCheckNoChangesMode();
+  const isInExhaustiveCheckNoChangesPass = ngDevMode && isExhaustiveCheckNoChanges();
   !isInCheckNoChangesPass && lView[ENVIRONMENT].inlineEffectRunner?.flush();
   enterView(lView);
+  let returnConsumerToPool = true;
   let prevConsumer = null;
   let currentConsumer = null;
-  if (!isInCheckNoChangesPass && viewShouldHaveReactiveConsumer(tView)) {
-    currentConsumer = getOrBorrowReactiveLViewConsumer(lView);
-    prevConsumer = consumerBeforeComputation(currentConsumer);
+  if (!isInCheckNoChangesPass) {
+    if (viewShouldHaveReactiveConsumer(tView)) {
+      currentConsumer = getOrBorrowReactiveLViewConsumer(lView);
+      prevConsumer = consumerBeforeComputation(currentConsumer);
+    } else if (getActiveConsumer() === null) {
+      returnConsumerToPool = false;
+      currentConsumer = getOrCreateTemporaryConsumer(lView);
+      prevConsumer = consumerBeforeComputation(currentConsumer);
+    } else if (lView[REACTIVE_TEMPLATE_CONSUMER]) {
+      consumerDestroy(lView[REACTIVE_TEMPLATE_CONSUMER]);
+      lView[REACTIVE_TEMPLATE_CONSUMER] = null;
+    }
   }
   try {
     resetPreOrderHookFlags(lView);
@@ -9289,7 +10572,9 @@ function refreshView(tView, lView, templateFn, context2) {
         );
       }
     }
-    markTransplantedViewsForRefresh(lView);
+    if (!isInExhaustiveCheckNoChangesPass) {
+      markTransplantedViewsForRefresh(lView);
+    }
     detectChangesInEmbeddedViews(
       lView,
       0
@@ -9371,18 +10656,19 @@ function refreshView(tView, lView, templateFn, context2) {
       lView[FLAGS] &= ~(64 | 8);
     }
   } catch (e) {
-    markAncestorsForTraversal(lView);
+    if (!isInCheckNoChangesPass) {
+      markAncestorsForTraversal(lView);
+    }
     throw e;
   } finally {
     if (currentConsumer !== null) {
       consumerAfterComputation(currentConsumer, prevConsumer);
-      maybeReturnReactiveLViewConsumer(currentConsumer);
+      if (returnConsumerToPool) {
+        maybeReturnReactiveLViewConsumer(currentConsumer);
+      }
     }
     leaveView();
   }
-}
-function viewShouldHaveReactiveConsumer(tView) {
-  return tView.type !== 2;
 }
 function detectChangesInEmbeddedViews(lView, mode) {
   for (let lContainer = getFirstLContainer(lView); lContainer !== null; lContainer = getNextLContainer(lContainer)) {
@@ -9394,14 +10680,11 @@ function detectChangesInEmbeddedViews(lView, mode) {
 }
 function markTransplantedViewsForRefresh(lView) {
   for (let lContainer = getFirstLContainer(lView); lContainer !== null; lContainer = getNextLContainer(lContainer)) {
-    if (!(lContainer[FLAGS] & LContainerFlags.HasTransplantedViews))
-      continue;
+    if (!(lContainer[FLAGS] & LContainerFlags.HasTransplantedViews)) continue;
     const movedViews = lContainer[MOVED_VIEWS];
     ngDevMode && assertDefined(movedViews, "Transplanted View flags set but missing MOVED_VIEWS");
     for (let i = 0; i < movedViews.length; i++) {
       const movedLView = movedViews[i];
-      const insertionLContainer = movedLView[PARENT];
-      ngDevMode && assertLContainer(insertionLContainer);
       markViewForRefresh(movedLView);
     }
   }
@@ -9415,9 +10698,9 @@ function detectChangesInViewIfAttached(lView, mode) {
   if (!viewAttachedToChangeDetector(lView)) {
     return;
   }
-  detectChangesInView$1(lView, mode);
+  detectChangesInView(lView, mode);
 }
-function detectChangesInView$1(lView, mode) {
+function detectChangesInView(lView, mode) {
   const isInCheckNoChangesPass = ngDevMode && isInCheckNoChangesMode();
   const tView = lView[TVIEW];
   const flags = lView[FLAGS];
@@ -9426,6 +10709,7 @@ function detectChangesInView$1(lView, mode) {
   shouldRefreshView ||= !!(flags & 64 && mode === 0 && !isInCheckNoChangesPass);
   shouldRefreshView ||= !!(flags & 1024);
   shouldRefreshView ||= !!(consumer?.dirty && consumerPollProducersForChange(consumer));
+  shouldRefreshView ||= !!(ngDevMode && isExhaustiveCheckNoChanges());
   if (consumer) {
     consumer.dirty = false;
   }
@@ -9454,10 +10738,21 @@ function detectChangesInChildComponents(hostLView, components, mode) {
     detectChangesInComponent(hostLView, components[i], mode);
   }
 }
-function markViewDirty(lView) {
-  lView[ENVIRONMENT].changeDetectionScheduler?.notify();
+function markViewDirty(lView, source) {
+  const dirtyBitsToUse = isRefreshingViews() ? (
+    // When we are actively refreshing views, we only use the `Dirty` bit to mark a view
+    64
+  ) : (
+    // When we are not actively refreshing a view tree, it is absolutely
+    // valid to update state and mark views dirty. We use the `RefreshView` flag in this
+    // case to allow synchronously rerunning change detection. This applies today to
+    // afterRender hooks as well as animation listeners which execute after detecting
+    // changes in a view when the render factory flushes.
+    1024 | 64
+  );
+  lView[ENVIRONMENT].changeDetectionScheduler?.notify(source);
   while (lView) {
-    lView[FLAGS] |= 64;
+    lView[FLAGS] |= dirtyBitsToUse;
     const parent = getLViewParent(lView);
     if (isRootView(lView) && !parent) {
       return lView;
@@ -9549,7 +10844,11 @@ var ViewRef$1 = class {
    * ```
    */
   markForCheck() {
-    markViewDirty(this._cdRefInjectingView || this._lView);
+    markViewDirty(
+      this._cdRefInjectingView || this._lView,
+      4
+      /* NotificationSource.MarkForCheck */
+    );
   }
   /**
    * Detaches the view from the change detection tree.
@@ -9700,7 +10999,7 @@ var ViewRef$1 = class {
    */
   checkNoChanges() {
     if (ngDevMode) {
-      checkNoChangesInternal(this._lView, this.notifyErrorHandler);
+      checkNoChangesInternal(this._lView, CheckNoChangesMode.OnlyDirtyViews, this.notifyErrorHandler);
     }
   }
   attachToViewContainerRef() {
@@ -9711,6 +11010,11 @@ var ViewRef$1 = class {
   }
   detachFromAppRef() {
     this._appRef = null;
+    const isRoot = isRootView(this._lView);
+    const declarationContainer = this._lView[DECLARATION_LCONTAINER];
+    if (declarationContainer !== null && !isRoot) {
+      detachMovedView(declarationContainer, this._lView);
+    }
     detachViewFromDOM(this._lView[TVIEW], this._lView);
   }
   attachToAppRef(appRef) {
@@ -9718,6 +11022,11 @@ var ViewRef$1 = class {
       throw new RuntimeError(902, ngDevMode && "This view is already attached to a ViewContainer!");
     }
     this._appRef = appRef;
+    const isRoot = isRootView(this._lView);
+    const declarationContainer = this._lView[DECLARATION_LCONTAINER];
+    if (declarationContainer !== null && !isRoot) {
+      trackMovedView(declarationContainer, this._lView);
+    }
     updateAncestorTraversalFlagsOnAttach(this._lView);
   }
 };
@@ -9749,7 +11058,10 @@ var R3TemplateRef = class TemplateRef2 extends ViewEngineTemplateRef {
    * @internal
    */
   createEmbeddedViewImpl(context2, injector, dehydratedView) {
-    const embeddedLView = createAndRenderEmbeddedLView(this._declarationLView, this._declarationTContainer, context2, { embeddedViewInjector: injector, dehydratedView });
+    const embeddedLView = createAndRenderEmbeddedLView(this._declarationLView, this._declarationTContainer, context2, {
+      embeddedViewInjector: injector,
+      dehydratedView
+    });
     return new ViewRef$1(embeddedLView);
   }
 };
@@ -9763,13 +11075,204 @@ function createTemplateRef(hostTNode, hostLView) {
   }
   return null;
 }
+function getInsertInFrontOfRNodeWithI18n(parentTNode, currentTNode, lView) {
+  const tNodeInsertBeforeIndex = currentTNode.insertBeforeIndex;
+  const insertBeforeIndex = Array.isArray(tNodeInsertBeforeIndex) ? tNodeInsertBeforeIndex[0] : tNodeInsertBeforeIndex;
+  if (insertBeforeIndex === null) {
+    return getInsertInFrontOfRNodeWithNoI18n(parentTNode, currentTNode, lView);
+  } else {
+    ngDevMode && assertIndexInRange(lView, insertBeforeIndex);
+    return unwrapRNode(lView[insertBeforeIndex]);
+  }
+}
+function processI18nInsertBefore(renderer, childTNode, lView, childRNode, parentRElement) {
+  const tNodeInsertBeforeIndex = childTNode.insertBeforeIndex;
+  if (Array.isArray(tNodeInsertBeforeIndex)) {
+    ngDevMode && assertDomNode(childRNode);
+    let i18nParent = childRNode;
+    let anchorRNode = null;
+    if (!(childTNode.type & 3)) {
+      anchorRNode = i18nParent;
+      i18nParent = parentRElement;
+    }
+    if (i18nParent !== null && childTNode.componentOffset === -1) {
+      for (let i = 1; i < tNodeInsertBeforeIndex.length; i++) {
+        const i18nChild = lView[tNodeInsertBeforeIndex[i]];
+        nativeInsertBefore(renderer, i18nParent, i18nChild, anchorRNode, false);
+      }
+    }
+  }
+}
+function addTNodeAndUpdateInsertBeforeIndex(previousTNodes, newTNode) {
+  ngDevMode && assertEqual(newTNode.insertBeforeIndex, null, "We expect that insertBeforeIndex is not set");
+  previousTNodes.push(newTNode);
+  if (previousTNodes.length > 1) {
+    for (let i = previousTNodes.length - 2; i >= 0; i--) {
+      const existingTNode = previousTNodes[i];
+      if (!isI18nText(existingTNode)) {
+        if (isNewTNodeCreatedBefore(existingTNode, newTNode) && getInsertBeforeIndex(existingTNode) === null) {
+          setInsertBeforeIndex(existingTNode, newTNode.index);
+        }
+      }
+    }
+  }
+}
+function isI18nText(tNode) {
+  return !(tNode.type & 64);
+}
+function isNewTNodeCreatedBefore(existingTNode, newTNode) {
+  return isI18nText(newTNode) || existingTNode.index > newTNode.index;
+}
+function getInsertBeforeIndex(tNode) {
+  const index = tNode.insertBeforeIndex;
+  return Array.isArray(index) ? index[0] : index;
+}
+function setInsertBeforeIndex(tNode, value) {
+  const index = tNode.insertBeforeIndex;
+  if (Array.isArray(index)) {
+    index[0] = value;
+  } else {
+    setI18nHandling(getInsertInFrontOfRNodeWithI18n, processI18nInsertBefore);
+    tNode.insertBeforeIndex = value;
+  }
+}
+function getTIcu(tView, index) {
+  const value = tView.data[index];
+  if (value === null || typeof value === "string") return null;
+  if (ngDevMode && !(value.hasOwnProperty("tView") || value.hasOwnProperty("currentCaseLViewIndex"))) {
+    throwError("We expect to get 'null'|'TIcu'|'TIcuContainer', but got: " + value);
+  }
+  const tIcu = value.hasOwnProperty("currentCaseLViewIndex") ? value : value.value;
+  ngDevMode && assertTIcu(tIcu);
+  return tIcu;
+}
+function setTIcu(tView, index, tIcu) {
+  const tNode = tView.data[index];
+  ngDevMode && assertEqual(tNode === null || tNode.hasOwnProperty("tView"), true, "We expect to get 'null'|'TIcuContainer'");
+  if (tNode === null) {
+    tView.data[index] = tIcu;
+  } else {
+    ngDevMode && assertTNodeType(
+      tNode,
+      32
+      /* TNodeType.Icu */
+    );
+    tNode.value = tIcu;
+  }
+}
+function setTNodeInsertBeforeIndex(tNode, index) {
+  ngDevMode && assertTNode(tNode);
+  let insertBeforeIndex = tNode.insertBeforeIndex;
+  if (insertBeforeIndex === null) {
+    setI18nHandling(getInsertInFrontOfRNodeWithI18n, processI18nInsertBefore);
+    insertBeforeIndex = tNode.insertBeforeIndex = [null, index];
+  } else {
+    assertEqual(Array.isArray(insertBeforeIndex), true, "Expecting array here");
+    insertBeforeIndex.push(index);
+  }
+}
+function createTNodePlaceholder(tView, previousTNodes, index) {
+  const tNode = createTNodeAtIndex(tView, index, 64, null, null);
+  addTNodeAndUpdateInsertBeforeIndex(previousTNodes, tNode);
+  return tNode;
+}
+function getCurrentICUCaseIndex(tIcu, lView) {
+  const currentCase = lView[tIcu.currentCaseLViewIndex];
+  return currentCase === null ? currentCase : currentCase < 0 ? ~currentCase : currentCase;
+}
+function getParentFromIcuCreateOpCode(mergedCode) {
+  return mergedCode >>> 17;
+}
+function getRefFromIcuCreateOpCode(mergedCode) {
+  return (mergedCode & 131070) >>> 1;
+}
+function getInstructionFromIcuCreateOpCode(mergedCode) {
+  return mergedCode & 1;
+}
+function icuCreateOpCode(opCode, parentIdx, refIdx) {
+  ngDevMode && assertGreaterThanOrEqual(parentIdx, 0, "Missing parent index");
+  ngDevMode && assertGreaterThan(refIdx, 0, "Missing ref index");
+  return opCode | parentIdx << 17 | refIdx << 1;
+}
+function isRootTemplateMessage(subTemplateIndex) {
+  return subTemplateIndex === -1;
+}
+function enterIcu(state, tIcu, lView) {
+  state.index = 0;
+  const currentCase = getCurrentICUCaseIndex(tIcu, lView);
+  if (currentCase !== null) {
+    ngDevMode && assertNumberInRange(currentCase, 0, tIcu.cases.length - 1);
+    state.removes = tIcu.remove[currentCase];
+  } else {
+    state.removes = EMPTY_ARRAY;
+  }
+}
+function icuContainerIteratorNext(state) {
+  if (state.index < state.removes.length) {
+    const removeOpCode = state.removes[state.index++];
+    ngDevMode && assertNumber(removeOpCode, "Expecting OpCode number");
+    if (removeOpCode > 0) {
+      const rNode = state.lView[removeOpCode];
+      ngDevMode && assertDomNode(rNode);
+      return rNode;
+    } else {
+      state.stack.push(state.index, state.removes);
+      const tIcuIndex = ~removeOpCode;
+      const tIcu = state.lView[TVIEW].data[tIcuIndex];
+      ngDevMode && assertTIcu(tIcu);
+      enterIcu(state, tIcu, state.lView);
+      return icuContainerIteratorNext(state);
+    }
+  } else {
+    if (state.stack.length === 0) {
+      return null;
+    } else {
+      state.removes = state.stack.pop();
+      state.index = state.stack.pop();
+      return icuContainerIteratorNext(state);
+    }
+  }
+}
+function loadIcuContainerVisitor() {
+  const _state = {
+    stack: [],
+    index: -1
+  };
+  function icuContainerIteratorStart(tIcuContainerNode, lView) {
+    _state.lView = lView;
+    while (_state.stack.length) _state.stack.pop();
+    ngDevMode && assertTNodeForLView(tIcuContainerNode, lView);
+    enterIcu(_state, tIcuContainerNode.value, lView);
+    return icuContainerIteratorNext.bind(null, _state);
+  }
+  return icuContainerIteratorStart;
+}
 var REF_EXTRACTOR_REGEXP = new RegExp(`^(\\d+)*(${REFERENCE_NODE_BODY}|${REFERENCE_NODE_HOST})*(.*)`);
+var _prepareI18nBlockForHydrationImpl = () => {
+};
+function prepareI18nBlockForHydration(lView, index, parentTNode, subTemplateIndex) {
+  _prepareI18nBlockForHydrationImpl(lView, index, parentTNode, subTemplateIndex);
+}
+var _claimDehydratedIcuCaseImpl = () => {
+};
+function claimDehydratedIcuCase(lView, icuIndex, caseIndex) {
+  _claimDehydratedIcuCaseImpl(lView, icuIndex, caseIndex);
+}
 var _findMatchingDehydratedViewImpl = () => null;
 function findMatchingDehydratedView(lContainer, template) {
   return _findMatchingDehydratedViewImpl(lContainer, template);
 }
 var ChangeDetectionScheduler = class {
 };
+var ZONELESS_ENABLED = new InjectionToken(typeof ngDevMode === "undefined" || ngDevMode ? "Zoneless enabled" : "", {
+  providedIn: "root",
+  factory: () => false
+});
+var PROVIDED_ZONELESS = new InjectionToken(typeof ngDevMode === "undefined" || ngDevMode ? "Zoneless provided" : "", {
+  providedIn: "root",
+  factory: () => false
+});
+var ZONELESS_SCHEDULER_DISABLED = new InjectionToken(typeof ngDevMode === "undefined" || ngDevMode ? "scheduler disabled" : "");
 var ComponentRef$1 = class {
 };
 var ComponentFactory$1 = class {
@@ -9787,7 +11290,7 @@ var _NullComponentFactoryResolver = class {
 };
 var _ComponentFactoryResolver$1 = class _ComponentFactoryResolver$1 {
 };
-_ComponentFactoryResolver$1.NULL = /* @__PURE__ */ new _NullComponentFactoryResolver();
+_ComponentFactoryResolver$1.NULL = new _NullComponentFactoryResolver();
 var ComponentFactoryResolver$1 = _ComponentFactoryResolver$1;
 var RendererFactory2 = class {
 };
@@ -9812,312 +11315,17 @@ _Sanitizer.\u0275prov = \u0275\u0275defineInjectable({
   factory: () => null
 });
 var Sanitizer = _Sanitizer;
-var NOT_FOUND_CHECK_ONLY_ELEMENT_INJECTOR = {};
 var markedFeatures = /* @__PURE__ */ new Set();
 function performanceMarkFeature(feature) {
   if (markedFeatures.has(feature)) {
     return;
   }
   markedFeatures.add(feature);
-  performance?.mark?.("mark_feature_usage", { detail: { feature } });
-}
-function noop2(...args) {
-}
-function getNativeRequestAnimationFrame() {
-  const isBrowser = typeof _global["requestAnimationFrame"] === "function";
-  let nativeRequestAnimationFrame = _global[isBrowser ? "requestAnimationFrame" : "setTimeout"];
-  let nativeCancelAnimationFrame = _global[isBrowser ? "cancelAnimationFrame" : "clearTimeout"];
-  if (typeof Zone !== "undefined" && nativeRequestAnimationFrame && nativeCancelAnimationFrame) {
-    const unpatchedRequestAnimationFrame = nativeRequestAnimationFrame[Zone.__symbol__("OriginalDelegate")];
-    if (unpatchedRequestAnimationFrame) {
-      nativeRequestAnimationFrame = unpatchedRequestAnimationFrame;
-    }
-    const unpatchedCancelAnimationFrame = nativeCancelAnimationFrame[Zone.__symbol__("OriginalDelegate")];
-    if (unpatchedCancelAnimationFrame) {
-      nativeCancelAnimationFrame = unpatchedCancelAnimationFrame;
-    }
-  }
-  return { nativeRequestAnimationFrame, nativeCancelAnimationFrame };
-}
-var AsyncStackTaggingZoneSpec = class {
-  constructor(namePrefix, consoleAsyncStackTaggingImpl = console) {
-    this.name = "asyncStackTagging for " + namePrefix;
-    this.createTask = consoleAsyncStackTaggingImpl?.createTask ?? (() => null);
-  }
-  onScheduleTask(delegate, _current, target, task) {
-    task.consoleTask = this.createTask(`Zone - ${task.source || task.type}`);
-    return delegate.scheduleTask(target, task);
-  }
-  onInvokeTask(delegate, _currentZone, targetZone, task, applyThis, applyArgs) {
-    let ret;
-    if (task.consoleTask) {
-      ret = task.consoleTask.run(() => delegate.invokeTask(targetZone, task, applyThis, applyArgs));
-    } else {
-      ret = delegate.invokeTask(targetZone, task, applyThis, applyArgs);
-    }
-    return ret;
-  }
-};
-var NgZone = class _NgZone {
-  constructor({ enableLongStackTrace = false, shouldCoalesceEventChangeDetection = false, shouldCoalesceRunChangeDetection = false }) {
-    this.hasPendingMacrotasks = false;
-    this.hasPendingMicrotasks = false;
-    this.isStable = true;
-    this.onUnstable = new EventEmitter(false);
-    this.onMicrotaskEmpty = new EventEmitter(false);
-    this.onStable = new EventEmitter(false);
-    this.onError = new EventEmitter(false);
-    if (typeof Zone == "undefined") {
-      throw new RuntimeError(908, ngDevMode && `In this configuration Angular requires Zone.js`);
-    }
-    Zone.assertZonePatched();
-    const self = this;
-    self._nesting = 0;
-    self._outer = self._inner = Zone.current;
-    if (ngDevMode) {
-      self._inner = self._inner.fork(new AsyncStackTaggingZoneSpec("Angular"));
-    }
-    if (Zone["TaskTrackingZoneSpec"]) {
-      self._inner = self._inner.fork(new Zone["TaskTrackingZoneSpec"]());
-    }
-    if (enableLongStackTrace && Zone["longStackTraceZoneSpec"]) {
-      self._inner = self._inner.fork(Zone["longStackTraceZoneSpec"]);
-    }
-    self.shouldCoalesceEventChangeDetection = !shouldCoalesceRunChangeDetection && shouldCoalesceEventChangeDetection;
-    self.shouldCoalesceRunChangeDetection = shouldCoalesceRunChangeDetection;
-    self.lastRequestAnimationFrameId = -1;
-    self.nativeRequestAnimationFrame = getNativeRequestAnimationFrame().nativeRequestAnimationFrame;
-    forkInnerZoneWithAngularBehavior(self);
-  }
-  /**
-    This method checks whether the method call happens within an Angular Zone instance.
-  */
-  static isInAngularZone() {
-    return typeof Zone !== "undefined" && Zone.current.get("isAngularZone") === true;
-  }
-  /**
-    Assures that the method is called within the Angular Zone, otherwise throws an error.
-  */
-  static assertInAngularZone() {
-    if (!_NgZone.isInAngularZone()) {
-      throw new RuntimeError(909, ngDevMode && "Expected to be in Angular Zone, but it is not!");
-    }
-  }
-  /**
-    Assures that the method is called outside of the Angular Zone, otherwise throws an error.
-  */
-  static assertNotInAngularZone() {
-    if (_NgZone.isInAngularZone()) {
-      throw new RuntimeError(909, ngDevMode && "Expected to not be in Angular Zone, but it is!");
-    }
-  }
-  /**
-   * Executes the `fn` function synchronously within the Angular zone and returns value returned by
-   * the function.
-   *
-   * Running functions via `run` allows you to reenter Angular zone from a task that was executed
-   * outside of the Angular zone (typically started via {@link #runOutsideAngular}).
-   *
-   * Any future tasks or microtasks scheduled from within this function will continue executing from
-   * within the Angular zone.
-   *
-   * If a synchronous error happens it will be rethrown and not reported via `onError`.
-   */
-  run(fn2, applyThis, applyArgs) {
-    return this._inner.run(fn2, applyThis, applyArgs);
-  }
-  /**
-   * Executes the `fn` function synchronously within the Angular zone as a task and returns value
-   * returned by the function.
-   *
-   * Running functions via `run` allows you to reenter Angular zone from a task that was executed
-   * outside of the Angular zone (typically started via {@link #runOutsideAngular}).
-   *
-   * Any future tasks or microtasks scheduled from within this function will continue executing from
-   * within the Angular zone.
-   *
-   * If a synchronous error happens it will be rethrown and not reported via `onError`.
-   */
-  runTask(fn2, applyThis, applyArgs, name) {
-    const zone = this._inner;
-    const task = zone.scheduleEventTask("NgZoneEvent: " + name, fn2, EMPTY_PAYLOAD, noop2, noop2);
-    try {
-      return zone.runTask(task, applyThis, applyArgs);
-    } finally {
-      zone.cancelTask(task);
-    }
-  }
-  /**
-   * Same as `run`, except that synchronous errors are caught and forwarded via `onError` and not
-   * rethrown.
-   */
-  runGuarded(fn2, applyThis, applyArgs) {
-    return this._inner.runGuarded(fn2, applyThis, applyArgs);
-  }
-  /**
-   * Executes the `fn` function synchronously in Angular's parent zone and returns value returned by
-   * the function.
-   *
-   * Running functions via {@link #runOutsideAngular} allows you to escape Angular's zone and do
-   * work that
-   * doesn't trigger Angular change-detection or is subject to Angular's error handling.
-   *
-   * Any future tasks or microtasks scheduled from within this function will continue executing from
-   * outside of the Angular zone.
-   *
-   * Use {@link #run} to reenter the Angular zone and do work that updates the application model.
-   */
-  runOutsideAngular(fn2) {
-    return this._outer.run(fn2);
-  }
-};
-var EMPTY_PAYLOAD = {};
-function checkStable(zone) {
-  if (zone._nesting == 0 && !zone.hasPendingMicrotasks && !zone.isStable) {
-    try {
-      zone._nesting++;
-      zone.onMicrotaskEmpty.emit(null);
-    } finally {
-      zone._nesting--;
-      if (!zone.hasPendingMicrotasks) {
-        try {
-          zone.runOutsideAngular(() => zone.onStable.emit(null));
-        } finally {
-          zone.isStable = true;
-        }
-      }
-    }
-  }
-}
-function delayChangeDetectionForEvents(zone) {
-  if (zone.isCheckStableRunning || zone.lastRequestAnimationFrameId !== -1) {
-    return;
-  }
-  zone.lastRequestAnimationFrameId = zone.nativeRequestAnimationFrame.call(_global, () => {
-    if (!zone.fakeTopEventTask) {
-      zone.fakeTopEventTask = Zone.root.scheduleEventTask("fakeTopEventTask", () => {
-        zone.lastRequestAnimationFrameId = -1;
-        updateMicroTaskStatus(zone);
-        zone.isCheckStableRunning = true;
-        checkStable(zone);
-        zone.isCheckStableRunning = false;
-      }, void 0, () => {
-      }, () => {
-      });
-    }
-    zone.fakeTopEventTask.invoke();
-  });
-  updateMicroTaskStatus(zone);
-}
-function forkInnerZoneWithAngularBehavior(zone) {
-  const delayChangeDetectionForEventsDelegate = () => {
-    delayChangeDetectionForEvents(zone);
-  };
-  zone._inner = zone._inner.fork({
-    name: "angular",
-    properties: { "isAngularZone": true },
-    onInvokeTask: (delegate, current, target, task, applyThis, applyArgs) => {
-      if (shouldBeIgnoredByZone(applyArgs)) {
-        return delegate.invokeTask(target, task, applyThis, applyArgs);
-      }
-      try {
-        onEnter(zone);
-        return delegate.invokeTask(target, task, applyThis, applyArgs);
-      } finally {
-        if (zone.shouldCoalesceEventChangeDetection && task.type === "eventTask" || zone.shouldCoalesceRunChangeDetection) {
-          delayChangeDetectionForEventsDelegate();
-        }
-        onLeave(zone);
-      }
-    },
-    onInvoke: (delegate, current, target, callback, applyThis, applyArgs, source) => {
-      try {
-        onEnter(zone);
-        return delegate.invoke(target, callback, applyThis, applyArgs, source);
-      } finally {
-        if (zone.shouldCoalesceRunChangeDetection) {
-          delayChangeDetectionForEventsDelegate();
-        }
-        onLeave(zone);
-      }
-    },
-    onHasTask: (delegate, current, target, hasTaskState) => {
-      delegate.hasTask(target, hasTaskState);
-      if (current === target) {
-        if (hasTaskState.change == "microTask") {
-          zone._hasPendingMicrotasks = hasTaskState.microTask;
-          updateMicroTaskStatus(zone);
-          checkStable(zone);
-        } else if (hasTaskState.change == "macroTask") {
-          zone.hasPendingMacrotasks = hasTaskState.macroTask;
-        }
-      }
-    },
-    onHandleError: (delegate, current, target, error) => {
-      delegate.handleError(target, error);
-      zone.runOutsideAngular(() => zone.onError.emit(error));
-      return false;
+  performance?.mark?.("mark_feature_usage", {
+    detail: {
+      feature
     }
   });
-}
-function updateMicroTaskStatus(zone) {
-  if (zone._hasPendingMicrotasks || (zone.shouldCoalesceEventChangeDetection || zone.shouldCoalesceRunChangeDetection) && zone.lastRequestAnimationFrameId !== -1) {
-    zone.hasPendingMicrotasks = true;
-  } else {
-    zone.hasPendingMicrotasks = false;
-  }
-}
-function onEnter(zone) {
-  zone._nesting++;
-  if (zone.isStable) {
-    zone.isStable = false;
-    zone.onUnstable.emit(null);
-  }
-}
-function onLeave(zone) {
-  zone._nesting--;
-  checkStable(zone);
-}
-var NoopNgZone = class {
-  constructor() {
-    this.hasPendingMicrotasks = false;
-    this.hasPendingMacrotasks = false;
-    this.isStable = true;
-    this.onUnstable = new EventEmitter();
-    this.onMicrotaskEmpty = new EventEmitter();
-    this.onStable = new EventEmitter();
-    this.onError = new EventEmitter();
-  }
-  run(fn2, applyThis, applyArgs) {
-    return fn2.apply(applyThis, applyArgs);
-  }
-  runGuarded(fn2, applyThis, applyArgs) {
-    return fn2.apply(applyThis, applyArgs);
-  }
-  runOutsideAngular(fn2) {
-    return fn2();
-  }
-  runTask(fn2, applyThis, applyArgs, name) {
-    return fn2.apply(applyThis, applyArgs);
-  }
-};
-function shouldBeIgnoredByZone(applyArgs) {
-  if (!Array.isArray(applyArgs)) {
-    return false;
-  }
-  if (applyArgs.length !== 1) {
-    return false;
-  }
-  return applyArgs[0].data?.["__ignore_ng_zone__"] === true;
-}
-function getNgZone(ngZoneToUse = "zone.js", options) {
-  if (ngZoneToUse === "noop") {
-    return new NoopNgZone();
-  }
-  if (ngZoneToUse === "zone.js") {
-    return new NgZone(options);
-  }
-  return ngZoneToUse;
 }
 var AfterRenderPhase;
 (function(AfterRenderPhase2) {
@@ -10128,8 +11336,7 @@ var AfterRenderPhase;
 })(AfterRenderPhase || (AfterRenderPhase = {}));
 function internalAfterNextRender(callback, options) {
   const injector = options?.injector ?? inject(Injector);
-  if (!options?.runOnServer && !isPlatformBrowser(injector))
-    return;
+  if (!options?.runOnServer && !isPlatformBrowser(injector)) return;
   const afterRenderEventManager = injector.get(AfterRenderEventManager);
   afterRenderEventManager.internalCallbacks.push(callback);
 }
@@ -10180,12 +11387,9 @@ function isComponent(value) {
   return !!getComponentDef(value);
 }
 function getDependencyTypeForError(type) {
-  if (getComponentDef(type))
-    return "component";
-  if (getDirectiveDef(type))
-    return "directive";
-  if (getPipeDef$1(type))
-    return "pipe";
+  if (getComponentDef(type)) return "component";
+  if (getDirectiveDef(type)) return "directive";
+  if (getPipeDef$1(type)) return "pipe";
   return "type";
 }
 function verifyStandaloneImport(depType, importingType) {
@@ -10249,28 +11453,27 @@ var DepsTracker = class {
     if (def.standalone) {
       const scope2 = this.getStandaloneComponentScope(type, rawImports);
       if (scope2.compilation.isPoisoned) {
-        return { dependencies: [] };
+        return {
+          dependencies: []
+        };
       }
       return {
-        dependencies: [
-          ...scope2.compilation.directives,
-          ...scope2.compilation.pipes,
-          ...scope2.compilation.ngModules
-        ]
+        dependencies: [...scope2.compilation.directives, ...scope2.compilation.pipes, ...scope2.compilation.ngModules]
       };
     } else {
       if (!this.ownerNgModule.has(type)) {
-        return { dependencies: [] };
+        return {
+          dependencies: []
+        };
       }
       const scope2 = this.getNgModuleScope(this.ownerNgModule.get(type));
       if (scope2.compilation.isPoisoned) {
-        return { dependencies: [] };
+        return {
+          dependencies: []
+        };
       }
       return {
-        dependencies: [
-          ...scope2.compilation.directives,
-          ...scope2.compilation.pipes
-        ]
+        dependencies: [...scope2.compilation.directives, ...scope2.compilation.pipes]
       };
     }
   }
@@ -10303,8 +11506,14 @@ var DepsTracker = class {
   computeNgModuleScope(type) {
     const def = getNgModuleDef(type, true);
     const scope2 = {
-      exported: { directives: /* @__PURE__ */ new Set(), pipes: /* @__PURE__ */ new Set() },
-      compilation: { directives: /* @__PURE__ */ new Set(), pipes: /* @__PURE__ */ new Set() }
+      exported: {
+        directives: /* @__PURE__ */ new Set(),
+        pipes: /* @__PURE__ */ new Set()
+      },
+      compilation: {
+        directives: /* @__PURE__ */ new Set(),
+        pipes: /* @__PURE__ */ new Set()
+      }
     };
     for (const imported of maybeUnwrapFn(def.imports)) {
       if (isNgModule(imported)) {
@@ -10450,7 +11659,7 @@ var ComponentFactoryResolver = class extends ComponentFactoryResolver$1 {
     return new ComponentFactory(componentDef, this.ngModule);
   }
 };
-function toRefArray(map2) {
+function toRefArray(map2, isInputMap) {
   const array = [];
   for (const publicName in map2) {
     if (!map2.hasOwnProperty(publicName)) {
@@ -10460,10 +11669,21 @@ function toRefArray(map2) {
     if (value === void 0) {
       continue;
     }
-    array.push({
-      propName: Array.isArray(value) ? value[0] : value,
-      templateName: publicName
-    });
+    const isArray4 = Array.isArray(value);
+    const propName = isArray4 ? value[0] : value;
+    const flags = isArray4 ? value[1] : InputFlags.None;
+    if (isInputMap) {
+      array.push({
+        propName,
+        templateName: publicName,
+        isSignal: (flags & InputFlags.SignalBased) !== 0
+      });
+    } else {
+      array.push({
+        propName,
+        templateName: publicName
+      });
+    }
   }
   return array;
 }
@@ -10471,25 +11691,11 @@ function getNamespace(elementName) {
   const name = elementName.toLowerCase();
   return name === "svg" ? SVG_NAMESPACE : name === "math" ? MATH_ML_NAMESPACE : null;
 }
-var ChainedInjector = class {
-  constructor(injector, parentInjector) {
-    this.injector = injector;
-    this.parentInjector = parentInjector;
-  }
-  get(token, notFoundValue, flags) {
-    flags = convertToBitFlags(flags);
-    const value = this.injector.get(token, NOT_FOUND_CHECK_ONLY_ELEMENT_INJECTOR, flags);
-    if (value !== NOT_FOUND_CHECK_ONLY_ELEMENT_INJECTOR || notFoundValue === NOT_FOUND_CHECK_ONLY_ELEMENT_INJECTOR) {
-      return value;
-    }
-    return this.parentInjector.get(token, notFoundValue, flags);
-  }
-};
 var ComponentFactory = class extends ComponentFactory$1 {
   get inputs() {
     const componentDef = this.componentDef;
     const inputTransforms = componentDef.inputTransforms;
-    const refArray = toRefArray(componentDef.inputs);
+    const refArray = toRefArray(componentDef.inputs, true);
     if (inputTransforms !== null) {
       for (const input2 of refArray) {
         if (inputTransforms.hasOwnProperty(input2.propName)) {
@@ -10500,7 +11706,7 @@ var ComponentFactory = class extends ComponentFactory$1 {
     return refArray;
   }
   get outputs() {
-    return toRefArray(this.componentDef.outputs);
+    return toRefArray(this.componentDef.outputs, false);
   }
   /**
    * @param componentDef The component definition.
@@ -10611,8 +11817,8 @@ var ComponentRef = class extends ComponentRef$1 {
     this.hostView = this.changeDetectorRef = new ViewRef$1(
       _rootLView,
       void 0,
-      /* _cdRefInjectingView */
       false
+      /* notifyErrorHandler */
     );
     this.componentType = componentType;
   }
@@ -10628,7 +11834,11 @@ var ComponentRef = class extends ComponentRef$1 {
       setInputsForProperty(lView[TVIEW], lView, dataValue, name, value);
       this.previousInputValues.set(name, value);
       const childComponentLView = getComponentLViewByIndex(this._tNode.index, lView);
-      markViewDirty(childComponentLView);
+      markViewDirty(
+        childComponentLView,
+        1
+        /* NotificationSource.SetInput */
+      );
     } else {
       if (ngDevMode) {
         const cmpNameForError = stringifyForError(this.componentType);
@@ -10715,9 +11925,12 @@ function createRootComponent(componentView, rootComponentDef, rootDirectives, ho
 }
 function setRootNodeAttributes(hostRenderer, componentDef, hostRNode, rootSelectorOrNode) {
   if (rootSelectorOrNode) {
-    setUpAttributes(hostRenderer, hostRNode, ["ng-version", "17.3.12"]);
+    setUpAttributes(hostRenderer, hostRNode, ["ng-version", "18.1.4"]);
   } else {
-    const { attrs, classes } = extractAttrsAndClassesFromSelector(componentDef.selectors[0]);
+    const {
+      attrs,
+      classes
+    } = extractAttrsAndClassesFromSelector(componentDef.selectors[0]);
     if (attrs) {
       setUpAttributes(hostRenderer, hostRNode, attrs);
     }
@@ -10940,8 +12153,7 @@ function populateDehydratedViewsInLContainer(lContainer, tNode, hostLView) {
   return _populateDehydratedViewsInLContainer(lContainer, tNode, hostLView);
 }
 function createAnchorNode(lContainer, hostLView, hostTNode, slotValue) {
-  if (lContainer[NATIVE])
-    return;
+  if (lContainer[NATIVE]) return;
   let commentNode;
   if (hostTNode.type & 8) {
     commentNode = unwrapRNode(slotValue);
@@ -11277,8 +12489,7 @@ function splitQueryMultiSelectors(locator) {
   return locator.split(",").map((s) => s.trim());
 }
 function createTQuery(tView, metadata, nodeIndex) {
-  if (tView.queries === null)
-    tView.queries = new TQueries_();
+  if (tView.queries === null) tView.queries = new TQueries_();
   tView.queries.track(new TQuery_(metadata, nodeIndex));
 }
 function saveContentQueryAndDirectiveIndex(tView, directiveIndex) {
@@ -11452,7 +12663,7 @@ function createModelSignal(initialValue) {
 }
 function assertModelSet(value) {
   if (value === REQUIRED_UNSET_VALUE) {
-    throw new RuntimeError(-952, ngDevMode && "Model is required but no value is available yet.");
+    throw new RuntimeError(952, ngDevMode && "Model is required but no value is available yet.");
   }
 }
 function modelFunction(initialValue) {
@@ -11477,7 +12688,12 @@ var ContentChildren = makePropDecorator("ContentChildren", (selector, opts = {})
   descendants: false,
   emitDistinctChangesOnly: emitDistinctChangesOnlyDefaultValue
 }, opts), Query);
-var ContentChild = makePropDecorator("ContentChild", (selector, opts = {}) => __spreadValues({ selector, first: true, isViewQuery: false, descendants: true }, opts), Query);
+var ContentChild = makePropDecorator("ContentChild", (selector, opts = {}) => __spreadValues({
+  selector,
+  first: true,
+  isViewQuery: false,
+  descendants: true
+}, opts), Query);
 var ViewChildren = makePropDecorator("ViewChildren", (selector, opts = {}) => __spreadValues({
   selector,
   first: false,
@@ -11485,7 +12701,12 @@ var ViewChildren = makePropDecorator("ViewChildren", (selector, opts = {}) => __
   descendants: true,
   emitDistinctChangesOnly: emitDistinctChangesOnlyDefaultValue
 }, opts), Query);
-var ViewChild = makePropDecorator("ViewChild", (selector, opts) => __spreadValues({ selector, first: true, isViewQuery: true, descendants: true }, opts), Query);
+var ViewChild = makePropDecorator("ViewChild", (selector, opts) => __spreadValues({
+  selector,
+  first: true,
+  isViewQuery: true,
+  descendants: true
+}, opts), Query);
 function resolveComponentResources(resourceResolver) {
   const componentResolved = [];
   const urlMap = /* @__PURE__ */ new Map();
@@ -11757,7 +12978,11 @@ function \u0275\u0275CopyDefinitionFeature(definition) {
 function \u0275\u0275HostDirectivesFeature(rawHostDirectives) {
   const feature = (definition) => {
     const resolved = (Array.isArray(rawHostDirectives) ? rawHostDirectives : rawHostDirectives()).map((dir) => {
-      return typeof dir === "function" ? { directive: resolveForwardRef(dir), inputs: EMPTY_OBJ, outputs: EMPTY_OBJ } : {
+      return typeof dir === "function" ? {
+        directive: resolveForwardRef(dir),
+        inputs: EMPTY_OBJ,
+        outputs: EMPTY_OBJ
+      } : {
         directive: resolveForwardRef(dir.directive),
         inputs: bindingArrayToMap(dir.inputs),
         outputs: bindingArrayToMap(dir.outputs)
@@ -11868,14 +13093,13 @@ var NgModuleRef = class extends NgModuleRef$1 {
     const ngModuleDef = getNgModuleDef(ngModuleType);
     ngDevMode && assertDefined(ngModuleDef, `NgModule '${stringify(ngModuleType)}' is not a subtype of 'NgModuleType'.`);
     this._bootstrapComponents = maybeUnwrapFn(ngModuleDef.bootstrap);
-    this._r3Injector = createInjectorWithoutInjectorInstances(ngModuleType, _parent, [
-      { provide: NgModuleRef$1, useValue: this },
-      {
-        provide: ComponentFactoryResolver$1,
-        useValue: this.componentFactoryResolver
-      },
-      ...additionalProviders
-    ], stringify(ngModuleType), /* @__PURE__ */ new Set(["environment"]));
+    this._r3Injector = createInjectorWithoutInjectorInstances(ngModuleType, _parent, [{
+      provide: NgModuleRef$1,
+      useValue: this
+    }, {
+      provide: ComponentFactoryResolver$1,
+      useValue: this.componentFactoryResolver
+    }, ...additionalProviders], stringify(ngModuleType), /* @__PURE__ */ new Set(["environment"]));
     this._r3Injector.resolveInjectorInitializers();
     this.instance = this._r3Injector.get(ngModuleType);
   }
@@ -11911,11 +13135,13 @@ var EnvironmentNgModuleRefAdapter = class extends NgModuleRef$1 {
     super();
     this.componentFactoryResolver = new ComponentFactoryResolver(this);
     this.instance = null;
-    const injector = new R3Injector([
-      ...config2.providers,
-      { provide: NgModuleRef$1, useValue: this },
-      { provide: ComponentFactoryResolver$1, useValue: this.componentFactoryResolver }
-    ], config2.parent || getNullInjector(), config2.debugName, /* @__PURE__ */ new Set(["environment"]));
+    const injector = new R3Injector([...config2.providers, {
+      provide: NgModuleRef$1,
+      useValue: this
+    }, {
+      provide: ComponentFactoryResolver$1,
+      useValue: this.componentFactoryResolver
+    }], config2.parent || getNullInjector(), config2.debugName, /* @__PURE__ */ new Set(["environment"]));
     this.injector = injector;
     if (config2.runEnvironmentInitializers) {
       injector.resolveInjectorInitializers();
@@ -11929,7 +13155,12 @@ var EnvironmentNgModuleRefAdapter = class extends NgModuleRef$1 {
   }
 };
 function createEnvironmentInjector(providers, parent, debugName = null) {
-  const adapter = new EnvironmentNgModuleRefAdapter({ providers, parent, debugName, runEnvironmentInitializers: true });
+  const adapter = new EnvironmentNgModuleRefAdapter({
+    providers,
+    parent,
+    debugName,
+    runEnvironmentInitializers: true
+  });
   return adapter.injector;
 }
 var _CachedInjectorService = class _CachedInjectorService {
@@ -11961,72 +13192,8 @@ _CachedInjectorService.\u0275prov = \u0275\u0275defineInjectable({
   factory: () => new _CachedInjectorService()
 });
 var CachedInjectorService = _CachedInjectorService;
-function setClassMetadata(type, decorators, ctorParameters, propDecorators) {
-  return noSideEffects(() => {
-    const clazz = type;
-    if (decorators !== null) {
-      if (clazz.hasOwnProperty("decorators") && clazz.decorators !== void 0) {
-        clazz.decorators.push(...decorators);
-      } else {
-        clazz.decorators = decorators;
-      }
-    }
-    if (ctorParameters !== null) {
-      clazz.ctorParameters = ctorParameters;
-    }
-    if (propDecorators !== null) {
-      if (clazz.hasOwnProperty("propDecorators") && clazz.propDecorators !== void 0) {
-        clazz.propDecorators = __spreadValues(__spreadValues({}, clazz.propDecorators), propDecorators);
-      } else {
-        clazz.propDecorators = propDecorators;
-      }
-    }
-  });
-}
-var _PendingTasks = class _PendingTasks {
-  constructor() {
-    this.taskId = 0;
-    this.pendingTasks = /* @__PURE__ */ new Set();
-    this.hasPendingTasks = new BehaviorSubject(false);
-  }
-  get _hasPendingTasks() {
-    return this.hasPendingTasks.value;
-  }
-  add() {
-    if (!this._hasPendingTasks) {
-      this.hasPendingTasks.next(true);
-    }
-    const taskId = this.taskId++;
-    this.pendingTasks.add(taskId);
-    return taskId;
-  }
-  remove(taskId) {
-    this.pendingTasks.delete(taskId);
-    if (this.pendingTasks.size === 0 && this._hasPendingTasks) {
-      this.hasPendingTasks.next(false);
-    }
-  }
-  ngOnDestroy() {
-    this.pendingTasks.clear();
-    if (this._hasPendingTasks) {
-      this.hasPendingTasks.next(false);
-    }
-  }
-};
-_PendingTasks.\u0275fac = function PendingTasks_Factory(t) {
-  return new (t || _PendingTasks)();
-};
-_PendingTasks.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _PendingTasks, factory: _PendingTasks.\u0275fac, providedIn: "root" });
-var PendingTasks = _PendingTasks;
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(PendingTasks, [{
-    type: Injectable,
-    args: [{ providedIn: "root" }]
-  }], null, null);
-})();
 function isListLikeIterable(obj) {
-  if (!isJsObject(obj))
-    return false;
+  if (!isJsObject(obj)) return false;
   return Array.isArray(obj) || !(obj instanceof Map) && // JS Map are iterables but return entries as [k, v]
   Symbol.iterator in obj;
 }
@@ -12036,12 +13203,9 @@ function areIterablesEqual(a, b, comparator) {
   while (true) {
     const item1 = iterator1.next();
     const item2 = iterator2.next();
-    if (item1.done && item2.done)
-      return true;
-    if (item1.done || item2.done)
-      return false;
-    if (!comparator(item1.value, item2.value))
-      return false;
+    if (item1.done && item2.done) return true;
+    if (item1.done || item2.done) return false;
+    if (!comparator(item1.value, item2.value)) return false;
   }
 }
 function iterateListLike(obj, fn2) {
@@ -12117,11 +13281,11 @@ function bindingUpdated4(lView, bindingIndex, exp1, exp2, exp3, exp4) {
 function isDetachedByI18n(tNode) {
   return (tNode.flags & 32) === 32;
 }
-function templateFirstCreatePass(index, tView, lView, templateFn, decls, vars, tagName, attrsIndex, localRefsIndex) {
+function templateFirstCreatePass(index, tView, lView, templateFn, decls, vars, tagName, attrs, localRefsIndex) {
   ngDevMode && assertFirstCreatePass(tView);
   ngDevMode && ngDevMode.firstCreatePass++;
   const tViewConsts = tView.consts;
-  const tNode = getOrCreateTNode(tView, index, 4, tagName || null, getConstant(tViewConsts, attrsIndex));
+  const tNode = getOrCreateTNode(tView, index, 4, tagName || null, attrs || null);
   resolveDirectives(tView, lView, tNode, getConstant(tViewConsts, localRefsIndex));
   registerPostOrderHooks(tView, tNode);
   const embeddedTView = tNode.tView = createTView(
@@ -12144,27 +13308,32 @@ function templateFirstCreatePass(index, tView, lView, templateFn, decls, vars, t
   }
   return tNode;
 }
+function declareTemplate(declarationLView, declarationTView, index, templateFn, decls, vars, tagName, attrs, localRefsIndex, localRefExtractor) {
+  const adjustedIndex = index + HEADER_OFFSET;
+  const tNode = declarationTView.firstCreatePass ? templateFirstCreatePass(adjustedIndex, declarationTView, declarationLView, templateFn, decls, vars, tagName, attrs, localRefsIndex) : declarationTView.data[adjustedIndex];
+  setCurrentTNode(tNode, false);
+  const comment = _locateOrCreateContainerAnchor(declarationTView, declarationLView, tNode, index);
+  if (wasLastNodeCreated()) {
+    appendChild(declarationTView, declarationLView, comment, tNode);
+  }
+  attachPatchData(comment, declarationLView);
+  const lContainer = createLContainer(comment, declarationLView, comment, tNode);
+  declarationLView[adjustedIndex] = lContainer;
+  addToViewTree(declarationLView, lContainer);
+  populateDehydratedViewsInLContainer(lContainer, tNode, declarationLView);
+  if (isDirectiveHost(tNode)) {
+    createDirectivesInstances(declarationTView, declarationLView, tNode);
+  }
+  if (localRefsIndex != null) {
+    saveResolvedLocalsInData(declarationLView, tNode, localRefExtractor);
+  }
+  return tNode;
+}
 function \u0275\u0275template(index, templateFn, decls, vars, tagName, attrsIndex, localRefsIndex, localRefExtractor) {
   const lView = getLView();
   const tView = getTView();
-  const adjustedIndex = index + HEADER_OFFSET;
-  const tNode = tView.firstCreatePass ? templateFirstCreatePass(adjustedIndex, tView, lView, templateFn, decls, vars, tagName, attrsIndex, localRefsIndex) : tView.data[adjustedIndex];
-  setCurrentTNode(tNode, false);
-  const comment = _locateOrCreateContainerAnchor(tView, lView, tNode, index);
-  if (wasLastNodeCreated()) {
-    appendChild(tView, lView, comment, tNode);
-  }
-  attachPatchData(comment, lView);
-  const lContainer = createLContainer(comment, lView, comment, tNode);
-  lView[adjustedIndex] = lContainer;
-  addToViewTree(lView, lContainer);
-  populateDehydratedViewsInLContainer(lContainer, tNode, lView);
-  if (isDirectiveHost(tNode)) {
-    createDirectivesInstances(tView, lView, tNode);
-  }
-  if (localRefsIndex != null) {
-    saveResolvedLocalsInData(lView, tNode, localRefExtractor);
-  }
+  const attrs = getConstant(tView.consts, attrsIndex);
+  declareTemplate(lView, tView, index, templateFn, decls, vars, tagName, attrs, localRefsIndex, localRefExtractor);
   return \u0275\u0275template;
 }
 var _locateOrCreateContainerAnchor = createContainerAnchorImpl;
@@ -12326,7 +13495,10 @@ function onInteraction(trigger, callback) {
   }
   entry.callbacks.add(callback);
   return () => {
-    const { callbacks, listener } = entry;
+    const {
+      callbacks,
+      listener
+    } = entry;
     callbacks.delete(callback);
     if (callbacks.size === 0) {
       interactionTriggers.delete(trigger);
@@ -12347,7 +13519,10 @@ function onHover(trigger, callback) {
   }
   entry.callbacks.add(callback);
   return () => {
-    const { callbacks, listener } = entry;
+    const {
+      callbacks,
+      listener
+    } = entry;
     callbacks.delete(callback);
     if (callbacks.size === 0) {
       for (const name of hoverEventNames) {
@@ -12428,7 +13603,9 @@ function registerDomTrigger(initialLView, tNode, triggerIndex, walkUpTimes, regi
     }
     const triggerLView = getTriggerLView(initialLView, tNode, walkUpTimes);
     if (!triggerLView) {
-      internalAfterNextRender(pollDomTrigger, { injector });
+      internalAfterNextRender(pollDomTrigger, {
+        injector
+      });
       return;
     }
     if (isDestroyed(triggerLView)) {
@@ -12446,7 +13623,9 @@ function registerDomTrigger(initialLView, tNode, triggerIndex, walkUpTimes, regi
     }
     storeTriggerCleanupFn(type, lDetails, cleanup);
   }
-  internalAfterNextRender(pollDomTrigger, { injector });
+  internalAfterNextRender(pollDomTrigger, {
+    injector
+  });
 }
 function onIdle(callback, lView) {
   const injector = lView[INJECTOR];
@@ -12475,7 +13654,10 @@ var _IdleScheduler = class _IdleScheduler {
     }
   }
   remove(callback) {
-    const { current, deferred } = this;
+    const {
+      current,
+      deferred
+    } = this;
     current.delete(callback);
     deferred.delete(callback);
     if (current.size === 0 && deferred.size === 0) {
@@ -12543,7 +13725,10 @@ var _TimerScheduler = class _TimerScheduler {
     this.scheduleTimer();
   }
   remove(callback) {
-    const { current, deferred } = this;
+    const {
+      current,
+      deferred
+    } = this;
     const callbackIndex = this.removeFromQueue(current, callback);
     if (callbackIndex === -1) {
       this.removeFromQueue(deferred, callback);
@@ -12651,7 +13836,9 @@ var TimerScheduler = _TimerScheduler;
 var DEFER_BLOCK_DEPENDENCY_INTERCEPTOR = new InjectionToken("DEFER_BLOCK_DEPENDENCY_INTERCEPTOR");
 var DEFER_BLOCK_CONFIG = new InjectionToken(ngDevMode ? "DEFER_BLOCK_CONFIG" : "");
 function shouldTriggerDeferBlock(injector) {
-  const config2 = injector.get(DEFER_BLOCK_CONFIG, null, { optional: true });
+  const config2 = injector.get(DEFER_BLOCK_CONFIG, null, {
+    optional: true
+  });
   if (config2?.behavior === DeferBlockBehavior.Manual) {
     return false;
   }
@@ -12674,7 +13861,7 @@ function \u0275\u0275defer(index, primaryTmplIndex, dependencyResolverFn, loadin
   const lView = getLView();
   const tView = getTView();
   const adjustedIndex = index + HEADER_OFFSET;
-  \u0275\u0275template(index, null, 0, 0);
+  const tNode = declareTemplate(lView, tView, index, null, 0, 0);
   if (tView.firstCreatePass) {
     performanceMarkFeature("NgDefer");
     const tDetails = {
@@ -12692,7 +13879,6 @@ function \u0275\u0275defer(index, primaryTmplIndex, dependencyResolverFn, loadin
     enableTimerScheduling?.(tView, tDetails, placeholderConfigIndex, loadingConfigIndex);
     setTDeferBlockDetails(tView, adjustedIndex, tDetails);
   }
-  const tNode = getCurrentTNode();
   const lContainer = lView[adjustedIndex];
   populateDehydratedViewsInLContainer(lContainer, tNode, lView);
   const lDetails = [
@@ -12910,8 +14096,7 @@ function scheduleDelayedPrefetching(scheduleFn) {
 function renderDeferBlockState(newState, tNode, lContainer, skipTimerScheduling = false) {
   const hostLView = lContainer[PARENT];
   const hostTView = hostLView[TVIEW];
-  if (isDestroyed(hostLView))
-    return;
+  if (isDestroyed(hostLView)) return;
   ngDevMode && assertTNodeForLView(tNode, hostLView);
   const lDetails = getLDeferBlockDetails(hostLView, tNode);
   ngDevMode && assertDefined(lDetails, "Expected a defer block state defined");
@@ -12931,12 +14116,22 @@ function renderDeferBlockState(newState, tNode, lContainer, skipTimerScheduling 
     }
   }
 }
-function isRouterOutletInjector(currentInjector) {
-  return currentInjector instanceof ChainedInjector && typeof currentInjector.injector.__ngOutletInjector === "function";
+function getOrCreateEnvironmentInjector(parentInjector, tDetails, providers) {
+  return parentInjector.get(CachedInjectorService).getOrCreateInjector(tDetails, parentInjector, providers, ngDevMode ? "DeferBlock Injector" : "");
 }
-function createRouterOutletInjector(parentOutletInjector, parentInjector) {
-  const outletInjector = parentOutletInjector.injector;
-  return outletInjector.__ngOutletInjector(parentInjector);
+function createDeferBlockInjector(parentInjector, tDetails, providers) {
+  if (parentInjector instanceof ChainedInjector) {
+    const origInjector = parentInjector.injector;
+    const parentEnvInjector2 = parentInjector.parentInjector;
+    const envInjector = getOrCreateEnvironmentInjector(parentEnvInjector2, tDetails, providers);
+    return new ChainedInjector(origInjector, envInjector);
+  }
+  const parentEnvInjector = parentInjector.get(EnvironmentInjector);
+  if (parentEnvInjector !== parentInjector) {
+    const envInjector = getOrCreateEnvironmentInjector(parentEnvInjector, tDetails, providers);
+    return new ChainedInjector(parentInjector, envInjector);
+  }
+  return getOrCreateEnvironmentInjector(parentInjector, tDetails, providers);
 }
 function applyDeferBlockState(newState, lDetails, lContainer, tNode, hostLView) {
   const stateTmplIndex = getTemplateIndexForState(newState, hostLView, tNode);
@@ -12952,19 +14147,20 @@ function applyDeferBlockState(newState, lDetails, lContainer, tNode, hostLView) 
       const tDetails = getTDeferBlockDetails(hostTView, tNode);
       const providers = tDetails.providers;
       if (providers && providers.length > 0) {
-        const parentInjector = hostLView[INJECTOR];
-        const isParentOutletInjector = isRouterOutletInjector(parentInjector);
-        const parentEnvInjector = isParentOutletInjector ? parentInjector : parentInjector.get(EnvironmentInjector);
-        injector = parentEnvInjector.get(CachedInjectorService).getOrCreateInjector(tDetails, parentEnvInjector, providers, ngDevMode ? "DeferBlock Injector" : "");
-        if (isParentOutletInjector) {
-          injector = createRouterOutletInjector(parentInjector, injector);
-        }
+        injector = createDeferBlockInjector(hostLView[INJECTOR], tDetails, providers);
       }
     }
     const dehydratedView = findMatchingDehydratedView(lContainer, activeBlockTNode.tView.ssrId);
-    const embeddedLView = createAndRenderEmbeddedLView(hostLView, activeBlockTNode, null, { dehydratedView, injector });
+    const embeddedLView = createAndRenderEmbeddedLView(hostLView, activeBlockTNode, null, {
+      dehydratedView,
+      injector
+    });
     addLViewToLContainer(lContainer, embeddedLView, viewIndex, shouldAddViewToDom(activeBlockTNode, dehydratedView));
-    markViewDirty(embeddedLView);
+    markViewDirty(
+      embeddedLView,
+      2
+      /* NotificationSource.DeferBlockStateUpdate */
+    );
   }
 }
 function applyDeferBlockStateWithScheduling(newState, lDetails, lContainer, tNode, hostLView) {
@@ -13027,7 +14223,9 @@ function triggerResourceLoading(tDetails, lView, tNode) {
   invokeTriggerCleanupFns(1, lDetails);
   let dependenciesFn = tDetails.dependencyResolverFn;
   if (ngDevMode) {
-    const deferDependencyInterceptor = injector.get(DEFER_BLOCK_DEPENDENCY_INTERCEPTOR, null, { optional: true });
+    const deferDependencyInterceptor = injector.get(DEFER_BLOCK_DEPENDENCY_INTERCEPTOR, null, {
+      optional: true
+    });
     if (deferDependencyInterceptor) {
       dependenciesFn = deferDependencyInterceptor.intercept(dependenciesFn);
     }
@@ -13068,7 +14266,7 @@ function triggerResourceLoading(tDetails, lView, tNode) {
     if (failed) {
       tDetails.loadingState = DeferDependenciesLoadingState.FAILED;
       if (tDetails.errorTmplIndex === null) {
-        const templateLocation = getTemplateLocationDetails(lView);
+        const templateLocation = ngDevMode ? getTemplateLocationDetails(lView) : "";
         const error = new RuntimeError(750, ngDevMode && `Loading dependencies for \`@defer\` block failed, but no \`@error\` block was configured${templateLocation}. Consider using the \`@error\` block to render an error state.`);
         handleError(lView, error);
       }
@@ -13109,8 +14307,7 @@ function triggerDeferBlock(lView, tNode) {
   const lContainer = lView[tNode.index];
   const injector = lView[INJECTOR];
   ngDevMode && assertLContainer(lContainer);
-  if (!shouldTriggerDeferBlock(injector))
-    return;
+  if (!shouldTriggerDeferBlock(injector)) return;
   const lDetails = getLDeferBlockDetails(lView, tNode);
   const tDetails = getTDeferBlockDetails(tView, tNode);
   invokeAllTriggerCleanupFns(lDetails);
@@ -13762,8 +14959,7 @@ function collectStylingFromDirectives(hostDirectiveDef, tData, tNode, stylingKey
     currentDirective = tData[directiveStylingLast];
     ngDevMode && assertDefined(currentDirective, "expected to be defined");
     stylingKey = collectStylingFromTAttrs(stylingKey, currentDirective.hostAttrs, isClassBased);
-    if (currentDirective === hostDirectiveDef)
-      break;
+    if (currentDirective === hostDirectiveDef) break;
     directiveStylingLast++;
   }
   if (hostDirectiveDef !== null) {
@@ -13792,8 +14988,7 @@ function collectStylingFromTAttrs(stylingKey, attrs, isClassBased) {
   return stylingKey === void 0 ? null : stylingKey;
 }
 function toStylingKeyValueArray(keyValueArraySet2, stringParser, value) {
-  if (value == null || value === "")
-    return EMPTY_ARRAY;
+  if (value == null || value === "") return EMPTY_ARRAY;
   const styleKeyValueArray = [];
   const unwrappedValue = unwrapSafeValue(value);
   if (Array.isArray(unwrappedValue)) {
@@ -14007,16 +15202,28 @@ function valuesMatching(liveIdx, liveValue, newIdx, newValue, trackBy) {
   }
   return 0;
 }
+function recordDuplicateKeys(keyToIdx, key, idx) {
+  const idxSoFar = keyToIdx.get(key);
+  if (idxSoFar !== void 0) {
+    idxSoFar.add(idx);
+  } else {
+    keyToIdx.set(key, /* @__PURE__ */ new Set([idx]));
+  }
+}
 function reconcile(liveCollection, newCollection, trackByFn) {
   let detachedItems = void 0;
   let liveKeysInTheFuture = void 0;
   let liveStartIdx = 0;
   let liveEndIdx = liveCollection.length - 1;
+  const duplicateKeys = ngDevMode ? /* @__PURE__ */ new Map() : void 0;
   if (Array.isArray(newCollection)) {
     let newEndIdx = newCollection.length - 1;
     while (liveStartIdx <= liveEndIdx && liveStartIdx <= newEndIdx) {
       const liveStartValue = liveCollection.at(liveStartIdx);
       const newStartValue = newCollection[liveStartIdx];
+      if (ngDevMode) {
+        recordDuplicateKeys(duplicateKeys, trackByFn(liveStartIdx, newStartValue), liveStartIdx);
+      }
       const isStartMatching = valuesMatching(liveStartIdx, liveStartValue, liveStartIdx, newStartValue, trackByFn);
       if (isStartMatching !== 0) {
         if (isStartMatching < 0) {
@@ -14027,6 +15234,9 @@ function reconcile(liveCollection, newCollection, trackByFn) {
       }
       const liveEndValue = liveCollection.at(liveEndIdx);
       const newEndValue = newCollection[newEndIdx];
+      if (ngDevMode) {
+        recordDuplicateKeys(duplicateKeys, trackByFn(newEndIdx, newEndValue), newEndIdx);
+      }
       const isEndMatching = valuesMatching(liveEndIdx, liveEndValue, newEndIdx, newEndValue, trackByFn);
       if (isEndMatching !== 0) {
         if (isEndMatching < 0) {
@@ -14079,6 +15289,9 @@ function reconcile(liveCollection, newCollection, trackByFn) {
     while (!newIterationResult.done && liveStartIdx <= liveEndIdx) {
       const liveValue = liveCollection.at(liveStartIdx);
       const newValue = newIterationResult.value;
+      if (ngDevMode) {
+        recordDuplicateKeys(duplicateKeys, trackByFn(liveStartIdx, newValue), liveStartIdx);
+      }
       const isStartMatching = valuesMatching(liveStartIdx, liveValue, liveStartIdx, newValue, trackByFn);
       if (isStartMatching !== 0) {
         if (isStartMatching < 0) {
@@ -14118,6 +15331,21 @@ function reconcile(liveCollection, newCollection, trackByFn) {
   detachedItems?.forEach((item) => {
     liveCollection.destroy(item);
   });
+  if (ngDevMode) {
+    let duplicatedKeysMsg = [];
+    for (const [key, idxSet] of duplicateKeys) {
+      if (idxSet.size > 1) {
+        const idx = [...idxSet].sort((a, b) => a - b);
+        for (let i = 1; i < idx.length; i++) {
+          duplicatedKeysMsg.push(`key "${stringifyForError(key)}" at index "${idx[i - 1]}" and "${idx[i]}"`);
+        }
+      }
+    }
+    if (duplicatedKeysMsg.length > 0) {
+      const message = formatRuntimeError(-955, "The provided track expression resulted in duplicated keys for a given collection. Adjust the tracking expression such that it uniquely identifies all the items in the collection. Duplicated keys were: \n" + duplicatedKeysMsg.join(", \n") + ".");
+      console.warn(message);
+    }
+  }
 }
 function attachPreviouslyDetached(prevCollection, detachedItems, index, key) {
   if (detachedItems !== void 0 && detachedItems.has(key)) {
@@ -14151,8 +15379,7 @@ var UniqueValueMultiKeyMap = class {
     return this.kvMap.has(key);
   }
   delete(key) {
-    if (!this.has(key))
-      return false;
+    if (!this.has(key)) return false;
     const value = this.kvMap.get(key);
     if (this._vMap !== void 0 && this._vMap.has(value)) {
       this.kvMap.set(key, this._vMap.get(value));
@@ -14194,29 +15421,36 @@ var UniqueValueMultiKeyMap = class {
     }
   }
 };
-function \u0275\u0275conditional(containerIndex, matchingTemplateIndex, value) {
+function \u0275\u0275conditional(matchingTemplateIndex, contextValue) {
   performanceMarkFeature("NgControlFlow");
   const hostLView = getLView();
   const bindingIndex = nextBindingIndex();
-  const lContainer = getLContainer(hostLView, HEADER_OFFSET + containerIndex);
+  const prevMatchingTemplateIndex = hostLView[bindingIndex] !== NO_CHANGE ? hostLView[bindingIndex] : -1;
+  const prevContainer = prevMatchingTemplateIndex !== -1 ? getLContainer(hostLView, HEADER_OFFSET + prevMatchingTemplateIndex) : void 0;
   const viewInContainerIdx = 0;
   if (bindingUpdated(hostLView, bindingIndex, matchingTemplateIndex)) {
     const prevConsumer = setActiveConsumer(null);
     try {
-      removeLViewFromLContainer(lContainer, viewInContainerIdx);
+      if (prevContainer !== void 0) {
+        removeLViewFromLContainer(prevContainer, viewInContainerIdx);
+      }
       if (matchingTemplateIndex !== -1) {
-        const templateTNode = getExistingTNode(hostLView[TVIEW], HEADER_OFFSET + matchingTemplateIndex);
-        const dehydratedView = findMatchingDehydratedView(lContainer, templateTNode.tView.ssrId);
-        const embeddedLView = createAndRenderEmbeddedLView(hostLView, templateTNode, value, { dehydratedView });
-        addLViewToLContainer(lContainer, embeddedLView, viewInContainerIdx, shouldAddViewToDom(templateTNode, dehydratedView));
+        const nextLContainerIndex = HEADER_OFFSET + matchingTemplateIndex;
+        const nextContainer = getLContainer(hostLView, nextLContainerIndex);
+        const templateTNode = getExistingTNode(hostLView[TVIEW], nextLContainerIndex);
+        const dehydratedView = findMatchingDehydratedView(nextContainer, templateTNode.tView.ssrId);
+        const embeddedLView = createAndRenderEmbeddedLView(hostLView, templateTNode, contextValue, {
+          dehydratedView
+        });
+        addLViewToLContainer(nextContainer, embeddedLView, viewInContainerIdx, shouldAddViewToDom(templateTNode, dehydratedView));
       }
     } finally {
       setActiveConsumer(prevConsumer);
     }
-  } else {
-    const lView = getLViewFromLContainer(lContainer, viewInContainerIdx);
+  } else if (prevContainer !== void 0) {
+    const lView = getLViewFromLContainer(prevContainer, viewInContainerIdx);
     if (lView !== void 0) {
-      lView[CONTEXT] = value;
+      lView[CONTEXT] = contextValue;
     }
   }
 }
@@ -14246,6 +15480,8 @@ var RepeaterMetadata = class {
 function \u0275\u0275repeaterCreate(index, templateFn, decls, vars, tagName, attrsIndex, trackByFn, trackByUsesComponentInstance, emptyTemplateFn, emptyDecls, emptyVars, emptyTagName, emptyAttrsIndex) {
   performanceMarkFeature("NgControlFlow");
   ngDevMode && assertFunction(trackByFn, `A track expression must be a function, was ${typeof trackByFn} instead.`);
+  const lView = getLView();
+  const tView = getTView();
   const hasEmptyBlock = emptyTemplateFn !== void 0;
   const hostLView = getLView();
   const boundTrackBy = trackByUsesComponentInstance ? (
@@ -14255,19 +15491,49 @@ function \u0275\u0275repeaterCreate(index, templateFn, decls, vars, tagName, att
   ) : trackByFn;
   const metadata = new RepeaterMetadata(hasEmptyBlock, boundTrackBy);
   hostLView[HEADER_OFFSET + index] = metadata;
-  \u0275\u0275template(index + 1, templateFn, decls, vars, tagName, attrsIndex);
+  declareTemplate(lView, tView, index + 1, templateFn, decls, vars, tagName, getConstant(tView.consts, attrsIndex));
   if (hasEmptyBlock) {
     ngDevMode && assertDefined(emptyDecls, "Missing number of declarations for the empty repeater block.");
     ngDevMode && assertDefined(emptyVars, "Missing number of bindings for the empty repeater block.");
-    \u0275\u0275template(index + 2, emptyTemplateFn, emptyDecls, emptyVars, emptyTagName, emptyAttrsIndex);
+    declareTemplate(lView, tView, index + 2, emptyTemplateFn, emptyDecls, emptyVars, emptyTagName, getConstant(tView.consts, emptyAttrsIndex));
   }
 }
+function isViewExpensiveToRecreate(lView) {
+  return lView.length - HEADER_OFFSET > 2;
+}
+var OperationsCounter = class {
+  constructor() {
+    this.created = 0;
+    this.destroyed = 0;
+  }
+  reset() {
+    this.created = 0;
+    this.destroyed = 0;
+  }
+  recordCreate() {
+    this.created++;
+  }
+  recordDestroy() {
+    this.destroyed++;
+  }
+  /**
+   * A method indicating if the entire collection was re-created as part of the reconciliation pass.
+   * Used to warn developers about the usage of a tracking function that might result in excessive
+   * amount of view creation / destroy operations.
+   *
+   * @returns boolean value indicating if a live collection was re-created
+   */
+  wasReCreated(collectionLen) {
+    return collectionLen > 0 && this.created === this.destroyed && this.created === collectionLen;
+  }
+};
 var LiveCollectionLContainerImpl = class extends LiveCollection {
   constructor(lContainer, hostLView, templateTNode) {
     super();
     this.lContainer = lContainer;
     this.hostLView = hostLView;
     this.templateTNode = templateTNode;
+    this.operationsCounter = ngDevMode ? new OperationsCounter() : void 0;
     this.needsIndexUpdate = false;
   }
   get length() {
@@ -14287,17 +15553,22 @@ var LiveCollectionLContainerImpl = class extends LiveCollection {
   }
   create(index, value) {
     const dehydratedView = findMatchingDehydratedView(this.lContainer, this.templateTNode.tView.ssrId);
-    const embeddedLView = createAndRenderEmbeddedLView(this.hostLView, this.templateTNode, new RepeaterContext(this.lContainer, value, index), { dehydratedView });
+    const embeddedLView = createAndRenderEmbeddedLView(this.hostLView, this.templateTNode, new RepeaterContext(this.lContainer, value, index), {
+      dehydratedView
+    });
+    this.operationsCounter?.recordCreate();
     return embeddedLView;
   }
   destroy(lView) {
     destroyLView(lView[TVIEW], lView);
+    this.operationsCounter?.recordDestroy();
   }
   updateValue(index, value) {
     this.getLView(index)[CONTEXT].$implicit = value;
   }
   reset() {
     this.needsIndexUpdate = false;
+    this.operationsCounter?.reset();
   }
   updateIndexes() {
     if (this.needsIndexUpdate) {
@@ -14317,9 +15588,9 @@ function \u0275\u0275repeater(collection) {
     const hostLView = getLView();
     const hostTView = hostLView[TVIEW];
     const metadata = hostLView[metadataSlotIdx];
+    const containerIndex = metadataSlotIdx + 1;
+    const lContainer = getLContainer(hostLView, containerIndex);
     if (metadata.liveCollection === void 0) {
-      const containerIndex = metadataSlotIdx + 1;
-      const lContainer = getLContainer(hostLView, containerIndex);
       const itemTemplateTNode = getExistingTNode(hostTView, containerIndex);
       metadata.liveCollection = new LiveCollectionLContainerImpl(lContainer, hostLView, itemTemplateTNode);
     } else {
@@ -14327,6 +15598,10 @@ function \u0275\u0275repeater(collection) {
     }
     const liveCollection = metadata.liveCollection;
     reconcile(liveCollection, collection, metadata.trackByFn);
+    if (ngDevMode && metadata.trackByFn === \u0275\u0275repeaterTrackByIdentity && liveCollection.operationsCounter?.wasReCreated(liveCollection.length) && isViewExpensiveToRecreate(getExistingLViewFromLContainer(lContainer, 0))) {
+      const message = formatRuntimeError(-956, `The configured tracking expression (track by identity) caused re-creation of the entire collection of size ${liveCollection.length}. This is an expensive operation requiring destruction and subsequent creation of DOM nodes, directives, components etc. Please review the "track expression" and make sure that it uniquely identifies items in a collection.`);
+      console.warn(message);
+    }
     liveCollection.updateIndexes();
     if (metadata.hasEmptyBlock) {
       const bindingIndex = nextBindingIndex();
@@ -14337,7 +15612,9 @@ function \u0275\u0275repeater(collection) {
         if (isCollectionEmpty) {
           const emptyTemplateTNode = getExistingTNode(hostTView, emptyTemplateIndex);
           const dehydratedView = findMatchingDehydratedView(lContainerForEmpty, emptyTemplateTNode.tView.ssrId);
-          const embeddedLView = createAndRenderEmbeddedLView(hostLView, emptyTemplateTNode, void 0, { dehydratedView });
+          const embeddedLView = createAndRenderEmbeddedLView(hostLView, emptyTemplateTNode, void 0, {
+            dehydratedView
+          });
           addLViewToLContainer(lContainerForEmpty, embeddedLView, 0, shouldAddViewToDom(emptyTemplateTNode, dehydratedView));
         } else {
           removeLViewFromLContainer(lContainerForEmpty, 0);
@@ -14569,8 +15846,7 @@ if (false) {
 var u = void 0;
 function plural(val) {
   const n = val, i = Math.floor(Math.abs(val)), v = val.toString().replace(/^[^.]*\.?/, "").length;
-  if (i === 1 && v === 0)
-    return 1;
+  if (i === 1 && v === 0) return 1;
   return 5;
 }
 var localeEn = ["en", [["a", "p"], ["AM", "PM"], u], [["AM", "PM"], u, u], [["S", "M", "T", "W", "T", "F", "S"], ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]], u, [["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"], ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]], u, [["B", "A"], ["BC", "AD"], ["Before Christ", "Anno Domini"]], 0, [6, 0], ["M/d/yy", "MMM d, y", "MMMM d, y", "EEEE, MMMM d, y"], ["h:mm a", "h:mm:ss a", "h:mm:ss a z", "h:mm:ss a zzzz"], ["{1}, {0}", u, "{1} 'at' {0}", u], [".", ",", ";", "%", "+", "-", "E", "\xD7", "\u2030", "\u221E", "NaN", ":"], ["#,##0.###", "#,##0%", "\xA4#,##0.00", "#E0"], "USD", "$", "US Dollar", {}, "ltr", plural];
@@ -14658,126 +15934,6 @@ function setLocaleId(localeId) {
 }
 function getLocaleId() {
   return LOCALE_ID$1;
-}
-function getInsertInFrontOfRNodeWithI18n(parentTNode, currentTNode, lView) {
-  const tNodeInsertBeforeIndex = currentTNode.insertBeforeIndex;
-  const insertBeforeIndex = Array.isArray(tNodeInsertBeforeIndex) ? tNodeInsertBeforeIndex[0] : tNodeInsertBeforeIndex;
-  if (insertBeforeIndex === null) {
-    return getInsertInFrontOfRNodeWithNoI18n(parentTNode, currentTNode, lView);
-  } else {
-    ngDevMode && assertIndexInRange(lView, insertBeforeIndex);
-    return unwrapRNode(lView[insertBeforeIndex]);
-  }
-}
-function processI18nInsertBefore(renderer, childTNode, lView, childRNode, parentRElement) {
-  const tNodeInsertBeforeIndex = childTNode.insertBeforeIndex;
-  if (Array.isArray(tNodeInsertBeforeIndex)) {
-    ngDevMode && assertDomNode(childRNode);
-    let i18nParent = childRNode;
-    let anchorRNode = null;
-    if (!(childTNode.type & 3)) {
-      anchorRNode = i18nParent;
-      i18nParent = parentRElement;
-    }
-    if (i18nParent !== null && childTNode.componentOffset === -1) {
-      for (let i = 1; i < tNodeInsertBeforeIndex.length; i++) {
-        const i18nChild = lView[tNodeInsertBeforeIndex[i]];
-        nativeInsertBefore(renderer, i18nParent, i18nChild, anchorRNode, false);
-      }
-    }
-  }
-}
-function addTNodeAndUpdateInsertBeforeIndex(previousTNodes, newTNode) {
-  ngDevMode && assertEqual(newTNode.insertBeforeIndex, null, "We expect that insertBeforeIndex is not set");
-  previousTNodes.push(newTNode);
-  if (previousTNodes.length > 1) {
-    for (let i = previousTNodes.length - 2; i >= 0; i--) {
-      const existingTNode = previousTNodes[i];
-      if (!isI18nText(existingTNode)) {
-        if (isNewTNodeCreatedBefore(existingTNode, newTNode) && getInsertBeforeIndex(existingTNode) === null) {
-          setInsertBeforeIndex(existingTNode, newTNode.index);
-        }
-      }
-    }
-  }
-}
-function isI18nText(tNode) {
-  return !(tNode.type & 64);
-}
-function isNewTNodeCreatedBefore(existingTNode, newTNode) {
-  return isI18nText(newTNode) || existingTNode.index > newTNode.index;
-}
-function getInsertBeforeIndex(tNode) {
-  const index = tNode.insertBeforeIndex;
-  return Array.isArray(index) ? index[0] : index;
-}
-function setInsertBeforeIndex(tNode, value) {
-  const index = tNode.insertBeforeIndex;
-  if (Array.isArray(index)) {
-    index[0] = value;
-  } else {
-    setI18nHandling(getInsertInFrontOfRNodeWithI18n, processI18nInsertBefore);
-    tNode.insertBeforeIndex = value;
-  }
-}
-function getTIcu(tView, index) {
-  const value = tView.data[index];
-  if (value === null || typeof value === "string")
-    return null;
-  if (ngDevMode && !(value.hasOwnProperty("tView") || value.hasOwnProperty("currentCaseLViewIndex"))) {
-    throwError("We expect to get 'null'|'TIcu'|'TIcuContainer', but got: " + value);
-  }
-  const tIcu = value.hasOwnProperty("currentCaseLViewIndex") ? value : value.value;
-  ngDevMode && assertTIcu(tIcu);
-  return tIcu;
-}
-function setTIcu(tView, index, tIcu) {
-  const tNode = tView.data[index];
-  ngDevMode && assertEqual(tNode === null || tNode.hasOwnProperty("tView"), true, "We expect to get 'null'|'TIcuContainer'");
-  if (tNode === null) {
-    tView.data[index] = tIcu;
-  } else {
-    ngDevMode && assertTNodeType(
-      tNode,
-      32
-      /* TNodeType.Icu */
-    );
-    tNode.value = tIcu;
-  }
-}
-function setTNodeInsertBeforeIndex(tNode, index) {
-  ngDevMode && assertTNode(tNode);
-  let insertBeforeIndex = tNode.insertBeforeIndex;
-  if (insertBeforeIndex === null) {
-    setI18nHandling(getInsertInFrontOfRNodeWithI18n, processI18nInsertBefore);
-    insertBeforeIndex = tNode.insertBeforeIndex = [null, index];
-  } else {
-    assertEqual(Array.isArray(insertBeforeIndex), true, "Expecting array here");
-    insertBeforeIndex.push(index);
-  }
-}
-function createTNodePlaceholder(tView, previousTNodes, index) {
-  const tNode = createTNodeAtIndex(tView, index, 64, null, null);
-  addTNodeAndUpdateInsertBeforeIndex(previousTNodes, tNode);
-  return tNode;
-}
-function getCurrentICUCaseIndex(tIcu, lView) {
-  const currentCase = lView[tIcu.currentCaseLViewIndex];
-  return currentCase === null ? currentCase : currentCase < 0 ? ~currentCase : currentCase;
-}
-function getParentFromIcuCreateOpCode(mergedCode) {
-  return mergedCode >>> 17;
-}
-function getRefFromIcuCreateOpCode(mergedCode) {
-  return (mergedCode & 131070) >>> 1;
-}
-function getInstructionFromIcuCreateOpCode(mergedCode) {
-  return mergedCode & 1;
-}
-function icuCreateOpCode(opCode, parentIdx, refIdx) {
-  ngDevMode && assertGreaterThanOrEqual(parentIdx, 0, "Missing parent index");
-  ngDevMode && assertGreaterThan(refIdx, 0, "Missing ref index");
-  return opCode | parentIdx << 17 | refIdx << 1;
 }
 var changeMask = 0;
 var changeMaskCounter = 0;
@@ -15000,6 +16156,7 @@ function applyIcuSwitchCase(tView, tIcu, lView, value) {
         ngDevMode && assertDomNode(anchorRNode);
         applyMutableOpCodes(tView, tIcu.create[caseIndex], lView, anchorRNode);
       }
+      claimDehydratedIcuCase(lView, tIcu.anchorIdx, caseIndex);
     }
   }
 }
@@ -15037,57 +16194,6 @@ function getCaseIndex(icuExpression, bindingValue) {
     }
   }
   return index === -1 ? null : index;
-}
-function loadIcuContainerVisitor() {
-  const _stack = [];
-  let _index = -1;
-  let _lView;
-  let _removes;
-  function icuContainerIteratorStart(tIcuContainerNode, lView) {
-    _lView = lView;
-    while (_stack.length)
-      _stack.pop();
-    ngDevMode && assertTNodeForLView(tIcuContainerNode, lView);
-    enterIcu(tIcuContainerNode.value, lView);
-    return icuContainerIteratorNext;
-  }
-  function enterIcu(tIcu, lView) {
-    _index = 0;
-    const currentCase = getCurrentICUCaseIndex(tIcu, lView);
-    if (currentCase !== null) {
-      ngDevMode && assertNumberInRange(currentCase, 0, tIcu.cases.length - 1);
-      _removes = tIcu.remove[currentCase];
-    } else {
-      _removes = EMPTY_ARRAY;
-    }
-  }
-  function icuContainerIteratorNext() {
-    if (_index < _removes.length) {
-      const removeOpCode = _removes[_index++];
-      ngDevMode && assertNumber(removeOpCode, "Expecting OpCode number");
-      if (removeOpCode > 0) {
-        const rNode = _lView[removeOpCode];
-        ngDevMode && assertDomNode(rNode);
-        return rNode;
-      } else {
-        _stack.push(_index, _removes);
-        const tIcuIndex = ~removeOpCode;
-        const tIcu = _lView[TVIEW].data[tIcuIndex];
-        ngDevMode && assertTIcu(tIcu);
-        enterIcu(tIcu, _lView);
-        return icuContainerIteratorNext();
-      }
-    } else {
-      if (_stack.length === 0) {
-        return null;
-      } else {
-        _removes = _stack.pop();
-        _index = _stack.pop();
-        return icuContainerIteratorNext();
-      }
-    }
-  }
-  return icuContainerIteratorStart;
 }
 function i18nCreateOpCodesToString(opcodes) {
   const createOpCodes = opcodes || (Array.isArray(this) ? this : []);
@@ -15253,7 +16359,10 @@ function replaceNgsp(value) {
 }
 function attachDebugGetter(obj, debugGetter) {
   if (ngDevMode) {
-    Object.defineProperty(obj, "debug", { get: debugGetter, enumerable: false });
+    Object.defineProperty(obj, "debug", {
+      get: debugGetter,
+      enumerable: false
+    });
   } else {
     throw new Error("This method should be guarded with `ngDevMode` so that it can be tree shaken in production!");
   }
@@ -15316,6 +16425,7 @@ function i18nStartFirstCreatePass(tView, parentTNodeIndex, lView, index, message
           index: index2,
           children: [],
           type: type === 35 ? 0 : 1
+          /* I18nPlaceholderType.SUBTEMPLATE */
         };
         astStack[0].push(placeholderNode);
         astStack.unshift(placeholderNode.children);
@@ -15363,7 +16473,10 @@ function i18nStartFirstCreatePassProcessTextNode(ast, tView, rootTNode, existing
   if (hasBinding) {
     generateBindingUpdateOpCodes(updateOpCodes, text, index, null, 0, null);
   }
-  ast.push({ kind: 0, index });
+  ast.push({
+    kind: 0,
+    index
+  });
 }
 function i18nAttributesFirstPass(tView, index, values) {
   const previousElement = getCurrentTNode();
@@ -15427,9 +16540,6 @@ function countBindings(opCodes) {
 }
 function toMaskBit(bindingIndex) {
   return 1 << Math.min(bindingIndex, 31);
-}
-function isRootTemplateMessage(subTemplateIndex) {
-  return subTemplateIndex === -1;
 }
 function removeInnerTemplateTranslation(message) {
   let match;
@@ -15530,7 +16640,12 @@ function parseICUBlock(pattern) {
       values.push(blocks);
     }
   }
-  return { type: icuType, mainBinding, cases, values };
+  return {
+    type: icuType,
+    mainBinding,
+    cases,
+    values
+  };
 }
 function i18nParseTextIntoPartsAndICU(pattern) {
   if (!pattern) {
@@ -15784,6 +16899,7 @@ function \u0275\u0275i18nStart(index, messageIndex, subTemplateIndex = -1) {
   const sameViewParentTNode = parentTNode === lView[T_HOST] ? null : parentTNode;
   const parentRNode = getClosestRElement(tView, sameViewParentTNode, lView);
   const insertInFrontOf = parentTNode && parentTNode.type & 8 ? lView[parentTNode.index] : null;
+  prepareI18nBlockForHydration(lView, adjustedIndex, parentTNode, subTemplateIndex);
   applyCreateOpCodes(lView, tI18n.create, parentRNode, insertInFrontOf);
   setInI18nBlock(true);
 }
@@ -15811,6 +16927,8 @@ function \u0275\u0275i18nApply(index) {
 function \u0275\u0275i18nPostprocess(message, replacements = {}) {
   return i18nPostprocess(message, replacements);
 }
+var stashEventListener = (el, eventName, listenerFn) => {
+};
 function \u0275\u0275listener(eventName, listenerFn, useCapture, eventTargetResolver) {
   const lView = getLView();
   const tView = getTView();
@@ -15871,28 +16989,15 @@ function listenerInternal(tView, lView, renderer, tNode, eventName, listenerFn, 
       existingListener.__ngLastListenerFn__ = listenerFn;
       processOutputs = false;
     } else {
-      listenerFn = wrapListener(
-        tNode,
-        lView,
-        context2,
-        listenerFn,
-        false
-        /** preventDefault */
-      );
+      listenerFn = wrapListener(tNode, lView, context2, listenerFn);
+      stashEventListener(native, eventName, listenerFn);
       const cleanupFn = renderer.listen(target, eventName, listenerFn);
       ngDevMode && ngDevMode.rendererAddEventListener++;
       lCleanup.push(listenerFn, cleanupFn);
       tCleanup && tCleanup.push(eventName, idxOrTargetGetter, lCleanupIndex, lCleanupIndex + 1);
     }
   } else {
-    listenerFn = wrapListener(
-      tNode,
-      lView,
-      context2,
-      listenerFn,
-      false
-      /** preventDefault */
-    );
+    listenerFn = wrapListener(tNode, lView, context2, listenerFn);
   }
   const outputs = tNode.outputs;
   let props;
@@ -15929,21 +17034,22 @@ function executeListenerWithErrorHandling(lView, context2, listenerFn, e) {
     setActiveConsumer(prevConsumer);
   }
 }
-function wrapListener(tNode, lView, context2, listenerFn, wrapWithPreventDefault) {
+function wrapListener(tNode, lView, context2, listenerFn) {
   return function wrapListenerIn_markDirtyAndPreventDefault(e) {
     if (e === Function) {
       return listenerFn;
     }
     const startView = tNode.componentOffset > -1 ? getComponentLViewByIndex(tNode.index, lView) : lView;
-    markViewDirty(startView);
+    markViewDirty(
+      startView,
+      5
+      /* NotificationSource.Listener */
+    );
     let result = executeListenerWithErrorHandling(lView, context2, listenerFn, e);
     let nextListenerFn = wrapListenerIn_markDirtyAndPreventDefault.__ngNextListenerFn__;
     while (nextListenerFn) {
       result = executeListenerWithErrorHandling(lView, context2, nextListenerFn, e) && result;
       nextListenerFn = nextListenerFn.__ngNextListenerFn__;
-    }
-    if (wrapWithPreventDefault && result === false) {
-      e.preventDefault();
     }
     return result;
   };
@@ -15982,31 +17088,54 @@ function \u0275\u0275projectionDef(projectionSlots) {
     const tails = projectionHeads.slice();
     let componentChild = componentNode.child;
     while (componentChild !== null) {
-      const slotIndex = projectionSlots ? matchingProjectionSlotIndex(componentChild, projectionSlots) : 0;
-      if (slotIndex !== null) {
-        if (tails[slotIndex]) {
-          tails[slotIndex].projectionNext = componentChild;
-        } else {
-          projectionHeads[slotIndex] = componentChild;
+      if (componentChild.type !== 128) {
+        const slotIndex = projectionSlots ? matchingProjectionSlotIndex(componentChild, projectionSlots) : 0;
+        if (slotIndex !== null) {
+          if (tails[slotIndex]) {
+            tails[slotIndex].projectionNext = componentChild;
+          } else {
+            projectionHeads[slotIndex] = componentChild;
+          }
+          tails[slotIndex] = componentChild;
         }
-        tails[slotIndex] = componentChild;
       }
       componentChild = componentChild.next;
     }
   }
 }
-function \u0275\u0275projection(nodeIndex, selectorIndex = 0, attrs) {
+function \u0275\u0275projection(nodeIndex, selectorIndex = 0, attrs, fallbackTemplateFn, fallbackDecls, fallbackVars) {
   const lView = getLView();
   const tView = getTView();
+  const fallbackIndex = fallbackTemplateFn ? nodeIndex + 1 : null;
+  if (fallbackIndex !== null) {
+    declareTemplate(lView, tView, fallbackIndex, fallbackTemplateFn, fallbackDecls, fallbackVars, null, attrs);
+  }
   const tProjectionNode = getOrCreateTNode(tView, HEADER_OFFSET + nodeIndex, 16, null, attrs || null);
-  if (tProjectionNode.projection === null)
+  if (tProjectionNode.projection === null) {
     tProjectionNode.projection = selectorIndex;
+  }
   setCurrentTNodeAsNotParent();
   const hydrationInfo = lView[HYDRATION];
   const isNodeCreationMode = !hydrationInfo || isInSkipHydrationBlock$1();
-  if (isNodeCreationMode && (tProjectionNode.flags & 32) !== 32) {
+  const componentHostNode = lView[DECLARATION_COMPONENT_VIEW][T_HOST];
+  const isEmpty = componentHostNode.projection[tProjectionNode.projection] === null;
+  if (isEmpty && fallbackIndex !== null) {
+    insertFallbackContent(lView, tView, fallbackIndex);
+  } else if (isNodeCreationMode && (tProjectionNode.flags & 32) !== 32) {
     applyProjection(tView, lView, tProjectionNode);
   }
+}
+function insertFallbackContent(lView, tView, fallbackIndex) {
+  const adjustedIndex = HEADER_OFFSET + fallbackIndex;
+  const fallbackTNode = tView.data[adjustedIndex];
+  const fallbackLContainer = lView[adjustedIndex];
+  ngDevMode && assertTNode(fallbackTNode);
+  ngDevMode && assertLContainer(fallbackLContainer);
+  const dehydratedView = findMatchingDehydratedView(fallbackLContainer, fallbackTNode.tView.ssrId);
+  const fallbackLView = createAndRenderEmbeddedLView(lView, fallbackTNode, void 0, {
+    dehydratedView
+  });
+  addLViewToLContainer(fallbackLContainer, fallbackLView, 0, shouldAddViewToDom(fallbackTNode, dehydratedView));
 }
 function \u0275\u0275propertyInterpolate(propName, v0, sanitizer) {
   \u0275\u0275propertyInterpolate1(propName, "", v0, "", sanitizer);
@@ -16383,6 +17512,32 @@ function \u0275\u0275twoWayListener(eventName, listenerFn) {
   listenerInternal(tView, lView, lView[RENDERER], tNode, eventName, listenerFn);
   return \u0275\u0275twoWayListener;
 }
+var UNINITIALIZED_LET = {};
+function \u0275\u0275declareLet(index) {
+  const tView = getTView();
+  const lView = getLView();
+  const adjustedIndex = index + HEADER_OFFSET;
+  const tNode = getOrCreateTNode(tView, adjustedIndex, 128, null, null);
+  setCurrentTNode(tNode, false);
+  store(tView, lView, adjustedIndex, UNINITIALIZED_LET);
+  return \u0275\u0275declareLet;
+}
+function \u0275\u0275storeLet(value) {
+  performanceMarkFeature("NgLet");
+  const tView = getTView();
+  const lView = getLView();
+  const index = getSelectedIndex();
+  store(tView, lView, index, value);
+  return value;
+}
+function \u0275\u0275readContextLet(index) {
+  const contextLView = getContextLView();
+  const value = load(contextLView, HEADER_OFFSET + index);
+  if (value === UNINITIALIZED_LET) {
+    throw new RuntimeError(314, ngDevMode && "Attempting to access a @let declaration whose value is not available yet");
+  }
+  return value;
+}
 function providersResolver(def, providers, viewProviders) {
   const tView = getTView();
   if (tView.firstCreatePass) {
@@ -16491,8 +17646,7 @@ function multiFactoryAdd(multiFactory2, factory, isComponentProvider) {
 }
 function indexOf(item, arr, begin, end2) {
   for (let i = begin; i < end2; i++) {
-    if (arr[i] === item)
-      return i;
+    if (arr[i] === item) return i;
   }
   return -1;
 }
@@ -16622,6 +17776,28 @@ function convertToTypeArray(values) {
 }
 function maybeUnwrapModuleWithProviders(value) {
   return isModuleWithProviders(value) ? value.ngModule : value;
+}
+function setClassMetadata(type, decorators, ctorParameters, propDecorators) {
+  return noSideEffects(() => {
+    const clazz = type;
+    if (decorators !== null) {
+      if (clazz.hasOwnProperty("decorators") && clazz.decorators !== void 0) {
+        clazz.decorators.push(...decorators);
+      } else {
+        clazz.decorators = decorators;
+      }
+    }
+    if (ctorParameters !== null) {
+      clazz.ctorParameters = ctorParameters;
+    }
+    if (propDecorators !== null) {
+      if (clazz.hasOwnProperty("propDecorators") && clazz.propDecorators !== void 0) {
+        clazz.propDecorators = __spreadValues(__spreadValues({}, clazz.propDecorators), propDecorators);
+      } else {
+        clazz.propDecorators = propDecorators;
+      }
+    }
+  });
 }
 function \u0275\u0275pureFunction0(slotOffset, pureFn, thisArg) {
   const bindingIndex = getBindingRoot() + slotOffset;
@@ -16989,6 +18165,9 @@ var angularCoreEnv = /* @__PURE__ */ (() => ({
   "\u0275\u0275registerNgModuleType": registerNgModuleType,
   "\u0275\u0275getComponentDepsFactory": \u0275\u0275getComponentDepsFactory,
   "\u0275setClassDebugInfo": \u0275setClassDebugInfo,
+  "\u0275\u0275declareLet": \u0275\u0275declareLet,
+  "\u0275\u0275storeLet": \u0275\u0275storeLet,
+  "\u0275\u0275readContextLet": \u0275\u0275readContextLet,
   "\u0275\u0275sanitizeHtml": \u0275\u0275sanitizeHtml,
   "\u0275\u0275sanitizeStyle": \u0275\u0275sanitizeStyle,
   "\u0275\u0275sanitizeResourceUrl": \u0275\u0275sanitizeResourceUrl,
@@ -17002,8 +18181,7 @@ var angularCoreEnv = /* @__PURE__ */ (() => ({
   "resolveForwardRef": resolveForwardRef,
   "\u0275\u0275twoWayProperty": \u0275\u0275twoWayProperty,
   "\u0275\u0275twoWayBindingSet": \u0275\u0275twoWayBindingSet,
-  "\u0275\u0275twoWayListener": \u0275\u0275twoWayListener,
-  "\u0275\u0275InputFlags": InputFlags
+  "\u0275\u0275twoWayListener": \u0275\u0275twoWayListener
 }))();
 var jitOptions = null;
 function setJitOptions(options) {
@@ -17026,7 +18204,10 @@ function patchModuleCompilation() {
 }
 var moduleQueue = [];
 function enqueueModuleForDelayedScoping(moduleType, ngModule) {
-  moduleQueue.push({ moduleType, ngModule });
+  moduleQueue.push({
+    moduleType,
+    ngModule
+  });
 }
 var flushingModuleQueue = false;
 function flushModuleScopingQueueAsMuchAsPossible() {
@@ -17034,7 +18215,10 @@ function flushModuleScopingQueueAsMuchAsPossible() {
     flushingModuleQueue = true;
     try {
       for (let i = moduleQueue.length - 1; i >= 0; i--) {
-        const { moduleType, ngModule } = moduleQueue[i];
+        const {
+          moduleType,
+          ngModule
+        } = moduleQueue[i];
         if (ngModule.declarations && ngModule.declarations.every(isResolvedDeclaration)) {
           moduleQueue.splice(i, 1);
           setScopeOnDeclaredComponents(moduleType, ngModule);
@@ -17071,7 +18255,11 @@ function compileNgModuleDefs(moduleType, ngModule, allowDuplicateDeclarationsInR
         if (ngDevMode && ngModule.imports && ngModule.imports.indexOf(moduleType) > -1) {
           throw new Error(`'${stringifyForError(moduleType)}' module can't import itself`);
         }
-        const compiler = getCompilerFacade({ usage: 0, kind: "NgModule", type: moduleType });
+        const compiler = getCompilerFacade({
+          usage: 0,
+          kind: "NgModule",
+          type: moduleType
+        });
         ngModuleDef = compiler.compileNgModule(angularCoreEnv, `ng:///${moduleType.name}/\u0275mod.js`, {
           type: moduleType,
           bootstrap: flatten(ngModule.bootstrap || EMPTY_ARRAY).map(resolveForwardRef),
@@ -17092,7 +18280,11 @@ function compileNgModuleDefs(moduleType, ngModule, allowDuplicateDeclarationsInR
   Object.defineProperty(moduleType, NG_FACTORY_DEF, {
     get: () => {
       if (ngFactoryDef === null) {
-        const compiler = getCompilerFacade({ usage: 0, kind: "NgModule", type: moduleType });
+        const compiler = getCompilerFacade({
+          usage: 0,
+          kind: "NgModule",
+          type: moduleType
+        });
         ngFactoryDef = compiler.compileFactory(angularCoreEnv, `ng:///${moduleType.name}/\u0275fac.js`, {
           name: moduleType.name,
           type: moduleType,
@@ -17115,12 +18307,13 @@ function compileNgModuleDefs(moduleType, ngModule, allowDuplicateDeclarationsInR
           name: moduleType.name,
           type: moduleType,
           providers: ngModule.providers || EMPTY_ARRAY,
-          imports: [
-            (ngModule.imports || EMPTY_ARRAY).map(resolveForwardRef),
-            (ngModule.exports || EMPTY_ARRAY).map(resolveForwardRef)
-          ]
+          imports: [(ngModule.imports || EMPTY_ARRAY).map(resolveForwardRef), (ngModule.exports || EMPTY_ARRAY).map(resolveForwardRef)]
         };
-        const compiler = getCompilerFacade({ usage: 0, kind: "NgModule", type: moduleType });
+        const compiler = getCompilerFacade({
+          usage: 0,
+          kind: "NgModule",
+          type: moduleType
+        });
         ngInjectorDef = compiler.compileInjector(angularCoreEnv, `ng:///${moduleType.name}/\u0275inj.js`, meta);
       }
       return ngInjectorDef;
@@ -17135,10 +18328,8 @@ function generateStandaloneInDeclarationsError(type, location2) {
   return `${prefix} ${location2}, ${suffix}`;
 }
 function verifySemanticsOfNgModuleDef(moduleType, allowDuplicateDeclarationsInRoot, importingModule) {
-  if (verifiedNgModule.get(moduleType))
-    return;
-  if (isStandalone(moduleType))
-    return;
+  if (verifiedNgModule.get(moduleType)) return;
+  if (isStandalone(moduleType)) return;
   verifiedNgModule.set(moduleType, true);
   moduleType = resolveForwardRef(moduleType);
   let ngModuleDef;
@@ -17161,10 +18352,7 @@ function verifySemanticsOfNgModuleDef(moduleType, allowDuplicateDeclarationsInRo
   declarations.forEach(verifyDeclarationsHaveDefinitions);
   declarations.forEach(verifyDirectivesHaveSelector);
   declarations.forEach((declarationType) => verifyNotStandalone(declarationType, moduleType));
-  const combinedDeclarations = [
-    ...declarations.map(resolveForwardRef),
-    ...flatten(imports.map(computeCombinedExports)).map(resolveForwardRef)
-  ];
+  const combinedDeclarations = [...declarations.map(resolveForwardRef), ...flatten(imports.map(computeCombinedExports)).map(resolveForwardRef)];
   exports.forEach(verifyExportsAreDeclaredOrReExported);
   declarations.forEach((decl) => verifyDeclarationIsUnique(decl, allowDuplicateDeclarationsInRoot));
   const ngModule = getAnnotation(moduleType, "NgModule");
@@ -17424,7 +18612,11 @@ function compileComponent(type, metadata) {
   Object.defineProperty(type, NG_COMP_DEF, {
     get: () => {
       if (ngComponentDef === null) {
-        const compiler = getCompilerFacade({ usage: 0, kind: "component", type });
+        const compiler = getCompilerFacade({
+          usage: 0,
+          kind: "component",
+          type
+        });
         if (componentNeedsResolution(metadata)) {
           const error = [`Component '${type.name}' is not resolved:`];
           if (metadata.templateUrl) {
@@ -17482,7 +18674,10 @@ function compileComponent(type, metadata) {
           ngComponentDef = compiler.compileComponent(angularCoreEnv, templateUrl, meta);
           if (metadata.standalone) {
             const imports = flatten(metadata.imports || EMPTY_ARRAY);
-            const { directiveDefs, pipeDefs } = getStandaloneDefFunctions(type, imports);
+            const {
+              directiveDefs,
+              pipeDefs
+            } = getStandaloneDefFunctions(type, imports);
             ngComponentDef.directiveDefs = directiveDefs;
             ngComponentDef.pipeDefs = pipeDefs;
             ngComponentDef.dependencies = () => imports.map(resolveForwardRef);
@@ -17616,7 +18811,11 @@ function compileDirective(type, directive) {
     get: () => {
       if (ngDirectiveDef === null) {
         const meta = getDirectiveMetadata(type, directive || {});
-        const compiler = getCompilerFacade({ usage: 0, kind: "directive", type });
+        const compiler = getCompilerFacade({
+          usage: 0,
+          kind: "directive",
+          type
+        });
         ngDirectiveDef = compiler.compileDirective(angularCoreEnv, meta.sourceMapUrl, meta.metadata);
       }
       return ngDirectiveDef;
@@ -17628,13 +18827,20 @@ function compileDirective(type, directive) {
 function getDirectiveMetadata(type, metadata) {
   const name = type && type.name;
   const sourceMapUrl = `ng:///${name}/\u0275dir.js`;
-  const compiler = getCompilerFacade({ usage: 0, kind: "directive", type });
+  const compiler = getCompilerFacade({
+    usage: 0,
+    kind: "directive",
+    type
+  });
   const facade = directiveMetadata(type, metadata);
   facade.typeSourceSpan = compiler.createParseSourceSpan("Directive", name, sourceMapUrl);
   if (facade.usesInheritance) {
     addDirectiveDefToUndecoratedParents(type);
   }
-  return { metadata: facade, sourceMapUrl };
+  return {
+    metadata: facade,
+    sourceMapUrl
+  };
 }
 function addDirectiveFactoryDef(type, metadata) {
   let ngFactoryDef = null;
@@ -17642,7 +18848,11 @@ function addDirectiveFactoryDef(type, metadata) {
     get: () => {
       if (ngFactoryDef === null) {
         const meta = getDirectiveMetadata(type, metadata);
-        const compiler = getCompilerFacade({ usage: 0, kind: "directive", type });
+        const compiler = getCompilerFacade({
+          usage: 0,
+          kind: "directive",
+          type
+        });
         ngFactoryDef = compiler.compileFactory(angularCoreEnv, `ng:///${type.name}/\u0275fac.js`, {
           name: meta.metadata.name,
           type: meta.metadata.type,
@@ -17672,7 +18882,9 @@ function directiveMetadata(type, metadata) {
     inputs: metadata.inputs || EMPTY_ARRAY,
     outputs: metadata.outputs || EMPTY_ARRAY,
     queries: extractQueriesMetadata(type, propMetadata, isContentQuery),
-    lifecycle: { usesOnChanges: reflect.hasLifecycleHook(type, "ngOnChanges") },
+    lifecycle: {
+      usesOnChanges: reflect.hasLifecycleHook(type, "ngOnChanges")
+    },
     typeSourceSpan: null,
     usesInheritance: !extendsDirectlyFromObject(type),
     exportAs: extractExportAs(metadata.exportAs),
@@ -17680,7 +18892,9 @@ function directiveMetadata(type, metadata) {
     viewQueries: extractQueriesMetadata(type, propMetadata, isViewQuery),
     isStandalone: !!metadata.standalone,
     isSignal: !!metadata.signals,
-    hostDirectives: metadata.hostDirectives?.map((directive) => typeof directive === "function" ? { directive } : directive) || null
+    hostDirectives: metadata.hostDirectives?.map((directive) => typeof directive === "function" ? {
+      directive
+    } : directive) || null
   };
 }
 function addDirectiveDefToUndecoratedParents(type) {
@@ -17745,16 +18959,7 @@ function isInputAnnotation(value) {
 function splitByComma(value) {
   return value.split(",").map((piece) => piece.trim());
 }
-var LIFECYCLE_HOOKS = [
-  "ngOnChanges",
-  "ngOnInit",
-  "ngOnDestroy",
-  "ngDoCheck",
-  "ngAfterViewInit",
-  "ngAfterViewChecked",
-  "ngAfterContentInit",
-  "ngAfterContentChecked"
-];
+var LIFECYCLE_HOOKS = ["ngOnChanges", "ngOnInit", "ngOnDestroy", "ngDoCheck", "ngAfterViewInit", "ngAfterViewChecked", "ngAfterContentInit", "ngAfterContentChecked"];
 function shouldAddAbstractDirective(type) {
   const reflect = getReflect();
   if (LIFECYCLE_HOOKS.some((hookName) => reflect.hasLifecycleHook(type, hookName))) {
@@ -17780,7 +18985,11 @@ function compilePipe(type, meta) {
     get: () => {
       if (ngFactoryDef === null) {
         const metadata = getPipeMetadata(type, meta);
-        const compiler = getCompilerFacade({ usage: 0, kind: "pipe", type: metadata.type });
+        const compiler = getCompilerFacade({
+          usage: 0,
+          kind: "pipe",
+          type: metadata.type
+        });
         ngFactoryDef = compiler.compileFactory(angularCoreEnv, `ng:///${metadata.name}/\u0275fac.js`, {
           name: metadata.name,
           type: metadata.type,
@@ -17798,7 +19007,11 @@ function compilePipe(type, meta) {
     get: () => {
       if (ngPipeDef === null) {
         const metadata = getPipeMetadata(type, meta);
-        const compiler = getCompilerFacade({ usage: 0, kind: "pipe", type: metadata.type });
+        const compiler = getCompilerFacade({
+          usage: 0,
+          kind: "pipe",
+          type: metadata.type
+        });
         ngPipeDef = compiler.compilePipe(angularCoreEnv, `ng:///${metadata.name}/\u0275pipe.js`, metadata);
       }
       return ngPipeDef;
@@ -17817,17 +19030,30 @@ function getPipeMetadata(type, meta) {
   };
 }
 var Directive = makeDecorator("Directive", (dir = {}) => dir, void 0, void 0, (type, meta) => compileDirective(type, meta));
-var Component = makeDecorator("Component", (c = {}) => __spreadValues({ changeDetection: ChangeDetectionStrategy.Default }, c), Directive, void 0, (type, meta) => compileComponent(type, meta));
-var Pipe = makeDecorator("Pipe", (p) => __spreadValues({ pure: true }, p), void 0, void 0, (type, meta) => compilePipe(type, meta));
+var Component = makeDecorator("Component", (c = {}) => __spreadValues({
+  changeDetection: ChangeDetectionStrategy.Default
+}, c), Directive, void 0, (type, meta) => compileComponent(type, meta));
+var Pipe = makeDecorator("Pipe", (p) => __spreadValues({
+  pure: true
+}, p), void 0, void 0, (type, meta) => compilePipe(type, meta));
 var Input = makePropDecorator("Input", (arg) => {
   if (!arg) {
     return {};
   }
-  return typeof arg === "string" ? { alias: arg } : arg;
+  return typeof arg === "string" ? {
+    alias: arg
+  } : arg;
 });
-var Output = makePropDecorator("Output", (alias) => ({ alias }));
-var HostBinding = makePropDecorator("HostBinding", (hostPropertyName) => ({ hostPropertyName }));
-var HostListener = makePropDecorator("HostListener", (eventName, args) => ({ eventName, args }));
+var Output = makePropDecorator("Output", (alias) => ({
+  alias
+}));
+var HostBinding = makePropDecorator("HostBinding", (hostPropertyName) => ({
+  hostPropertyName
+}));
+var HostListener = makePropDecorator("HostListener", (eventName, args) => ({
+  eventName,
+  args
+}));
 var NgModule = makeDecorator(
   "NgModule",
   (ngModule) => ngModule,
@@ -17855,7 +19081,7 @@ var Version = class {
     this.patch = parts.slice(2).join(".");
   }
 };
-var VERSION = new Version("17.3.12");
+var VERSION = new Version("18.1.4");
 var _Console = class _Console {
   log(message) {
     console.log(message);
@@ -17865,15 +19091,21 @@ var _Console = class _Console {
     console.warn(message);
   }
 };
-_Console.\u0275fac = function Console_Factory(t) {
-  return new (t || _Console)();
+_Console.\u0275fac = function Console_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _Console)();
 };
-_Console.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _Console, factory: _Console.\u0275fac, providedIn: "platform" });
+_Console.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _Console,
+  factory: _Console.\u0275fac,
+  providedIn: "platform"
+});
 var Console = _Console;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(Console, [{
     type: Injectable,
-    args: [{ providedIn: "platform" }]
+    args: [{
+      providedIn: "platform"
+    }]
   }], null, null);
 })();
 var DIDebugData = class {
@@ -17897,7 +19129,10 @@ function setupFrameworkInjectorProfiler() {
   setInjectorProfiler((injectorProfilerEvent) => handleInjectorProfilerEvent(injectorProfilerEvent));
 }
 function handleInjectorProfilerEvent(injectorProfilerEvent) {
-  const { context: context2, type } = injectorProfilerEvent;
+  const {
+    context: context2,
+    type
+  } = injectorProfilerEvent;
   if (type === 0) {
     handleInjectEvent(context2, injectorProfilerEvent.service);
   } else if (type === 1) {
@@ -17922,14 +19157,27 @@ function handleInjectEvent(context2, data) {
   if (!instantiatedTokenToDependencies.has(context2.token)) {
     instantiatedTokenToDependencies.set(context2.token, []);
   }
-  const { token, value, flags } = data;
+  const {
+    token,
+    value,
+    flags
+  } = data;
   assertDefined(context2.token, "Injector profiler context token is undefined.");
   const dependencies = instantiatedTokenToDependencies.get(context2.token);
   assertDefined(dependencies, "Could not resolve dependencies for token.");
   if (context2.injector instanceof NodeInjector) {
-    dependencies.push({ token, value, flags, injectedIn: getNodeInjectorContext(context2.injector) });
+    dependencies.push({
+      token,
+      value,
+      flags,
+      injectedIn: getNodeInjectorContext(context2.injector)
+    });
   } else {
-    dependencies.push({ token, value, flags });
+    dependencies.push({
+      token,
+      value,
+      flags
+    });
   }
 }
 function getNodeInjectorContext(injector) {
@@ -17942,10 +19190,15 @@ function getNodeInjectorContext(injector) {
     return;
   }
   assertTNodeForLView(tNode, lView);
-  return { lView, tNode };
+  return {
+    lView,
+    tNode
+  };
 }
 function handleInstanceCreatedByInjectorEvent(context2, data) {
-  const { value } = data;
+  const {
+    value
+  } = data;
   if (getDIResolver(context2.injector) === null) {
     throwError("An InjectorCreatedInstance event must be run within an injection context.");
   }
@@ -17953,14 +19206,18 @@ function handleInstanceCreatedByInjectorEvent(context2, data) {
   if (typeof value === "object") {
     standaloneComponent = value?.constructor;
   }
-  if (standaloneComponent === void 0 || !isStandaloneComponent(standaloneComponent)) {
+  if (standaloneComponent == void 0 || !isStandaloneComponent(standaloneComponent)) {
     return;
   }
-  const environmentInjector = context2.injector.get(EnvironmentInjector, null, { optional: true });
+  const environmentInjector = context2.injector.get(EnvironmentInjector, null, {
+    optional: true
+  });
   if (environmentInjector === null) {
     return;
   }
-  const { standaloneInjectorToComponent } = frameworkDIDebugData;
+  const {
+    standaloneInjectorToComponent
+  } = frameworkDIDebugData;
   if (standaloneInjectorToComponent.has(environmentInjector)) {
     return;
   }
@@ -17971,7 +19228,9 @@ function isStandaloneComponent(value) {
   return !!def?.standalone;
 }
 function handleProviderConfiguredEvent(context2, data) {
-  const { resolverToProviders } = frameworkDIDebugData;
+  const {
+    resolverToProviders
+  } = frameworkDIDebugData;
   let diResolver;
   if (context2?.injector instanceof NodeInjector) {
     diResolver = getNodeInjectorTNode(context2.injector);
@@ -18003,7 +19262,11 @@ function canBeHeldWeakly(value) {
 }
 function applyChanges(component) {
   ngDevMode && assertDefined(component, "component");
-  markViewDirty(getComponentViewByInstance(component));
+  markViewDirty(
+    getComponentViewByInstance(component),
+    3
+    /* NotificationSource.DebugApplyChanges */
+  );
   getRootComponents(component).forEach((rootComponent) => detectChanges(rootComponent));
 }
 function detectChanges(component) {
@@ -18012,7 +19275,10 @@ function detectChanges(component) {
   detectChangesInternal(view);
 }
 function getDependenciesFromInjectable(injector, token) {
-  const instance = injector.get(token, null, { self: true, optional: true });
+  const instance = injector.get(token, null, {
+    self: true,
+    optional: true
+  });
   if (instance === null) {
     throw new Error(`Unable to determine instance of ${token} in given injector`);
   }
@@ -18028,6 +19294,7 @@ function getDependenciesFromInjectable(injector, token) {
       host: (1 & flags) === 1,
       self: (2 & flags) === 2,
       skipSelf: (4 & flags) === 4
+      /* InternalInjectFlags.SkipSelf */
     };
     for (let i = 0; i < resolutionPath.length; i++) {
       const injectorToCheck = resolutionPath[i];
@@ -18037,11 +19304,16 @@ function getDependenciesFromInjectable(injector, token) {
       if (formattedDependency.flags.host && injectorToCheck instanceof EnvironmentInjector) {
         break;
       }
-      const instance2 = injectorToCheck.get(dep.token, null, { self: true, optional: true });
+      const instance2 = injectorToCheck.get(dep.token, null, {
+        self: true,
+        optional: true
+      });
       if (instance2 !== null) {
         if (formattedDependency.flags.host) {
           const firstInjector = resolutionPath[0];
-          const lookupFromFirstInjector = firstInjector.get(dep.token, null, __spreadProps(__spreadValues({}, formattedDependency.flags), { optional: true }));
+          const lookupFromFirstInjector = firstInjector.get(dep.token, null, __spreadProps(__spreadValues({}, formattedDependency.flags), {
+            optional: true
+          }));
           if (lookupFromFirstInjector !== null) {
             formattedDependency.providedIn = injectorToCheck;
           }
@@ -18054,14 +19326,18 @@ function getDependenciesFromInjectable(injector, token) {
         break;
       }
     }
-    if (dep.token)
-      formattedDependency.token = dep.token;
+    if (dep.token) formattedDependency.token = dep.token;
     return formattedDependency;
   });
-  return { instance, dependencies };
+  return {
+    instance,
+    dependencies
+  };
 }
 function getDependenciesForTokenInInjector(token, injector) {
-  const { resolverToTokenToDependencies } = getFrameworkDIDebugData();
+  const {
+    resolverToTokenToDependencies
+  } = getFrameworkDIDebugData();
   if (!(injector instanceof NodeInjector)) {
     return resolverToTokenToDependencies.get(injector)?.get?.(token) ?? [];
   }
@@ -18080,11 +19356,16 @@ function getDependenciesForTokenInInjector(token, injector) {
   });
 }
 function getProviderImportsContainer(injector) {
-  const { standaloneInjectorToComponent } = getFrameworkDIDebugData();
+  const {
+    standaloneInjectorToComponent
+  } = getFrameworkDIDebugData();
   if (standaloneInjectorToComponent.has(injector)) {
     return standaloneInjectorToComponent.get(injector);
   }
-  const defTypeRef = injector.get(NgModuleRef$1, null, { self: true, optional: true });
+  const defTypeRef = injector.get(NgModuleRef$1, null, {
+    self: true,
+    optional: true
+  });
   if (defTypeRef === null) {
     return null;
   }
@@ -18095,7 +19376,9 @@ function getProviderImportsContainer(injector) {
 }
 function getNodeInjectorProviders(injector) {
   const diResolver = getNodeInjectorTNode(injector);
-  const { resolverToProviders } = getFrameworkDIDebugData();
+  const {
+    resolverToProviders
+  } = getFrameworkDIDebugData();
   return resolverToProviders.get(diResolver) ?? [];
 }
 function getProviderImportPaths(providerImportsContainer) {
@@ -18160,7 +19443,9 @@ function getEnvironmentInjectorProviders(injector) {
     if (isStandaloneComponent2) {
       importPath = [providerImportsContainer, ...importPath];
     }
-    providerRecords.push(__spreadProps(__spreadValues({}, providerRecord), { importPath }));
+    providerRecords.push(__spreadProps(__spreadValues({}, providerRecord), {
+      importPath
+    }));
   }
   return providerRecords;
 }
@@ -18180,13 +19465,22 @@ function getInjectorMetadata(injector) {
     const lView = getNodeInjectorLView(injector);
     const tNode = getNodeInjectorTNode(injector);
     assertTNodeForLView(tNode, lView);
-    return { type: "element", source: getNativeByTNode(tNode, lView) };
+    return {
+      type: "element",
+      source: getNativeByTNode(tNode, lView)
+    };
   }
   if (injector instanceof R3Injector) {
-    return { type: "environment", source: injector.source ?? null };
+    return {
+      type: "environment",
+      source: injector.source ?? null
+    };
   }
   if (injector instanceof NullInjector) {
-    return { type: "null", source: null };
+    return {
+      type: "null",
+      source: null
+    };
   }
   return null;
 }
@@ -18218,7 +19512,11 @@ function getInjectorResolutionPathHelper(injector, resolutionPath) {
 }
 function getInjectorParent(injector) {
   if (injector instanceof R3Injector) {
-    return injector.parent;
+    const parent = injector.parent;
+    if (isRouterOutletInjector(parent)) {
+      return parent.parentInjector;
+    }
+    return parent;
   }
   let tNode;
   let lView;
@@ -18230,7 +19528,7 @@ function getInjectorParent(injector) {
   } else if (injector instanceof ChainedInjector) {
     return injector.parentInjector;
   } else {
-    throwError("getInjectorParent only support injectors of type R3Injector, NodeInjector, NullInjector, ChainedInjector");
+    throwError("getInjectorParent only support injectors of type R3Injector, NodeInjector, NullInjector");
   }
   const parentLocation = getParentInjectorLocation(tNode, lView);
   if (hasParentInjector(parentLocation)) {
@@ -18315,7 +19613,6 @@ var _Testability = class _Testability {
   constructor(_ngZone, registry, testabilityGetter) {
     this._ngZone = _ngZone;
     this.registry = registry;
-    this._pendingCount = 0;
     this._isZoneStable = true;
     this._callbacks = [];
     this.taskTrackingZone = null;
@@ -18347,30 +19644,10 @@ var _Testability = class _Testability {
     });
   }
   /**
-   * Increases the number of pending request
-   * @deprecated pending requests are now tracked with zones.
-   */
-  increasePendingRequestCount() {
-    this._pendingCount += 1;
-    return this._pendingCount;
-  }
-  /**
-   * Decreases the number of pending request
-   * @deprecated pending requests are now tracked with zones
-   */
-  decreasePendingRequestCount() {
-    this._pendingCount -= 1;
-    if (this._pendingCount < 0) {
-      throw new Error("pending async requests below zero");
-    }
-    this._runCallbacksIfReady();
-    return this._pendingCount;
-  }
-  /**
    * Whether an associated application is stable
    */
   isStable() {
-    return this._isZoneStable && this._pendingCount === 0 && !this._ngZone.hasPendingMacrotasks;
+    return this._isZoneStable && !this._ngZone.hasPendingMacrotasks;
   }
   _runCallbacksIfReady() {
     if (this.isStable()) {
@@ -18414,7 +19691,11 @@ var _Testability = class _Testability {
         cb();
       }, timeout);
     }
-    this._callbacks.push({ doneCb: cb, timeoutId, updateCb });
+    this._callbacks.push({
+      doneCb: cb,
+      timeoutId,
+      updateCb
+    });
   }
   /**
    * Wait for the application to be stable with a timeout. If the timeout is reached before that
@@ -18434,13 +19715,6 @@ var _Testability = class _Testability {
     }
     this.addCallback(doneCb, timeout, updateCb);
     this._runCallbacksIfReady();
-  }
-  /**
-   * Get the number of pending requests
-   * @deprecated pending requests are now tracked with zones
-   */
-  getPendingRequestCount() {
-    return this._pendingCount;
   }
   /**
    * Registers an application with a testability hook so that it can be tracked.
@@ -18470,18 +19744,28 @@ var _Testability = class _Testability {
     return [];
   }
 };
-_Testability.\u0275fac = function Testability_Factory(t) {
-  return new (t || _Testability)(\u0275\u0275inject(NgZone), \u0275\u0275inject(TestabilityRegistry), \u0275\u0275inject(TESTABILITY_GETTER));
+_Testability.\u0275fac = function Testability_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _Testability)(\u0275\u0275inject(NgZone), \u0275\u0275inject(TestabilityRegistry), \u0275\u0275inject(TESTABILITY_GETTER));
 };
-_Testability.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _Testability, factory: _Testability.\u0275fac });
+_Testability.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _Testability,
+  factory: _Testability.\u0275fac
+});
 var Testability = _Testability;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(Testability, [{
     type: Injectable
-  }], () => [{ type: NgZone }, { type: TestabilityRegistry }, { type: void 0, decorators: [{
-    type: Inject,
-    args: [TESTABILITY_GETTER]
-  }] }], null);
+  }], () => [{
+    type: NgZone
+  }, {
+    type: TestabilityRegistry
+  }, {
+    type: void 0,
+    decorators: [{
+      type: Inject,
+      args: [TESTABILITY_GETTER]
+    }]
+  }], null);
 })();
 var _TestabilityRegistry = class _TestabilityRegistry {
   constructor() {
@@ -18537,15 +19821,21 @@ var _TestabilityRegistry = class _TestabilityRegistry {
     return _testabilityGetter?.findTestabilityInTree(this, elem, findInAncestors) ?? null;
   }
 };
-_TestabilityRegistry.\u0275fac = function TestabilityRegistry_Factory(t) {
-  return new (t || _TestabilityRegistry)();
+_TestabilityRegistry.\u0275fac = function TestabilityRegistry_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _TestabilityRegistry)();
 };
-_TestabilityRegistry.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _TestabilityRegistry, factory: _TestabilityRegistry.\u0275fac, providedIn: "platform" });
+_TestabilityRegistry.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _TestabilityRegistry,
+  factory: _TestabilityRegistry.\u0275fac,
+  providedIn: "platform"
+});
 var TestabilityRegistry = _TestabilityRegistry;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(TestabilityRegistry, [{
     type: Injectable,
-    args: [{ providedIn: "platform" }]
+    args: [{
+      providedIn: "platform"
+    }]
   }], null, null);
 })();
 function setTestabilityGetter(getter) {
@@ -18567,7 +19857,9 @@ var _ApplicationInitStatus = class _ApplicationInitStatus {
       this.resolve = res;
       this.reject = rej;
     });
-    this.appInits = inject(APP_INITIALIZER, { optional: true }) ?? [];
+    this.appInits = inject(APP_INITIALIZER, {
+      optional: true
+    }) ?? [];
     if ((typeof ngDevMode === "undefined" || ngDevMode) && !Array.isArray(this.appInits)) {
       throw new RuntimeError(-209, `Unexpected type of the \`APP_INITIALIZER\` token value (expected an array, but got ${typeof this.appInits}). Please check that the \`APP_INITIALIZER\` token is configured as a \`multi: true\` provider.`);
     }
@@ -18584,7 +19876,10 @@ var _ApplicationInitStatus = class _ApplicationInitStatus {
         asyncInitPromises.push(initResult);
       } else if (isSubscribable(initResult)) {
         const observableAsPromise = new Promise((resolve, reject) => {
-          initResult.subscribe({ complete: resolve, error: reject });
+          initResult.subscribe({
+            complete: resolve,
+            error: reject
+          });
         });
         asyncInitPromises.push(observableAsPromise);
       }
@@ -18604,15 +19899,21 @@ var _ApplicationInitStatus = class _ApplicationInitStatus {
     this.initialized = true;
   }
 };
-_ApplicationInitStatus.\u0275fac = function ApplicationInitStatus_Factory(t) {
-  return new (t || _ApplicationInitStatus)();
+_ApplicationInitStatus.\u0275fac = function ApplicationInitStatus_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ApplicationInitStatus)();
 };
-_ApplicationInitStatus.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _ApplicationInitStatus, factory: _ApplicationInitStatus.\u0275fac, providedIn: "root" });
+_ApplicationInitStatus.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _ApplicationInitStatus,
+  factory: _ApplicationInitStatus.\u0275fac,
+  providedIn: "root"
+});
 var ApplicationInitStatus = _ApplicationInitStatus;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ApplicationInitStatus, [{
     type: Injectable,
-    args: [{ providedIn: "root" }]
+    args: [{
+      providedIn: "root"
+    }]
   }], () => [], null);
 })();
 var APP_BOOTSTRAP_LISTENER = new InjectionToken(ngDevMode ? "appBootstrapListener" : "");
@@ -18627,6 +19928,7 @@ function publishSignalConfiguration() {
 function isBoundToModule(cf) {
   return cf.isBoundToModule;
 }
+var MAXIMUM_REFRESH_RERUNS = 10;
 function _callAndReportToErrorHandler(errorHandler2, ngZone, callback) {
   try {
     const result = callback();
@@ -18657,6 +19959,7 @@ var _ApplicationRef = class _ApplicationRef {
     this._views = [];
     this.internalErrorHandler = inject(INTERNAL_APPLICATION_ERROR_HANDLER);
     this.afterRenderEffectManager = inject(AfterRenderEventManager);
+    this.zonelessEnabled = inject(ZONELESS_ENABLED);
     this.externalTestViews = /* @__PURE__ */ new Set();
     this.beforeRender = new Subject();
     this.afterTick = new Subject();
@@ -18664,6 +19967,10 @@ var _ApplicationRef = class _ApplicationRef {
     this.components = [];
     this.isStable = inject(PendingTasks).hasPendingTasks.pipe(map((pending) => !pending));
     this._injector = inject(EnvironmentInjector);
+  }
+  /** @internal */
+  get allViews() {
+    return [...this.externalTestViews.keys(), ...this._views];
   }
   /**
    * Indicates whether this instance was destroyed.
@@ -18780,34 +20087,50 @@ var _ApplicationRef = class _ApplicationRef {
     } catch (e) {
       this.internalErrorHandler(e);
     } finally {
-      this.afterTick.next();
       this._runningTick = false;
       setActiveConsumer(prevConsumer);
+      this.afterTick.next();
     }
   }
   detectChangesInAttachedViews(refreshViews) {
+    let rendererFactory = null;
+    if (!this._injector.destroyed) {
+      rendererFactory = this._injector.get(RendererFactory2, null, {
+        optional: true
+      });
+    }
     let runs = 0;
     const afterRenderEffectManager = this.afterRenderEffectManager;
-    while (true) {
-      if (runs === MAXIMUM_REFRESH_RERUNS) {
-        throw new RuntimeError(103, ngDevMode && "Infinite change detection while refreshing application views. Ensure afterRender or queueStateUpdate hooks are not continuously causing updates.");
-      }
-      if (refreshViews) {
-        const isFirstPass = runs === 0;
+    while (runs < MAXIMUM_REFRESH_RERUNS) {
+      const isFirstPass = runs === 0;
+      if (refreshViews || !isFirstPass) {
         this.beforeRender.next(isFirstPass);
-        for (let { _lView, notifyErrorHandler } of this._views) {
-          detectChangesInViewIfRequired(_lView, isFirstPass, notifyErrorHandler);
+        for (let {
+          _lView,
+          notifyErrorHandler
+        } of this._views) {
+          detectChangesInViewIfRequired(_lView, notifyErrorHandler, isFirstPass, this.zonelessEnabled);
         }
+      } else {
+        rendererFactory?.begin?.();
+        rendererFactory?.end?.();
       }
       runs++;
       afterRenderEffectManager.executeInternalCallbacks();
-      if ([...this.externalTestViews.keys(), ...this._views].some(({ _lView }) => shouldRecheckView(_lView))) {
+      if (this.allViews.some(({
+        _lView
+      }) => requiresRefreshOrTraversal(_lView))) {
         continue;
       }
       afterRenderEffectManager.execute();
-      if (![...this.externalTestViews.keys(), ...this._views].some(({ _lView }) => shouldRecheckView(_lView))) {
+      if (!this.allViews.some(({
+        _lView
+      }) => requiresRefreshOrTraversal(_lView))) {
         break;
       }
+    }
+    if ((typeof ngDevMode === "undefined" || ngDevMode) && runs >= MAXIMUM_REFRESH_RERUNS) {
+      throw new RuntimeError(103, ngDevMode && "Infinite change detection while refreshing application views. Ensure views are not calling `markForCheck` on every template execution or that afterRender hooks always mark views for check.");
     }
   }
   /**
@@ -18842,8 +20165,7 @@ var _ApplicationRef = class _ApplicationRef {
   }
   /** @internal */
   ngOnDestroy() {
-    if (this._destroyed)
-      return;
+    if (this._destroyed) return;
     try {
       this._destroyListeners.forEach((listener) => listener());
       this._views.slice().forEach((view) => view.destroy());
@@ -18891,15 +20213,21 @@ var _ApplicationRef = class _ApplicationRef {
     }
   }
 };
-_ApplicationRef.\u0275fac = function ApplicationRef_Factory(t) {
-  return new (t || _ApplicationRef)();
+_ApplicationRef.\u0275fac = function ApplicationRef_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ApplicationRef)();
 };
-_ApplicationRef.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _ApplicationRef, factory: _ApplicationRef.\u0275fac, providedIn: "root" });
+_ApplicationRef.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _ApplicationRef,
+  factory: _ApplicationRef.\u0275fac,
+  providedIn: "root"
+});
 var ApplicationRef = _ApplicationRef;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ApplicationRef, [{
     type: Injectable,
-    args: [{ providedIn: "root" }]
+    args: [{
+      providedIn: "root"
+    }]
   }], null, null);
 })();
 function remove(list, el) {
@@ -18908,25 +20236,29 @@ function remove(list, el) {
     list.splice(index, 1);
   }
 }
-function detectChangesInViewIfRequired(lView, isFirstPass, notifyErrorHandler) {
-  if (!isFirstPass && !shouldRecheckView(lView)) {
+var whenStableStore;
+function whenStable(applicationRef) {
+  whenStableStore ??= /* @__PURE__ */ new WeakMap();
+  const cachedWhenStable = whenStableStore.get(applicationRef);
+  if (cachedWhenStable) {
+    return cachedWhenStable;
+  }
+  const whenStablePromise = applicationRef.isStable.pipe(first((isStable) => isStable)).toPromise().then(() => void 0);
+  whenStableStore.set(applicationRef, whenStablePromise);
+  applicationRef.onDestroy(() => whenStableStore?.delete(applicationRef));
+  return whenStablePromise;
+}
+function detectChangesInViewIfRequired(lView, notifyErrorHandler, isFirstPass, zonelessEnabled) {
+  if (!isFirstPass && !requiresRefreshOrTraversal(lView)) {
     return;
   }
-  detectChangesInView(lView, notifyErrorHandler, isFirstPass);
-}
-function shouldRecheckView(view) {
-  return requiresRefreshOrTraversal(view);
-}
-function detectChangesInView(lView, notifyErrorHandler, isFirstPass) {
-  let mode;
-  if (isFirstPass) {
-    mode = 0;
-    lView[FLAGS] |= 1024;
-  } else if (lView[FLAGS] & 64) {
-    mode = 0;
-  } else {
-    mode = 1;
-  }
+  const mode = isFirstPass && !zonelessEnabled ? (
+    // The first pass is always in Global mode, which includes `CheckAlways` views.
+    0
+  ) : (
+    // Only refresh views with the `RefreshView` flag or views is a changed signal
+    1
+  );
   detectChangesInternal(lView, notifyErrorHandler, mode);
 }
 var ModuleWithComponentFactories = class {
@@ -18985,15 +20317,21 @@ var _Compiler = class _Compiler {
     return void 0;
   }
 };
-_Compiler.\u0275fac = function Compiler_Factory(t) {
-  return new (t || _Compiler)();
+_Compiler.\u0275fac = function Compiler_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _Compiler)();
 };
-_Compiler.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _Compiler, factory: _Compiler.\u0275fac, providedIn: "root" });
+_Compiler.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _Compiler,
+  factory: _Compiler.\u0275fac,
+  providedIn: "root"
+});
 var Compiler = _Compiler;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(Compiler, [{
     type: Injectable,
-    args: [{ providedIn: "root" }]
+    args: [{
+      providedIn: "root"
+    }]
   }], null, null);
 })();
 var COMPILER_OPTIONS = new InjectionToken(ngDevMode ? "compilerOptions" : "");
@@ -19020,7 +20358,9 @@ function compileNgModuleFactory(injector, options, moduleType) {
     kind: "NgModule",
     type: moduleType
   });
-  const compilerInjector = Injector.create({ providers: compilerProviders });
+  const compilerInjector = Injector.create({
+    providers: compilerProviders
+  });
   const resourceLoader = compilerInjector.get(compiler.ResourceLoader);
   return resolveComponentResources((url) => Promise.resolve(resourceLoader.get(url))).then(() => moduleFactory);
 }
@@ -19035,6 +20375,7 @@ function _lastDefined(args) {
 var _NgZoneChangeDetectionScheduler = class _NgZoneChangeDetectionScheduler {
   constructor() {
     this.zone = inject(NgZone);
+    this.changeDetectionScheduler = inject(ChangeDetectionScheduler);
     this.applicationRef = inject(ApplicationRef);
   }
   initialize() {
@@ -19043,6 +20384,9 @@ var _NgZoneChangeDetectionScheduler = class _NgZoneChangeDetectionScheduler {
     }
     this._onMicrotaskEmptySubscription = this.zone.onMicrotaskEmpty.subscribe({
       next: () => {
+        if (this.changeDetectionScheduler.runningTick) {
+          return;
+        }
         this.zone.run(() => {
           this.applicationRef.tick();
         });
@@ -19053,26 +20397,43 @@ var _NgZoneChangeDetectionScheduler = class _NgZoneChangeDetectionScheduler {
     this._onMicrotaskEmptySubscription?.unsubscribe();
   }
 };
-_NgZoneChangeDetectionScheduler.\u0275fac = function NgZoneChangeDetectionScheduler_Factory(t) {
-  return new (t || _NgZoneChangeDetectionScheduler)();
+_NgZoneChangeDetectionScheduler.\u0275fac = function NgZoneChangeDetectionScheduler_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgZoneChangeDetectionScheduler)();
 };
-_NgZoneChangeDetectionScheduler.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _NgZoneChangeDetectionScheduler, factory: _NgZoneChangeDetectionScheduler.\u0275fac, providedIn: "root" });
+_NgZoneChangeDetectionScheduler.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _NgZoneChangeDetectionScheduler,
+  factory: _NgZoneChangeDetectionScheduler.\u0275fac,
+  providedIn: "root"
+});
 var NgZoneChangeDetectionScheduler = _NgZoneChangeDetectionScheduler;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(NgZoneChangeDetectionScheduler, [{
     type: Injectable,
-    args: [{ providedIn: "root" }]
+    args: [{
+      providedIn: "root"
+    }]
   }], null, null);
 })();
-var PROVIDED_NG_ZONE = new InjectionToken(typeof ngDevMode === "undefined" || ngDevMode ? "provideZoneChangeDetection token" : "");
-function internalProvideZoneChangeDetection(ngZoneFactory) {
+var PROVIDED_NG_ZONE = new InjectionToken(typeof ngDevMode === "undefined" || ngDevMode ? "provideZoneChangeDetection token" : "", {
+  factory: () => false
+});
+function internalProvideZoneChangeDetection({
+  ngZoneFactory,
+  ignoreChangesOutsideZone
+}) {
+  ngZoneFactory ??= () => new NgZone(getNgZoneOptions());
   return [
-    { provide: NgZone, useFactory: ngZoneFactory },
+    {
+      provide: NgZone,
+      useFactory: ngZoneFactory
+    },
     {
       provide: ENVIRONMENT_INITIALIZER,
       multi: true,
       useFactory: () => {
-        const ngZoneChangeDetectionScheduler = inject(NgZoneChangeDetectionScheduler, { optional: true });
+        const ngZoneChangeDetectionScheduler = inject(NgZoneChangeDetectionScheduler, {
+          optional: true
+        });
         if ((typeof ngDevMode === "undefined" || ngDevMode) && ngZoneChangeDetectionScheduler === null) {
           throw new RuntimeError(402, `A required Injectable was not found in the dependency injection tree. If you are bootstrapping an NgModule, make sure that the \`BrowserModule\` is imported.`);
         }
@@ -19089,20 +20450,13 @@ function internalProvideZoneChangeDetection(ngZoneFactory) {
         };
       }
     },
-    { provide: INTERNAL_APPLICATION_ERROR_HANDLER, useFactory: ngZoneApplicationErrorHandlerFactory }
+    // Always disable scheduler whenever explicitly disabled, even if another place called
+    // `provideZoneChangeDetection` without the 'ignore' option.
+    ignoreChangesOutsideZone === true ? {
+      provide: ZONELESS_SCHEDULER_DISABLED,
+      useValue: true
+    } : []
   ];
-}
-function ngZoneApplicationErrorHandlerFactory() {
-  const zone = inject(NgZone);
-  const userErrorHandler = inject(ErrorHandler);
-  return (e) => zone.runOutsideAngular(() => userErrorHandler.handleError(e));
-}
-function provideZoneChangeDetection(options) {
-  const zoneProviders = internalProvideZoneChangeDetection(() => new NgZone(getNgZoneOptions(options)));
-  return makeEnvironmentProviders([
-    typeof ngDevMode === "undefined" || ngDevMode ? { provide: PROVIDED_NG_ZONE, useValue: true } : [],
-    zoneProviders
-  ]);
 }
 function getNgZoneOptions(options) {
   return {
@@ -19147,16 +20501,194 @@ var _ZoneStablePendingTask = class _ZoneStablePendingTask {
     this.subscription.unsubscribe();
   }
 };
-_ZoneStablePendingTask.\u0275fac = function ZoneStablePendingTask_Factory(t) {
-  return new (t || _ZoneStablePendingTask)();
+_ZoneStablePendingTask.\u0275fac = function ZoneStablePendingTask_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ZoneStablePendingTask)();
 };
-_ZoneStablePendingTask.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _ZoneStablePendingTask, factory: _ZoneStablePendingTask.\u0275fac, providedIn: "root" });
+_ZoneStablePendingTask.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _ZoneStablePendingTask,
+  factory: _ZoneStablePendingTask.\u0275fac,
+  providedIn: "root"
+});
 var ZoneStablePendingTask = _ZoneStablePendingTask;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ZoneStablePendingTask, [{
     type: Injectable,
-    args: [{ providedIn: "root" }]
+    args: [{
+      providedIn: "root"
+    }]
   }], null, null);
+})();
+var CONSECUTIVE_MICROTASK_NOTIFICATION_LIMIT = 100;
+var consecutiveMicrotaskNotifications = 0;
+var stackFromLastFewNotifications = [];
+function trackMicrotaskNotificationForDebugging() {
+  consecutiveMicrotaskNotifications++;
+  if (CONSECUTIVE_MICROTASK_NOTIFICATION_LIMIT - consecutiveMicrotaskNotifications < 5) {
+    const stack = new Error().stack;
+    if (stack) {
+      stackFromLastFewNotifications.push(stack);
+    }
+  }
+  if (consecutiveMicrotaskNotifications === CONSECUTIVE_MICROTASK_NOTIFICATION_LIMIT) {
+    throw new RuntimeError(103, "Angular could not stabilize because there were endless change notifications within the browser event loop. The stack from the last several notifications: \n" + stackFromLastFewNotifications.join("\n"));
+  }
+}
+var _ChangeDetectionSchedulerImpl = class _ChangeDetectionSchedulerImpl {
+  constructor() {
+    this.appRef = inject(ApplicationRef);
+    this.taskService = inject(PendingTasks);
+    this.ngZone = inject(NgZone);
+    this.zonelessEnabled = inject(ZONELESS_ENABLED);
+    this.disableScheduling = inject(ZONELESS_SCHEDULER_DISABLED, {
+      optional: true
+    }) ?? false;
+    this.zoneIsDefined = typeof Zone !== "undefined" && !!Zone.root.run;
+    this.schedulerTickApplyArgs = [{
+      data: {
+        "__scheduler_tick__": true
+      }
+    }];
+    this.subscriptions = new Subscription();
+    this.cancelScheduledCallback = null;
+    this.shouldRefreshViews = false;
+    this.useMicrotaskScheduler = false;
+    this.runningTick = false;
+    this.pendingRenderTaskId = null;
+    this.subscriptions.add(this.appRef.afterTick.subscribe(() => {
+      if (!this.runningTick) {
+        this.cleanup();
+      }
+    }));
+    this.subscriptions.add(this.ngZone.onUnstable.subscribe(() => {
+      if (!this.runningTick) {
+        this.cleanup();
+      }
+    }));
+    this.disableScheduling ||= !this.zonelessEnabled && // NoopNgZone without enabling zoneless means no scheduling whatsoever
+    (this.ngZone instanceof NoopNgZone || // The same goes for the lack of Zone without enabling zoneless scheduling
+    !this.zoneIsDefined);
+  }
+  notify(source) {
+    if (!this.zonelessEnabled && source === 5) {
+      return;
+    }
+    switch (source) {
+      case 3:
+      case 2:
+      case 0:
+      case 4:
+      case 5:
+      case 1: {
+        this.shouldRefreshViews = true;
+        break;
+      }
+      case 8:
+      case 7:
+      case 6:
+      case 9:
+      default: {
+      }
+    }
+    if (!this.shouldScheduleTick()) {
+      return;
+    }
+    if (typeof ngDevMode === "undefined" || ngDevMode) {
+      if (this.useMicrotaskScheduler) {
+        trackMicrotaskNotificationForDebugging();
+      } else {
+        consecutiveMicrotaskNotifications = 0;
+        stackFromLastFewNotifications.length = 0;
+      }
+    }
+    const scheduleCallback = this.useMicrotaskScheduler ? scheduleCallbackWithMicrotask : scheduleCallbackWithRafRace;
+    this.pendingRenderTaskId = this.taskService.add();
+    if (this.zoneIsDefined) {
+      Zone.root.run(() => {
+        this.cancelScheduledCallback = scheduleCallback(() => {
+          this.tick(this.shouldRefreshViews);
+        });
+      });
+    } else {
+      this.cancelScheduledCallback = scheduleCallback(() => {
+        this.tick(this.shouldRefreshViews);
+      });
+    }
+  }
+  shouldScheduleTick() {
+    if (this.disableScheduling) {
+      return false;
+    }
+    if (this.pendingRenderTaskId !== null || this.runningTick || this.appRef._runningTick) {
+      return false;
+    }
+    if (!this.zonelessEnabled && this.zoneIsDefined && NgZone.isInAngularZone()) {
+      return false;
+    }
+    return true;
+  }
+  /**
+   * Calls ApplicationRef._tick inside the `NgZone`.
+   *
+   * Calling `tick` directly runs change detection and cancels any change detection that had been
+   * scheduled previously.
+   *
+   * @param shouldRefreshViews Passed directly to `ApplicationRef._tick` and skips straight to
+   *     render hooks when `false`.
+   */
+  tick(shouldRefreshViews) {
+    if (this.runningTick || this.appRef.destroyed) {
+      return;
+    }
+    const task = this.taskService.add();
+    try {
+      this.ngZone.run(() => {
+        this.runningTick = true;
+        this.appRef._tick(shouldRefreshViews);
+      }, void 0, this.schedulerTickApplyArgs);
+    } catch (e) {
+      this.taskService.remove(task);
+      throw e;
+    } finally {
+      this.cleanup();
+    }
+    this.useMicrotaskScheduler = true;
+    scheduleCallbackWithMicrotask(() => {
+      this.useMicrotaskScheduler = false;
+      this.taskService.remove(task);
+    });
+  }
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+    this.cleanup();
+  }
+  cleanup() {
+    this.shouldRefreshViews = false;
+    this.runningTick = false;
+    this.cancelScheduledCallback?.();
+    this.cancelScheduledCallback = null;
+    if (this.pendingRenderTaskId !== null) {
+      const taskId = this.pendingRenderTaskId;
+      this.pendingRenderTaskId = null;
+      this.taskService.remove(taskId);
+    }
+  }
+};
+_ChangeDetectionSchedulerImpl.\u0275fac = function ChangeDetectionSchedulerImpl_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ChangeDetectionSchedulerImpl)();
+};
+_ChangeDetectionSchedulerImpl.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _ChangeDetectionSchedulerImpl,
+  factory: _ChangeDetectionSchedulerImpl.\u0275fac,
+  providedIn: "root"
+});
+var ChangeDetectionSchedulerImpl = _ChangeDetectionSchedulerImpl;
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ChangeDetectionSchedulerImpl, [{
+    type: Injectable,
+    args: [{
+      providedIn: "root"
+    }]
+  }], () => [], null);
 })();
 function getGlobalLocale() {
   if (false) {
@@ -19202,9 +20734,21 @@ var _PlatformRef = class _PlatformRef {
       runCoalescing: options?.ngZoneRunCoalescing
     }));
     return ngZone.run(() => {
-      const moduleRef = createNgModuleRefWithProviders(moduleFactory.moduleType, this.injector, internalProvideZoneChangeDetection(() => ngZone));
-      if ((typeof ngDevMode === "undefined" || ngDevMode) && moduleRef.injector.get(PROVIDED_NG_ZONE, null) !== null) {
-        throw new RuntimeError(207, "`bootstrapModule` does not support `provideZoneChangeDetection`. Use `BootstrapOptions` instead.");
+      const ignoreChangesOutsideZone = options?.ignoreChangesOutsideZone;
+      const moduleRef = createNgModuleRefWithProviders(moduleFactory.moduleType, this.injector, [...internalProvideZoneChangeDetection({
+        ngZoneFactory: () => ngZone,
+        ignoreChangesOutsideZone
+      }), {
+        provide: ChangeDetectionScheduler,
+        useExisting: ChangeDetectionSchedulerImpl
+      }]);
+      if (typeof ngDevMode === "undefined" || ngDevMode) {
+        if (moduleRef.injector.get(PROVIDED_NG_ZONE)) {
+          throw new RuntimeError(207, "`bootstrapModule` does not support `provideZoneChangeDetection`. Use `BootstrapOptions` instead.");
+        }
+        if (moduleRef.injector.get(ZONELESS_ENABLED) && options?.ngZone !== "noop") {
+          throw new RuntimeError(408, "Invalid change detection configuration: `ngZone: 'noop'` must be set in `BootstrapOptions` with provideExperimentalZonelessChangeDetection.");
+        }
       }
       const exceptionHandler = moduleRef.injector.get(ErrorHandler, null);
       if ((typeof ngDevMode === "undefined" || ngDevMode) && exceptionHandler === null) {
@@ -19301,16 +20845,24 @@ var _PlatformRef = class _PlatformRef {
     return this._destroyed;
   }
 };
-_PlatformRef.\u0275fac = function PlatformRef_Factory(t) {
-  return new (t || _PlatformRef)(\u0275\u0275inject(Injector));
+_PlatformRef.\u0275fac = function PlatformRef_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _PlatformRef)(\u0275\u0275inject(Injector));
 };
-_PlatformRef.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _PlatformRef, factory: _PlatformRef.\u0275fac, providedIn: "platform" });
+_PlatformRef.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _PlatformRef,
+  factory: _PlatformRef.\u0275fac,
+  providedIn: "platform"
+});
 var PlatformRef = _PlatformRef;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(PlatformRef, [{
     type: Injectable,
-    args: [{ providedIn: "platform" }]
-  }], () => [{ type: Injector }], null);
+    args: [{
+      providedIn: "platform"
+    }]
+  }], () => [{
+    type: Injector
+  }], null);
 })();
 var _platformInjector = null;
 var ALLOW_MULTIPLE_PLATFORMS = new InjectionToken(ngDevMode ? "AllowMultipleToken" : "");
@@ -19331,7 +20883,10 @@ function createPlatformFactory(parentPlatformFactory, name, providers = []) {
   return (extraProviders = []) => {
     let platform = getPlatform();
     if (!platform || platform.injector.get(ALLOW_MULTIPLE_PLATFORMS, false)) {
-      const platformProviders = [...providers, ...extraProviders, { provide: marker, useValue: true }];
+      const platformProviders = [...providers, ...extraProviders, {
+        provide: marker,
+        useValue: true
+      }];
       if (parentPlatformFactory) {
         parentPlatformFactory(platformProviders);
       } else {
@@ -19344,11 +20899,13 @@ function createPlatformFactory(parentPlatformFactory, name, providers = []) {
 function createPlatformInjector(providers = [], name) {
   return Injector.create({
     name,
-    providers: [
-      { provide: INJECTOR_SCOPE, useValue: "platform" },
-      { provide: PLATFORM_DESTROY_LISTENERS, useValue: /* @__PURE__ */ new Set([() => _platformInjector = null]) },
-      ...providers
-    ]
+    providers: [{
+      provide: INJECTOR_SCOPE,
+      useValue: "platform"
+    }, {
+      provide: PLATFORM_DESTROY_LISTENERS,
+      useValue: /* @__PURE__ */ new Set([() => _platformInjector = null])
+    }, ...providers]
   });
 }
 function assertPlatform(requiredToken) {
@@ -19365,8 +20922,7 @@ function getPlatform() {
   return _platformInjector?.get(PlatformRef) ?? null;
 }
 function createOrReusePlatformInjector(providers = []) {
-  if (_platformInjector)
-    return _platformInjector;
+  if (_platformInjector) return _platformInjector;
   publishDefaultGlobalUtils();
   const injector = createPlatformInjector(providers);
   _platformInjector = injector;
@@ -19397,7 +20953,7 @@ function createViewRef(tNode, lView, isPipe2) {
   if (isComponentHost(tNode) && !isPipe2) {
     const componentView = getComponentLViewByIndex(tNode.index, lView);
     return new ViewRef$1(componentView, componentView);
-  } else if (tNode.type & (3 | 12 | 32)) {
+  } else if (tNode.type & (3 | 12 | 32 | 128)) {
     const hostComponentView = lView[DECLARATION_COMPONENT_VIEW];
     return new ViewRef$1(hostComponentView, lView);
   }
@@ -19455,8 +21011,7 @@ var DefaultIterableDiffer = class {
         if (record.previousIndex == null) {
           addRemoveOffset++;
         } else {
-          if (!moveOffsets)
-            moveOffsets = [];
+          if (!moveOffsets) moveOffsets = [];
           const localMovePreviousIndex = adjPreviousIndex - addRemoveOffset;
           const localCurrentIndex = currentIndex - addRemoveOffset;
           if (localMovePreviousIndex != localCurrentIndex) {
@@ -19508,8 +21063,7 @@ var DefaultIterableDiffer = class {
     }
   }
   diff(collection) {
-    if (collection == null)
-      collection = [];
+    if (collection == null) collection = [];
     if (!isListLikeIterable(collection)) {
       throw new RuntimeError(900, ngDevMode && `Error trying to diff '${stringify(collection)}'. Only arrays and iterables are allowed`);
     }
@@ -19540,8 +21094,7 @@ var DefaultIterableDiffer = class {
           if (mayBeDirty) {
             record = this._verifyReinsertion(record, item, itemTrackBy, index2);
           }
-          if (!Object.is(record.item, item))
-            this._addIdentityChange(record, item);
+          if (!Object.is(record.item, item)) this._addIdentityChange(record, item);
         }
         record = record._next;
       }
@@ -19556,8 +21109,7 @@ var DefaultIterableDiffer = class {
           if (mayBeDirty) {
             record = this._verifyReinsertion(record, item2, itemTrackBy, index);
           }
-          if (!Object.is(record.item, item2))
-            this._addIdentityChange(record, item2);
+          if (!Object.is(record.item, item2)) this._addIdentityChange(record, item2);
         }
         record = record._next;
         index++;
@@ -19620,14 +21172,12 @@ var DefaultIterableDiffer = class {
     }
     record = this._unlinkedRecords === null ? null : this._unlinkedRecords.get(itemTrackBy, null);
     if (record !== null) {
-      if (!Object.is(record.item, item))
-        this._addIdentityChange(record, item);
+      if (!Object.is(record.item, item)) this._addIdentityChange(record, item);
       this._reinsertAfter(record, previousRecord, index);
     } else {
       record = this._linkedRecords === null ? null : this._linkedRecords.get(itemTrackBy, index);
       if (record !== null) {
-        if (!Object.is(record.item, item))
-          this._addIdentityChange(record, item);
+        if (!Object.is(record.item, item)) this._addIdentityChange(record, item);
         this._moveAfter(record, previousRecord, index);
       } else {
         record = this._addAfter(new IterableChangeRecord_(item, itemTrackBy), previousRecord, index);
@@ -19945,8 +21495,7 @@ var _DuplicateMap = class {
 };
 function getPreviousIndex(item, addRemoveOffset, moveOffsets) {
   const previousIndex = item.previousIndex;
-  if (previousIndex === null)
-    return previousIndex;
+  if (previousIndex === null) return previousIndex;
   let moveOffset = 0;
   if (moveOffsets && previousIndex < moveOffsets.length) {
     moveOffset = moveOffsets[previousIndex];
@@ -20054,10 +21603,8 @@ var DefaultKeyValueDiffer = class {
         record._next = null;
       }
     }
-    if (this._changesTail)
-      this._changesTail._nextChanged = null;
-    if (this._additionsTail)
-      this._additionsTail._nextAdded = null;
+    if (this._changesTail) this._changesTail._nextChanged = null;
+    if (this._additionsTail) this._additionsTail._nextAdded = null;
     return this.isDirty;
   }
   /**
@@ -20232,7 +21779,11 @@ var _IterableDiffers = class _IterableDiffers {
     }
   }
 };
-_IterableDiffers.\u0275prov = \u0275\u0275defineInjectable({ token: _IterableDiffers, providedIn: "root", factory: defaultIterableDiffersFactory });
+_IterableDiffers.\u0275prov = \u0275\u0275defineInjectable({
+  token: _IterableDiffers,
+  providedIn: "root",
+  factory: defaultIterableDiffersFactory
+});
 var IterableDiffers = _IterableDiffers;
 function getTypeNameForDebugging(type) {
   return type["name"] || typeof type;
@@ -20289,7 +21840,11 @@ var _KeyValueDiffers = class _KeyValueDiffers {
     throw new RuntimeError(901, ngDevMode && `Cannot find a differ supporting object '${kv}'`);
   }
 };
-_KeyValueDiffers.\u0275prov = \u0275\u0275defineInjectable({ token: _KeyValueDiffers, providedIn: "root", factory: defaultKeyValueDiffersFactory });
+_KeyValueDiffers.\u0275prov = \u0275\u0275defineInjectable({
+  token: _KeyValueDiffers,
+  providedIn: "root",
+  factory: defaultKeyValueDiffersFactory
+});
 var KeyValueDiffers = _KeyValueDiffers;
 var keyValDiff = [new DefaultKeyValueDifferFactory()];
 var iterableDiff = [new DefaultIterableDifferFactory()];
@@ -20301,16 +21856,20 @@ var _ApplicationModule = class _ApplicationModule {
   constructor(appRef) {
   }
 };
-_ApplicationModule.\u0275fac = function ApplicationModule_Factory(t) {
-  return new (t || _ApplicationModule)(\u0275\u0275inject(ApplicationRef));
+_ApplicationModule.\u0275fac = function ApplicationModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ApplicationModule)(\u0275\u0275inject(ApplicationRef));
 };
-_ApplicationModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({ type: _ApplicationModule });
+_ApplicationModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
+  type: _ApplicationModule
+});
 _ApplicationModule.\u0275inj = /* @__PURE__ */ \u0275\u0275defineInjector({});
 var ApplicationModule = _ApplicationModule;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ApplicationModule, [{
     type: NgModule
-  }], () => [{ type: ApplicationRef }], null);
+  }], () => [{
+    type: ApplicationRef
+  }], null);
 })();
 var SCAN_DELAY = 200;
 var OVERSIZED_IMAGE_TOLERANCE = 1200;
@@ -20337,7 +21896,9 @@ var _ImagePerformanceWarning = class _ImagePerformanceWarning {
         if (doc.readyState === "complete") {
           waitToScan();
         } else {
-          this.window?.addEventListener("load", waitToScan, { once: true });
+          this.window?.addEventListener("load", waitToScan, {
+            once: true
+          });
         }
       });
     }
@@ -20351,15 +21912,16 @@ var _ImagePerformanceWarning = class _ImagePerformanceWarning {
     }
     const observer = new PerformanceObserver((entryList) => {
       const entries = entryList.getEntries();
-      if (entries.length === 0)
-        return;
+      if (entries.length === 0) return;
       const lcpElement = entries[entries.length - 1];
       const imgSrc = lcpElement.element?.src ?? "";
-      if (imgSrc.startsWith("data:") || imgSrc.startsWith("blob:"))
-        return;
+      if (imgSrc.startsWith("data:") || imgSrc.startsWith("blob:")) return;
       this.lcpImageUrl = imgSrc;
     });
-    observer.observe({ type: "largest-contentful-paint", buffered: true });
+    observer.observe({
+      type: "largest-contentful-paint",
+      buffered: true
+    });
     return observer;
   }
   scanImages() {
@@ -20415,34 +21977,44 @@ var _ImagePerformanceWarning = class _ImagePerformanceWarning {
     return oversizedWidth || oversizedHeight;
   }
 };
-_ImagePerformanceWarning.\u0275fac = function ImagePerformanceWarning_Factory(t) {
-  return new (t || _ImagePerformanceWarning)();
+_ImagePerformanceWarning.\u0275fac = function ImagePerformanceWarning_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ImagePerformanceWarning)();
 };
-_ImagePerformanceWarning.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _ImagePerformanceWarning, factory: _ImagePerformanceWarning.\u0275fac, providedIn: "root" });
+_ImagePerformanceWarning.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _ImagePerformanceWarning,
+  factory: _ImagePerformanceWarning.\u0275fac,
+  providedIn: "root"
+});
 var ImagePerformanceWarning = _ImagePerformanceWarning;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ImagePerformanceWarning, [{
     type: Injectable,
-    args: [{ providedIn: "root" }]
+    args: [{
+      providedIn: "root"
+    }]
   }], null, null);
 })();
 function logLazyLCPWarning(src) {
-  console.warn(formatRuntimeError(-913, `An image with src ${src} is the Largest Contentful Paint (LCP) element but was given a "loading" value of "lazy", which can negatively impact application loading performance. This warning can be addressed by changing the loading value of the LCP image to "eager", or by using the NgOptimizedImage directive's prioritization utilities. For more information about addressing or disabling this warning, see https://angular.io/errors/NG0913`));
+  console.warn(formatRuntimeError(-913, `An image with src ${src} is the Largest Contentful Paint (LCP) element but was given a "loading" value of "lazy", which can negatively impact application loading performance. This warning can be addressed by changing the loading value of the LCP image to "eager", or by using the NgOptimizedImage directive's prioritization utilities. For more information about addressing or disabling this warning, see https://angular.dev/errors/NG0913`));
 }
 function logOversizedImageWarning(src) {
-  console.warn(formatRuntimeError(-913, `An image with src ${src} has intrinsic file dimensions much larger than its rendered size. This can negatively impact application loading performance. For more information about addressing or disabling this warning, see https://angular.io/errors/NG0913`));
+  console.warn(formatRuntimeError(-913, `An image with src ${src} has intrinsic file dimensions much larger than its rendered size. This can negatively impact application loading performance. For more information about addressing or disabling this warning, see https://angular.dev/errors/NG0913`));
 }
 function internalCreateApplication(config2) {
   try {
-    const { rootComponent, appProviders, platformProviders } = config2;
+    const {
+      rootComponent,
+      appProviders,
+      platformProviders
+    } = config2;
     if ((typeof ngDevMode === "undefined" || ngDevMode) && rootComponent !== void 0) {
       assertStandaloneComponentType(rootComponent);
     }
     const platformInjector = createOrReusePlatformInjector(platformProviders);
-    const allAppProviders = [
-      provideZoneChangeDetection(),
-      ...appProviders || []
-    ];
+    const allAppProviders = [internalProvideZoneChangeDetection({}), {
+      provide: ChangeDetectionScheduler,
+      useExisting: ChangeDetectionSchedulerImpl
+    }, ...appProviders || []];
     const adapter = new EnvironmentNgModuleRefAdapter({
       providers: allAppProviders,
       parent: platformInjector,
@@ -20456,8 +22028,13 @@ function internalCreateApplication(config2) {
     return ngZone.run(() => {
       envInjector.resolveInjectorInitializers();
       const exceptionHandler = envInjector.get(ErrorHandler, null);
-      if ((typeof ngDevMode === "undefined" || ngDevMode) && !exceptionHandler) {
-        throw new RuntimeError(402, "No `ErrorHandler` found in the Dependency Injection tree.");
+      if (typeof ngDevMode === "undefined" || ngDevMode) {
+        if (!exceptionHandler) {
+          throw new RuntimeError(402, "No `ErrorHandler` found in the Dependency Injection tree.");
+        }
+        if (envInjector.get(PROVIDED_ZONELESS) && envInjector.get(PROVIDED_NG_ZONE)) {
+          throw new RuntimeError(408, "Invalid change detection configuration: provideZoneChangeDetection and provideExperimentalZonelessChangeDetection cannot be used together.");
+        }
       }
       let onErrorSubscription;
       ngZone.runOutsideAngular(() => {
@@ -20496,74 +22073,50 @@ function internalCreateApplication(config2) {
     return Promise.reject(e);
   }
 }
-var _ChangeDetectionSchedulerImpl = class _ChangeDetectionSchedulerImpl {
+var sharedStashFunction = (rEl, eventType, listenerFn) => {
+  const el = rEl;
+  const eventListenerMap = el.__jsaction_fns ?? /* @__PURE__ */ new Map();
+  const eventListeners = eventListenerMap.get(eventType) ?? [];
+  eventListeners.push(listenerFn);
+  eventListenerMap.set(eventType, eventListeners);
+  el.__jsaction_fns = eventListenerMap;
+};
+var JSACTION_EVENT_CONTRACT = new InjectionToken(ngDevMode ? "EVENT_CONTRACT_DETAILS" : "", {
+  providedIn: "root",
+  factory: () => ({})
+});
+var GLOBAL_EVENT_DELEGATION = new InjectionToken(ngDevMode ? "GLOBAL_EVENT_DELEGATION" : "");
+var _GlobalEventDelegation = class _GlobalEventDelegation {
   constructor() {
-    this.appRef = inject(ApplicationRef);
-    this.taskService = inject(PendingTasks);
-    this.pendingRenderTaskId = null;
-    this.shouldRefreshViews = false;
+    this.eventContractDetails = inject(JSACTION_EVENT_CONTRACT);
   }
-  notify(type = 0) {
-    this.shouldRefreshViews ||= type === 0;
-    if (this.pendingRenderTaskId !== null) {
-      return;
-    }
-    this.pendingRenderTaskId = this.taskService.add();
-    this.raceTimeoutAndRequestAnimationFrame();
+  ngOnDestroy() {
+    this.eventContractDetails.instance?.cleanUp();
   }
-  /**
-   * Run change detection after the first of setTimeout and requestAnimationFrame resolves.
-   *
-   * - `requestAnimationFrame` ensures that change detection runs ahead of a browser repaint.
-   * This ensures that the create and update passes of a change detection always happen
-   * in the same frame.
-   * - When the browser is resource-starved, `rAF` can execute _before_ a `setTimeout` because
-   * rendering is a very high priority process. This means that `setTimeout` cannot guarantee
-   * same-frame create and update pass, when `setTimeout` is used to schedule the update phase.
-   * - While `rAF` gives us the desirable same-frame updates, it has two limitations that
-   * prevent it from being used alone. First, it does not run in background tabs, which would
-   * prevent Angular from initializing an application when opened in a new tab (for example).
-   * Second, repeated calls to requestAnimationFrame will execute at the refresh rate of the
-   * hardware (~16ms for a 60Hz display). This would cause significant slowdown of tests that
-   * are written with several updates and asserts in the form of "update; await stable; assert;".
-   * - Both `setTimeout` and `rAF` are able to "coalesce" several events from a single user
-   * interaction into a single change detection. Importantly, this reduces view tree traversals when
-   * compared to an alternative timing mechanism like `queueMicrotask`, where change detection would
-   * then be interleaves between each event.
-   *
-   * By running change detection after the first of `setTimeout` and `rAF` to execute, we get the
-   * best of both worlds.
-   */
-  raceTimeoutAndRequestAnimationFrame() {
-    return __async(this, null, function* () {
-      const timeout = new Promise((resolve) => setTimeout(resolve));
-      const rAF = typeof _global["requestAnimationFrame"] === "function" ? new Promise((resolve) => requestAnimationFrame(() => resolve())) : null;
-      yield Promise.race([timeout, rAF]);
-      this.tick();
-    });
+  supports(eventType) {
+    return isEarlyEventType(eventType);
   }
-  tick() {
-    try {
-      if (!this.appRef.destroyed) {
-        this.appRef._tick(this.shouldRefreshViews);
-      }
-    } finally {
-      this.shouldRefreshViews = false;
-      const taskId = this.pendingRenderTaskId;
-      this.pendingRenderTaskId = null;
-      this.taskService.remove(taskId);
-    }
+  addEventListener(element, eventName, handler) {
+    this.eventContractDetails.instance.addEvent(eventName);
+    sharedStashFunction(element, eventName, handler);
+    getDefaulted(element)[eventName] = "";
+    return () => this.removeEventListener(element, eventName, handler);
+  }
+  removeEventListener(element, eventType, callback) {
+    getDefaulted(element)[eventType] = void 0;
   }
 };
-_ChangeDetectionSchedulerImpl.\u0275fac = function ChangeDetectionSchedulerImpl_Factory(t) {
-  return new (t || _ChangeDetectionSchedulerImpl)();
+_GlobalEventDelegation.\u0275fac = function GlobalEventDelegation_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _GlobalEventDelegation)();
 };
-_ChangeDetectionSchedulerImpl.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _ChangeDetectionSchedulerImpl, factory: _ChangeDetectionSchedulerImpl.\u0275fac, providedIn: "root" });
-var ChangeDetectionSchedulerImpl = _ChangeDetectionSchedulerImpl;
+_GlobalEventDelegation.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _GlobalEventDelegation,
+  factory: _GlobalEventDelegation.\u0275fac
+});
+var GlobalEventDelegation = _GlobalEventDelegation;
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ChangeDetectionSchedulerImpl, [{
-    type: Injectable,
-    args: [{ providedIn: "root" }]
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(GlobalEventDelegation, [{
+    type: Injectable
   }], null, null);
 })();
 function booleanAttribute(value) {
@@ -20572,6 +22125,17 @@ function booleanAttribute(value) {
 function numberAttribute(value, fallbackValue = NaN) {
   const isNumberValue = !isNaN(parseFloat(value)) && !isNaN(Number(value));
   return isNumberValue ? Number(value) : fallbackValue;
+}
+function computed(computation, options) {
+  performanceMarkFeature("NgSignals");
+  const getter = createComputed(computation);
+  if (options?.equal) {
+    getter[SIGNAL].equal = options.equal;
+  }
+  if (ngDevMode) {
+    getter.toString = () => `[Computed: ${getter()}]`;
+  }
+  return getter;
 }
 function untracked(nonReactiveReadsFn) {
   const prevConsumer = setActiveConsumer(null);
@@ -20657,8 +22221,7 @@ function createComponent(component, options) {
 }
 function reflectComponentType(component) {
   const componentDef = getComponentDef(component);
-  if (!componentDef)
-    return null;
+  if (!componentDef) return null;
   const factory = new ComponentFactory(componentDef);
   return {
     get selector() {
@@ -20702,8 +22265,8 @@ var DomAdapter = class {
 };
 var _PlatformNavigation = class _PlatformNavigation {
 };
-_PlatformNavigation.\u0275fac = function PlatformNavigation_Factory(t) {
-  return new (t || _PlatformNavigation)();
+_PlatformNavigation.\u0275fac = function PlatformNavigation_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _PlatformNavigation)();
 };
 _PlatformNavigation.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _PlatformNavigation,
@@ -20726,8 +22289,8 @@ var _PlatformLocation = class _PlatformLocation {
     throw new Error(ngDevMode ? "Not implemented" : "");
   }
 };
-_PlatformLocation.\u0275fac = function PlatformLocation_Factory(t) {
-  return new (t || _PlatformLocation)();
+_PlatformLocation.\u0275fac = function PlatformLocation_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _PlatformLocation)();
 };
 _PlatformLocation.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _PlatformLocation,
@@ -20808,8 +22371,8 @@ var _BrowserPlatformLocation = class _BrowserPlatformLocation extends PlatformLo
     return this._history.state;
   }
 };
-_BrowserPlatformLocation.\u0275fac = function BrowserPlatformLocation_Factory(t) {
-  return new (t || _BrowserPlatformLocation)();
+_BrowserPlatformLocation.\u0275fac = function BrowserPlatformLocation_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _BrowserPlatformLocation)();
 };
 _BrowserPlatformLocation.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _BrowserPlatformLocation,
@@ -20862,8 +22425,8 @@ var _LocationStrategy = class _LocationStrategy {
     throw new Error(ngDevMode ? "Not implemented" : "");
   }
 };
-_LocationStrategy.\u0275fac = function LocationStrategy_Factory(t) {
-  return new (t || _LocationStrategy)();
+_LocationStrategy.\u0275fac = function LocationStrategy_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _LocationStrategy)();
 };
 _LocationStrategy.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _LocationStrategy,
@@ -20929,8 +22492,8 @@ var _PathLocationStrategy = class _PathLocationStrategy extends LocationStrategy
     this._platformLocation.historyGo?.(relativePosition);
   }
 };
-_PathLocationStrategy.\u0275fac = function PathLocationStrategy_Factory(t) {
-  return new (t || _PathLocationStrategy)(\u0275\u0275inject(PlatformLocation), \u0275\u0275inject(APP_BASE_HREF, 8));
+_PathLocationStrategy.\u0275fac = function PathLocationStrategy_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _PathLocationStrategy)(\u0275\u0275inject(PlatformLocation), \u0275\u0275inject(APP_BASE_HREF, 8));
 };
 _PathLocationStrategy.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _PathLocationStrategy,
@@ -21013,8 +22576,8 @@ var _HashLocationStrategy = class _HashLocationStrategy extends LocationStrategy
     this._platformLocation.historyGo?.(relativePosition);
   }
 };
-_HashLocationStrategy.\u0275fac = function HashLocationStrategy_Factory(t) {
-  return new (t || _HashLocationStrategy)(\u0275\u0275inject(PlatformLocation), \u0275\u0275inject(APP_BASE_HREF, 8));
+_HashLocationStrategy.\u0275fac = function HashLocationStrategy_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _HashLocationStrategy)(\u0275\u0275inject(PlatformLocation), \u0275\u0275inject(APP_BASE_HREF, 8));
 };
 _HashLocationStrategy.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _HashLocationStrategy,
@@ -21217,8 +22780,8 @@ var _Location = class _Location {
 _Location.normalizeQueryParams = normalizeQueryParams;
 _Location.joinWithSlash = joinWithSlash;
 _Location.stripTrailingSlash = stripTrailingSlash;
-_Location.\u0275fac = function Location_Factory(t) {
-  return new (t || _Location)(\u0275\u0275inject(LocationStrategy));
+_Location.\u0275fac = function Location_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _Location)(\u0275\u0275inject(LocationStrategy));
 };
 _Location.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _Location,
@@ -22395,8 +23958,7 @@ function parseNumber(num) {
     numStr = numStr.replace(DECIMAL_SEP, "");
   }
   if ((i = numStr.search(/e/i)) > 0) {
-    if (integerLen < 0)
-      integerLen = i;
+    if (integerLen < 0) integerLen = i;
     integerLen += +numStr.slice(i + 1);
     numStr = numStr.substring(0, i);
   } else if (integerLen < 0) {
@@ -22409,8 +23971,7 @@ function parseNumber(num) {
     integerLen = 1;
   } else {
     zeros--;
-    while (numStr.charAt(zeros) === ZERO_CHAR)
-      zeros--;
+    while (numStr.charAt(zeros) === ZERO_CHAR) zeros--;
     integerLen -= i;
     digits = [];
     for (j = 0; i <= zeros; i++, j++) {
@@ -22447,8 +24008,7 @@ function roundNumber(parsedNumber, minFrac, maxFrac) {
     parsedNumber.integerLen = 1;
     digits.length = Math.max(1, roundAt = fractionSize + 1);
     digits[0] = 0;
-    for (let i = 1; i < roundAt; i++)
-      digits[i] = 0;
+    for (let i = 1; i < roundAt; i++) digits[i] = 0;
   }
   if (digit >= 5) {
     if (roundAt - 1 < 0) {
@@ -22462,8 +24022,7 @@ function roundNumber(parsedNumber, minFrac, maxFrac) {
       digits[roundAt - 1]++;
     }
   }
-  for (; fractionLen < Math.max(0, fractionSize); fractionLen++)
-    digits.push(0);
+  for (; fractionLen < Math.max(0, fractionSize); fractionLen++) digits.push(0);
   let dropTrailingZeros = fractionSize !== 0;
   const minLen = minFrac + parsedNumber.integerLen;
   const carry = digits.reduceRight(function(carry2, d, i, digits2) {
@@ -22492,19 +24051,19 @@ function parseIntAutoRadix(text) {
 }
 var _NgLocalization = class _NgLocalization {
 };
-_NgLocalization.\u0275fac = function NgLocalization_Factory(t) {
-  return new (t || _NgLocalization)();
+_NgLocalization.\u0275fac = function NgLocalization_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgLocalization)();
 };
 _NgLocalization.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgLocalization,
-  factory: function NgLocalization_Factory(t) {
-    let r = null;
-    if (t) {
-      r = new t();
+  factory: function NgLocalization_Factory(__ngFactoryType__) {
+    let __ngConditionalFactory__ = null;
+    if (__ngFactoryType__) {
+      __ngConditionalFactory__ = new __ngFactoryType__();
     } else {
-      r = ((locale) => new NgLocaleLocalization(locale))(\u0275\u0275inject(LOCALE_ID));
+      __ngConditionalFactory__ = ((locale) => new NgLocaleLocalization(locale))(\u0275\u0275inject(LOCALE_ID));
     }
-    return r;
+    return __ngConditionalFactory__;
   },
   providedIn: "root"
 });
@@ -22556,8 +24115,8 @@ var _NgLocaleLocalization = class _NgLocaleLocalization extends NgLocalization {
     }
   }
 };
-_NgLocaleLocalization.\u0275fac = function NgLocaleLocalization_Factory(t) {
-  return new (t || _NgLocaleLocalization)(\u0275\u0275inject(LOCALE_ID));
+_NgLocaleLocalization.\u0275fac = function NgLocaleLocalization_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgLocaleLocalization)(\u0275\u0275inject(LOCALE_ID));
 };
 _NgLocaleLocalization.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgLocaleLocalization,
@@ -22689,14 +24248,14 @@ var _NgClass = class _NgClass {
     }
   }
 };
-_NgClass.\u0275fac = function NgClass_Factory(t) {
-  return new (t || _NgClass)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(Renderer2));
+_NgClass.\u0275fac = function NgClass_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgClass)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(Renderer2));
 };
 _NgClass.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgClass,
   selectors: [["", "ngClass", ""]],
   inputs: {
-    klass: [InputFlags.None, "class", "klass"],
+    klass: [0, "class", "klass"],
     ngClass: "ngClass"
   },
   standalone: true
@@ -22789,8 +24348,8 @@ var _NgComponentOutlet = class _NgComponentOutlet {
     }
   }
 };
-_NgComponentOutlet.\u0275fac = function NgComponentOutlet_Factory(t) {
-  return new (t || _NgComponentOutlet)(\u0275\u0275directiveInject(ViewContainerRef));
+_NgComponentOutlet.\u0275fac = function NgComponentOutlet_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgComponentOutlet)(\u0275\u0275directiveInject(ViewContainerRef));
 };
 _NgComponentOutlet.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgComponentOutlet,
@@ -22864,7 +24423,7 @@ var NgForOfContext = class {
 var _NgForOf = class _NgForOf {
   /**
    * The value of the iterable expression, which can be used as a
-   * [template input variable](guide/structural-directives#shorthand).
+   * [template input variable](guide/directives/structural-directives#shorthand).
    */
   set ngForOf(ngForOf) {
     this._ngForOf = ngForOf;
@@ -22907,7 +24466,7 @@ var _NgForOf = class _NgForOf {
   }
   /**
    * A reference to the template that is stamped out for each item in the iterable.
-   * @see [template reference variable](guide/template-reference-variables)
+   * @see [template reference variable](guide/templates/reference-variables)
    */
   set ngForTemplate(value) {
     if (value) {
@@ -22940,8 +24499,7 @@ var _NgForOf = class _NgForOf {
     }
     if (this._differ) {
       const changes = this._differ.diff(this._ngForOf);
-      if (changes)
-        this._applyChanges(changes);
+      if (changes) this._applyChanges(changes);
     }
   }
   _applyChanges(changes) {
@@ -22979,8 +24537,8 @@ var _NgForOf = class _NgForOf {
     return true;
   }
 };
-_NgForOf.\u0275fac = function NgForOf_Factory(t) {
-  return new (t || _NgForOf)(\u0275\u0275directiveInject(ViewContainerRef), \u0275\u0275directiveInject(TemplateRef), \u0275\u0275directiveInject(IterableDiffers));
+_NgForOf.\u0275fac = function NgForOf_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgForOf)(\u0275\u0275directiveInject(ViewContainerRef), \u0275\u0275directiveInject(TemplateRef), \u0275\u0275directiveInject(IterableDiffers));
 };
 _NgForOf.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgForOf,
@@ -23088,8 +24646,8 @@ var _NgIf = class _NgIf {
     return true;
   }
 };
-_NgIf.\u0275fac = function NgIf_Factory(t) {
-  return new (t || _NgIf)(\u0275\u0275directiveInject(ViewContainerRef), \u0275\u0275directiveInject(TemplateRef));
+_NgIf.\u0275fac = function NgIf_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgIf)(\u0275\u0275directiveInject(ViewContainerRef), \u0275\u0275directiveInject(TemplateRef));
 };
 _NgIf.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgIf,
@@ -23137,7 +24695,6 @@ function assertTemplate(property, templateRef) {
     throw new Error(`${property} must be a TemplateRef, but received '${stringify(templateRef)}'.`);
   }
 }
-var NG_SWITCH_USE_STRICT_EQUALS = true;
 var SwitchView = class {
   constructor(_viewContainerRef, _templateRef) {
     this._viewContainerRef = _viewContainerRef;
@@ -23184,10 +24741,7 @@ var _NgSwitch = class _NgSwitch {
   }
   /** @internal */
   _matchCase(value) {
-    const matched = NG_SWITCH_USE_STRICT_EQUALS ? value === this._ngSwitch : value == this._ngSwitch;
-    if ((typeof ngDevMode === "undefined" || ngDevMode) && matched !== (value == this._ngSwitch)) {
-      console.warn(formatRuntimeError(2001, `As of Angular v17 the NgSwitch directive uses strict equality comparison === instead of == to match different cases. Previously the case value "${stringifyValue(value)}" matched switch expression value "${stringifyValue(this._ngSwitch)}", but this is no longer the case with the stricter equality check. Your comparison results return different results using === vs. == and you should adjust your ngSwitch expression and / or values to conform with the strict equality requirements.`));
-    }
+    const matched = value === this._ngSwitch;
     this._lastCasesMatched ||= matched;
     this._lastCaseCheckIndex++;
     if (this._lastCaseCheckIndex === this._caseCount) {
@@ -23206,8 +24760,8 @@ var _NgSwitch = class _NgSwitch {
     }
   }
 };
-_NgSwitch.\u0275fac = function NgSwitch_Factory(t) {
-  return new (t || _NgSwitch)();
+_NgSwitch.\u0275fac = function NgSwitch_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgSwitch)();
 };
 _NgSwitch.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgSwitch,
@@ -23248,8 +24802,8 @@ var _NgSwitchCase = class _NgSwitchCase {
     this._view.enforceState(this.ngSwitch._matchCase(this.ngSwitchCase));
   }
 };
-_NgSwitchCase.\u0275fac = function NgSwitchCase_Factory(t) {
-  return new (t || _NgSwitchCase)(\u0275\u0275directiveInject(ViewContainerRef), \u0275\u0275directiveInject(TemplateRef), \u0275\u0275directiveInject(NgSwitch, 9));
+_NgSwitchCase.\u0275fac = function NgSwitchCase_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgSwitchCase)(\u0275\u0275directiveInject(ViewContainerRef), \u0275\u0275directiveInject(TemplateRef), \u0275\u0275directiveInject(NgSwitch, 9));
 };
 _NgSwitchCase.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgSwitchCase,
@@ -23292,8 +24846,8 @@ var _NgSwitchDefault = class _NgSwitchDefault {
     ngSwitch._addDefault(new SwitchView(viewContainer, templateRef));
   }
 };
-_NgSwitchDefault.\u0275fac = function NgSwitchDefault_Factory(t) {
-  return new (t || _NgSwitchDefault)(\u0275\u0275directiveInject(ViewContainerRef), \u0275\u0275directiveInject(TemplateRef), \u0275\u0275directiveInject(NgSwitch, 9));
+_NgSwitchDefault.\u0275fac = function NgSwitchDefault_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgSwitchDefault)(\u0275\u0275directiveInject(ViewContainerRef), \u0275\u0275directiveInject(TemplateRef), \u0275\u0275directiveInject(NgSwitch, 9));
 };
 _NgSwitchDefault.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgSwitchDefault,
@@ -23324,9 +24878,6 @@ var NgSwitchDefault = _NgSwitchDefault;
 function throwNgSwitchProviderNotFoundError(attrName, directiveName) {
   throw new RuntimeError(2e3, `An element with the "${attrName}" attribute (matching the "${directiveName}" directive) must be located inside an element with the "ngSwitch" attribute (matching "NgSwitch" directive)`);
 }
-function stringifyValue(value) {
-  return typeof value === "string" ? `'${value}'` : String(value);
-}
 var _NgPlural = class _NgPlural {
   constructor(_localization) {
     this._localization = _localization;
@@ -23345,8 +24896,7 @@ var _NgPlural = class _NgPlural {
     this._activateView(this._caseViews[key]);
   }
   _clearViews() {
-    if (this._activeView)
-      this._activeView.destroy();
+    if (this._activeView) this._activeView.destroy();
   }
   _activateView(view) {
     if (view) {
@@ -23355,8 +24905,8 @@ var _NgPlural = class _NgPlural {
     }
   }
 };
-_NgPlural.\u0275fac = function NgPlural_Factory(t) {
-  return new (t || _NgPlural)(\u0275\u0275directiveInject(NgLocalization));
+_NgPlural.\u0275fac = function NgPlural_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgPlural)(\u0275\u0275directiveInject(NgLocalization));
 };
 _NgPlural.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgPlural,
@@ -23389,8 +24939,8 @@ var _NgPluralCase = class _NgPluralCase {
     ngPlural.addCase(isANumber ? `=${value}` : value, new SwitchView(viewContainer, template));
   }
 };
-_NgPluralCase.\u0275fac = function NgPluralCase_Factory(t) {
-  return new (t || _NgPluralCase)(\u0275\u0275injectAttribute("ngPluralCase"), \u0275\u0275directiveInject(TemplateRef), \u0275\u0275directiveInject(ViewContainerRef), \u0275\u0275directiveInject(NgPlural, 1));
+_NgPluralCase.\u0275fac = function NgPluralCase_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgPluralCase)(\u0275\u0275injectAttribute("ngPluralCase"), \u0275\u0275directiveInject(TemplateRef), \u0275\u0275directiveInject(ViewContainerRef), \u0275\u0275directiveInject(NgPlural, 1));
 };
 _NgPluralCase.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgPluralCase,
@@ -23408,7 +24958,7 @@ var NgPluralCase = _NgPluralCase;
   }], () => [{
     type: void 0,
     decorators: [{
-      type: Attribute,
+      type: Attribute2,
       args: ["ngPluralCase"]
     }]
   }, {
@@ -23459,8 +25009,8 @@ var _NgStyle = class _NgStyle {
     changes.forEachChangedItem((record) => this._setStyle(record.key, record.currentValue));
   }
 };
-_NgStyle.\u0275fac = function NgStyle_Factory(t) {
-  return new (t || _NgStyle)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(KeyValueDiffers), \u0275\u0275directiveInject(Renderer2));
+_NgStyle.\u0275fac = function NgStyle_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgStyle)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(KeyValueDiffers), \u0275\u0275directiveInject(Renderer2));
 };
 _NgStyle.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgStyle,
@@ -23545,8 +25095,8 @@ var _NgTemplateOutlet = class _NgTemplateOutlet {
     });
   }
 };
-_NgTemplateOutlet.\u0275fac = function NgTemplateOutlet_Factory(t) {
-  return new (t || _NgTemplateOutlet)(\u0275\u0275directiveInject(ViewContainerRef));
+_NgTemplateOutlet.\u0275fac = function NgTemplateOutlet_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgTemplateOutlet)(\u0275\u0275directiveInject(ViewContainerRef));
 };
 _NgTemplateOutlet.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgTemplateOutlet,
@@ -23671,8 +25221,8 @@ var _AsyncPipe = class _AsyncPipe {
     }
   }
 };
-_AsyncPipe.\u0275fac = function AsyncPipe_Factory(t) {
-  return new (t || _AsyncPipe)(\u0275\u0275directiveInject(ChangeDetectorRef, 16));
+_AsyncPipe.\u0275fac = function AsyncPipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _AsyncPipe)(\u0275\u0275directiveInject(ChangeDetectorRef, 16));
 };
 _AsyncPipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "async",
@@ -23695,16 +25245,15 @@ var AsyncPipe = _AsyncPipe;
 })();
 var _LowerCasePipe = class _LowerCasePipe {
   transform(value) {
-    if (value == null)
-      return null;
+    if (value == null) return null;
     if (typeof value !== "string") {
       throw invalidPipeArgumentError(_LowerCasePipe, value);
     }
     return value.toLowerCase();
   }
 };
-_LowerCasePipe.\u0275fac = function LowerCasePipe_Factory(t) {
-  return new (t || _LowerCasePipe)();
+_LowerCasePipe.\u0275fac = function LowerCasePipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _LowerCasePipe)();
 };
 _LowerCasePipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "lowercase",
@@ -23725,16 +25274,15 @@ var LowerCasePipe = _LowerCasePipe;
 var unicodeWordMatch = /(?:[0-9A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05D0-\u05EA\u05EF-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u0860-\u086A\u0870-\u0887\u0889-\u088E\u08A0-\u08C9\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u09FC\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C5D\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D04-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16F1-\u16F8\u1700-\u1711\u171F-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1878\u1880-\u1884\u1887-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4C\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184\u2C00-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u31A0-\u31BF\u31F0-\u31FF\u3400-\u4DBF\u4E00-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788\uA78B-\uA7CA\uA7D0\uA7D1\uA7D3\uA7D5-\uA7D9\uA7F2-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA8FE\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDE80-\uDE9C\uDEA0-\uDED0\uDF00-\uDF1F\uDF2D-\uDF40\uDF42-\uDF49\uDF50-\uDF75\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF]|\uD801[\uDC00-\uDC9D\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDD70-\uDD7A\uDD7C-\uDD8A\uDD8C-\uDD92\uDD94\uDD95\uDD97-\uDDA1\uDDA3-\uDDB1\uDDB3-\uDDB9\uDDBB\uDDBC\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67\uDF80-\uDF85\uDF87-\uDFB0\uDFB2-\uDFBA]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00\uDE10-\uDE13\uDE15-\uDE17\uDE19-\uDE35\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE4\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDD00-\uDD23\uDE80-\uDEA9\uDEB0\uDEB1\uDF00-\uDF1C\uDF27\uDF30-\uDF45\uDF70-\uDF81\uDFB0-\uDFC4\uDFE0-\uDFF6]|\uD804[\uDC03-\uDC37\uDC71\uDC72\uDC75\uDC83-\uDCAF\uDCD0-\uDCE8\uDD03-\uDD26\uDD44\uDD47\uDD50-\uDD72\uDD76\uDD83-\uDDB2\uDDC1-\uDDC4\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE2B\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEDE\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D\uDF50\uDF5D-\uDF61]|\uD805[\uDC00-\uDC34\uDC47-\uDC4A\uDC5F-\uDC61\uDC80-\uDCAF\uDCC4\uDCC5\uDCC7\uDD80-\uDDAE\uDDD8-\uDDDB\uDE00-\uDE2F\uDE44\uDE80-\uDEAA\uDEB8\uDF00-\uDF1A\uDF40-\uDF46]|\uD806[\uDC00-\uDC2B\uDCA0-\uDCDF\uDCFF-\uDD06\uDD09\uDD0C-\uDD13\uDD15\uDD16\uDD18-\uDD2F\uDD3F\uDD41\uDDA0-\uDDA7\uDDAA-\uDDD0\uDDE1\uDDE3\uDE00\uDE0B-\uDE32\uDE3A\uDE50\uDE5C-\uDE89\uDE9D\uDEB0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC2E\uDC40\uDC72-\uDC8F\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD30\uDD46\uDD60-\uDD65\uDD67\uDD68\uDD6A-\uDD89\uDD98\uDEE0-\uDEF2\uDFB0]|\uD808[\uDC00-\uDF99]|\uD809[\uDC80-\uDD43]|\uD80B[\uDF90-\uDFF0]|[\uD80C\uD81C-\uD820\uD822\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE70-\uDEBE\uDED0-\uDEED\uDF00-\uDF2F\uDF40-\uDF43\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDE40-\uDE7F\uDF00-\uDF4A\uDF50\uDF93-\uDF9F\uDFE0\uDFE1\uDFE3]|\uD821[\uDC00-\uDFF7]|\uD823[\uDC00-\uDCD5\uDD00-\uDD08]|\uD82B[\uDFF0-\uDFF3\uDFF5-\uDFFB\uDFFD\uDFFE]|\uD82C[\uDC00-\uDD22\uDD50-\uDD52\uDD64-\uDD67\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB]|\uD837[\uDF00-\uDF1E]|\uD838[\uDD00-\uDD2C\uDD37-\uDD3D\uDD4E\uDE90-\uDEAD\uDEC0-\uDEEB]|\uD839[\uDFE0-\uDFE6\uDFE8-\uDFEB\uDFED\uDFEE\uDFF0-\uDFFE]|\uD83A[\uDC00-\uDCC4\uDD00-\uDD43\uDD4B]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD869[\uDC00-\uDEDF\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF38\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A])\S*/g;
 var _TitleCasePipe = class _TitleCasePipe {
   transform(value) {
-    if (value == null)
-      return null;
+    if (value == null) return null;
     if (typeof value !== "string") {
       throw invalidPipeArgumentError(_TitleCasePipe, value);
     }
     return value.replace(unicodeWordMatch, (txt) => txt[0].toUpperCase() + txt.slice(1).toLowerCase());
   }
 };
-_TitleCasePipe.\u0275fac = function TitleCasePipe_Factory(t) {
-  return new (t || _TitleCasePipe)();
+_TitleCasePipe.\u0275fac = function TitleCasePipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _TitleCasePipe)();
 };
 _TitleCasePipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "titlecase",
@@ -23754,16 +25302,15 @@ var TitleCasePipe = _TitleCasePipe;
 })();
 var _UpperCasePipe = class _UpperCasePipe {
   transform(value) {
-    if (value == null)
-      return null;
+    if (value == null) return null;
     if (typeof value !== "string") {
       throw invalidPipeArgumentError(_UpperCasePipe, value);
     }
     return value.toUpperCase();
   }
 };
-_UpperCasePipe.\u0275fac = function UpperCasePipe_Factory(t) {
-  return new (t || _UpperCasePipe)();
+_UpperCasePipe.\u0275fac = function UpperCasePipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _UpperCasePipe)();
 };
 _UpperCasePipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "uppercase",
@@ -23791,8 +25338,7 @@ var _DatePipe = class _DatePipe {
     this.defaultOptions = defaultOptions;
   }
   transform(value, format, timezone, locale) {
-    if (value == null || value === "" || value !== value)
-      return null;
+    if (value == null || value === "" || value !== value) return null;
     try {
       const _format = format ?? this.defaultOptions?.dateFormat ?? DEFAULT_DATE_FORMAT;
       const _timezone = timezone ?? this.defaultOptions?.timezone ?? this.defaultTimezone ?? void 0;
@@ -23802,8 +25348,8 @@ var _DatePipe = class _DatePipe {
     }
   }
 };
-_DatePipe.\u0275fac = function DatePipe_Factory(t) {
-  return new (t || _DatePipe)(\u0275\u0275directiveInject(LOCALE_ID, 16), \u0275\u0275directiveInject(DATE_PIPE_DEFAULT_TIMEZONE, 24), \u0275\u0275directiveInject(DATE_PIPE_DEFAULT_OPTIONS, 24));
+_DatePipe.\u0275fac = function DatePipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DatePipe)(\u0275\u0275directiveInject(LOCALE_ID, 16), \u0275\u0275directiveInject(DATE_PIPE_DEFAULT_TIMEZONE, 24), \u0275\u0275directiveInject(DATE_PIPE_DEFAULT_OPTIONS, 24));
 };
 _DatePipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "date",
@@ -23856,8 +25402,7 @@ var _I18nPluralPipe = class _I18nPluralPipe {
    * default).
    */
   transform(value, pluralMap, locale) {
-    if (value == null)
-      return "";
+    if (value == null) return "";
     if (typeof pluralMap !== "object" || pluralMap === null) {
       throw invalidPipeArgumentError(_I18nPluralPipe, pluralMap);
     }
@@ -23865,8 +25410,8 @@ var _I18nPluralPipe = class _I18nPluralPipe {
     return pluralMap[key].replace(_INTERPOLATION_REGEXP, value.toString());
   }
 };
-_I18nPluralPipe.\u0275fac = function I18nPluralPipe_Factory(t) {
-  return new (t || _I18nPluralPipe)(\u0275\u0275directiveInject(NgLocalization, 16));
+_I18nPluralPipe.\u0275fac = function I18nPluralPipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _I18nPluralPipe)(\u0275\u0275directiveInject(NgLocalization, 16));
 };
 _I18nPluralPipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "i18nPlural",
@@ -23893,8 +25438,7 @@ var _I18nSelectPipe = class _I18nSelectPipe {
    * for different values of the provided `value`.
    */
   transform(value, mapping) {
-    if (value == null)
-      return "";
+    if (value == null) return "";
     if (typeof mapping !== "object" || typeof value !== "string") {
       throw invalidPipeArgumentError(_I18nSelectPipe, mapping);
     }
@@ -23907,8 +25451,8 @@ var _I18nSelectPipe = class _I18nSelectPipe {
     return "";
   }
 };
-_I18nSelectPipe.\u0275fac = function I18nSelectPipe_Factory(t) {
-  return new (t || _I18nSelectPipe)();
+_I18nSelectPipe.\u0275fac = function I18nSelectPipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _I18nSelectPipe)();
 };
 _I18nSelectPipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "i18nSelect",
@@ -23934,8 +25478,8 @@ var _JsonPipe = class _JsonPipe {
     return JSON.stringify(value, null, 2);
   }
 };
-_JsonPipe.\u0275fac = function JsonPipe_Factory(t) {
-  return new (t || _JsonPipe)();
+_JsonPipe.\u0275fac = function JsonPipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _JsonPipe)();
 };
 _JsonPipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "json",
@@ -23986,8 +25530,8 @@ var _KeyValuePipe = class _KeyValuePipe {
     return this.keyValues;
   }
 };
-_KeyValuePipe.\u0275fac = function KeyValuePipe_Factory(t) {
-  return new (t || _KeyValuePipe)(\u0275\u0275directiveInject(KeyValueDiffers, 16));
+_KeyValuePipe.\u0275fac = function KeyValuePipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _KeyValuePipe)(\u0275\u0275directiveInject(KeyValueDiffers, 16));
 };
 _KeyValuePipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "keyvalue",
@@ -24011,16 +25555,11 @@ var KeyValuePipe = _KeyValuePipe;
 function defaultComparator(keyValueA, keyValueB) {
   const a = keyValueA.key;
   const b = keyValueB.key;
-  if (a === b)
-    return 0;
-  if (a === void 0)
-    return 1;
-  if (b === void 0)
-    return -1;
-  if (a === null)
-    return 1;
-  if (b === null)
-    return -1;
+  if (a === b) return 0;
+  if (a === void 0) return 1;
+  if (b === void 0) return -1;
+  if (a === null) return 1;
+  if (b === null) return -1;
   if (typeof a == "string" && typeof b == "string") {
     return a < b ? -1 : 1;
   }
@@ -24046,8 +25585,7 @@ var _DecimalPipe = class _DecimalPipe {
    * [See more](#locale).
    */
   transform(value, digitsInfo, locale) {
-    if (!isValue(value))
-      return null;
+    if (!isValue(value)) return null;
     locale ||= this._locale;
     try {
       const num = strToNumber(value);
@@ -24057,8 +25595,8 @@ var _DecimalPipe = class _DecimalPipe {
     }
   }
 };
-_DecimalPipe.\u0275fac = function DecimalPipe_Factory(t) {
-  return new (t || _DecimalPipe)(\u0275\u0275directiveInject(LOCALE_ID, 16));
+_DecimalPipe.\u0275fac = function DecimalPipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DecimalPipe)(\u0275\u0275directiveInject(LOCALE_ID, 16));
 };
 _DecimalPipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "number",
@@ -24100,11 +25638,10 @@ var _PercentPipe = class _PercentPipe {
    * Default is `0`.
    * @param locale A locale code for the locale format rules to use.
    * When not supplied, uses the value of `LOCALE_ID`, which is `en-US` by default.
-   * See [Setting your app locale](guide/i18n-common-locale-id).
+   * See [Setting your app locale](guide/i18n/locale-id).
    */
   transform(value, digitsInfo, locale) {
-    if (!isValue(value))
-      return null;
+    if (!isValue(value)) return null;
     locale ||= this._locale;
     try {
       const num = strToNumber(value);
@@ -24114,8 +25651,8 @@ var _PercentPipe = class _PercentPipe {
     }
   }
 };
-_PercentPipe.\u0275fac = function PercentPipe_Factory(t) {
-  return new (t || _PercentPipe)(\u0275\u0275directiveInject(LOCALE_ID, 16));
+_PercentPipe.\u0275fac = function PercentPipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _PercentPipe)(\u0275\u0275directiveInject(LOCALE_ID, 16));
 };
 _PercentPipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "percent",
@@ -24175,11 +25712,10 @@ var _CurrencyPipe = class _CurrencyPipe {
    * For example, the Canadian dollar has 2 digits, whereas the Chilean peso has none.
    * @param locale A locale code for the locale format rules to use.
    * When not supplied, uses the value of `LOCALE_ID`, which is `en-US` by default.
-   * See [Setting your app locale](guide/i18n-common-locale-id).
+   * See [Setting your app locale](guide/i18n/locale-id).
    */
   transform(value, currencyCode = this._defaultCurrencyCode, display = "symbol", digitsInfo, locale) {
-    if (!isValue(value))
-      return null;
+    if (!isValue(value)) return null;
     locale ||= this._locale;
     if (typeof display === "boolean") {
       if ((typeof ngDevMode === "undefined" || ngDevMode) && console && console.warn) {
@@ -24203,8 +25739,8 @@ var _CurrencyPipe = class _CurrencyPipe {
     }
   }
 };
-_CurrencyPipe.\u0275fac = function CurrencyPipe_Factory(t) {
-  return new (t || _CurrencyPipe)(\u0275\u0275directiveInject(LOCALE_ID, 16), \u0275\u0275directiveInject(DEFAULT_CURRENCY_CODE, 16));
+_CurrencyPipe.\u0275fac = function CurrencyPipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _CurrencyPipe)(\u0275\u0275directiveInject(LOCALE_ID, 16), \u0275\u0275directiveInject(DEFAULT_CURRENCY_CODE, 16));
 };
 _CurrencyPipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "currency",
@@ -24248,8 +25784,7 @@ function strToNumber(value) {
 }
 var _SlicePipe = class _SlicePipe {
   transform(value, start2, end2) {
-    if (value == null)
-      return null;
+    if (value == null) return null;
     if (!this.supports(value)) {
       throw invalidPipeArgumentError(_SlicePipe, value);
     }
@@ -24259,8 +25794,8 @@ var _SlicePipe = class _SlicePipe {
     return typeof obj === "string" || Array.isArray(obj);
   }
 };
-_SlicePipe.\u0275fac = function SlicePipe_Factory(t) {
-  return new (t || _SlicePipe)();
+_SlicePipe.\u0275fac = function SlicePipe_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _SlicePipe)();
 };
 _SlicePipe.\u0275pipe = /* @__PURE__ */ \u0275\u0275definePipe({
   name: "slice",
@@ -24282,8 +25817,8 @@ var SlicePipe = _SlicePipe;
 var COMMON_PIPES = [AsyncPipe, UpperCasePipe, LowerCasePipe, JsonPipe, SlicePipe, DecimalPipe, PercentPipe, TitleCasePipe, CurrencyPipe, DatePipe, I18nPluralPipe, I18nSelectPipe, KeyValuePipe];
 var _CommonModule = class _CommonModule {
 };
-_CommonModule.\u0275fac = function CommonModule_Factory(t) {
-  return new (t || _CommonModule)();
+_CommonModule.\u0275fac = function CommonModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _CommonModule)();
 };
 _CommonModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _CommonModule
@@ -24307,7 +25842,7 @@ function isPlatformBrowser2(platformId) {
 function isPlatformServer(platformId) {
   return platformId === PLATFORM_SERVER_ID;
 }
-var VERSION2 = new Version("17.3.12");
+var VERSION2 = new Version("18.1.4");
 var _ViewportScroller = class _ViewportScroller {
 };
 _ViewportScroller.\u0275prov = \u0275\u0275defineInjectable({
@@ -24593,9 +26128,10 @@ var _LCPImageObserver = class _LCPImageObserver {
     this.images = /* @__PURE__ */ new Map();
     this.window = null;
     this.observer = null;
+    const isBrowser = isPlatformBrowser2(inject(PLATFORM_ID));
     assertDevMode("LCP checker");
     const win = inject(DOCUMENT2).defaultView;
-    if (typeof win !== "undefined" && typeof PerformanceObserver !== "undefined") {
+    if (isBrowser && typeof PerformanceObserver !== "undefined") {
       this.window = win;
       this.observer = this.initPerformanceObserver();
     }
@@ -24607,15 +26143,12 @@ var _LCPImageObserver = class _LCPImageObserver {
   initPerformanceObserver() {
     const observer = new PerformanceObserver((entryList) => {
       const entries = entryList.getEntries();
-      if (entries.length === 0)
-        return;
+      if (entries.length === 0) return;
       const lcpElement = entries[entries.length - 1];
       const imgSrc = lcpElement.element?.src ?? "";
-      if (imgSrc.startsWith("data:") || imgSrc.startsWith("blob:"))
-        return;
+      if (imgSrc.startsWith("data:") || imgSrc.startsWith("blob:")) return;
       const img = this.images.get(imgSrc);
-      if (!img)
-        return;
+      if (!img) return;
       if (!img.priority && !img.alreadyWarnedPriority) {
         img.alreadyWarnedPriority = true;
         logMissingPriorityError(imgSrc);
@@ -24632,8 +26165,7 @@ var _LCPImageObserver = class _LCPImageObserver {
     return observer;
   }
   registerImage(rewrittenSrc, originalNgSrc, isPriority) {
-    if (!this.observer)
-      return;
+    if (!this.observer) return;
     const newObservedImageState = {
       priority: isPriority,
       modified: false,
@@ -24643,11 +26175,11 @@ var _LCPImageObserver = class _LCPImageObserver {
     this.images.set(getUrl(rewrittenSrc, this.window).href, newObservedImageState);
   }
   unregisterImage(rewrittenSrc) {
-    if (!this.observer)
-      return;
+    if (!this.observer) return;
     this.images.delete(getUrl(rewrittenSrc, this.window).href);
   }
   updateImage(originalSrc, newSrc) {
+    if (!this.observer) return;
     const originalUrl = getUrl(originalSrc, this.window).href;
     const img = this.images.get(originalUrl);
     if (img) {
@@ -24657,14 +26189,13 @@ var _LCPImageObserver = class _LCPImageObserver {
     }
   }
   ngOnDestroy() {
-    if (!this.observer)
-      return;
+    if (!this.observer) return;
     this.observer.disconnect();
     this.images.clear();
   }
 };
-_LCPImageObserver.\u0275fac = function LCPImageObserver_Factory(t) {
-  return new (t || _LCPImageObserver)();
+_LCPImageObserver.\u0275fac = function LCPImageObserver_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _LCPImageObserver)();
 };
 _LCPImageObserver.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _LCPImageObserver,
@@ -24693,6 +26224,7 @@ var PRECONNECT_CHECK_BLOCKLIST = new InjectionToken(ngDevMode ? "PRECONNECT_CHEC
 var _PreconnectLinkChecker = class _PreconnectLinkChecker {
   constructor() {
     this.document = inject(DOCUMENT2);
+    this.isServer = isPlatformServer(inject(PLATFORM_ID));
     this.preconnectLinks = null;
     this.alreadySeen = /* @__PURE__ */ new Set();
     this.window = null;
@@ -24726,11 +26258,9 @@ var _PreconnectLinkChecker = class _PreconnectLinkChecker {
    * @param originalNgSrc ngSrc value
    */
   assertPreconnect(rewrittenSrc, originalNgSrc) {
-    if (!this.window)
-      return;
+    if (this.isServer) return;
     const imgUrl = getUrl(rewrittenSrc, this.window);
-    if (this.blocklist.has(imgUrl.hostname) || this.alreadySeen.has(imgUrl.origin))
-      return;
+    if (this.blocklist.has(imgUrl.hostname) || this.alreadySeen.has(imgUrl.origin)) return;
     this.alreadySeen.add(imgUrl.origin);
     this.preconnectLinks ??= this.queryPreconnectLinks();
     if (!this.preconnectLinks.has(imgUrl.origin)) {
@@ -24753,8 +26283,8 @@ var _PreconnectLinkChecker = class _PreconnectLinkChecker {
     this.alreadySeen.clear();
   }
 };
-_PreconnectLinkChecker.\u0275fac = function PreconnectLinkChecker_Factory(t) {
-  return new (t || _PreconnectLinkChecker)();
+_PreconnectLinkChecker.\u0275fac = function PreconnectLinkChecker_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _PreconnectLinkChecker)();
 };
 _PreconnectLinkChecker.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _PreconnectLinkChecker,
@@ -24825,8 +26355,8 @@ var _PreloadLinkCreator = class _PreloadLinkCreator {
     renderer.appendChild(this.document.head, preload);
   }
 };
-_PreloadLinkCreator.\u0275fac = function PreloadLinkCreator_Factory(t) {
-  return new (t || _PreloadLinkCreator)();
+_PreloadLinkCreator.\u0275fac = function PreloadLinkCreator_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _PreloadLinkCreator)();
 };
 _PreloadLinkCreator.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _PreloadLinkCreator,
@@ -24854,9 +26384,12 @@ var OVERSIZED_IMAGE_TOLERANCE2 = 1e3;
 var FIXED_SRCSET_WIDTH_LIMIT = 1920;
 var FIXED_SRCSET_HEIGHT_LIMIT = 1080;
 var PLACEHOLDER_BLUR_AMOUNT = 15;
+var PLACEHOLDER_DIMENSION_LIMIT = 1e3;
 var DATA_URL_WARN_LIMIT = 4e3;
 var DATA_URL_ERROR_LIMIT = 1e4;
 var BUILT_IN_LOADERS = [imgixLoaderInfo, imageKitLoaderInfo, cloudinaryLoaderInfo, netlifyLoaderInfo];
+var PRIORITY_COUNT_THRESHOLD = 10;
+var IMGS_WITH_PRIORITY_ATTR_COUNT = 0;
 var _NgOptimizedImage = class _NgOptimizedImage {
   constructor() {
     this.imageLoader = inject(IMAGE_LOADER);
@@ -24915,6 +26448,10 @@ var _NgOptimizedImage = class _NgOptimizedImage {
       if (this.priority) {
         const checker = this.injector.get(PreconnectLinkChecker);
         checker.assertPreconnect(this.getRewrittenSrc(), this.ngSrc);
+        if (!this.isServer) {
+          const applicationRef = this.injector.get(ApplicationRef);
+          assetPriorityCountBelowThreshold(applicationRef);
+        }
       }
     }
     if (this.placeholder) {
@@ -24955,6 +26492,9 @@ var _NgOptimizedImage = class _NgOptimizedImage {
           this.lcpObserver?.updateImage(oldSrc, newSrc);
         });
       }
+    }
+    if (ngDevMode && changes["placeholder"]?.currentValue && !this.isServer) {
+      assertPlaceholderDimensions(this, this.imgElement);
     }
   }
   callImageLoader(configWithoutCustomParams) {
@@ -25061,7 +26601,7 @@ var _NgOptimizedImage = class _NgOptimizedImage {
         width: placeholderResolution,
         isPlaceholder: true
       })})`;
-    } else if (typeof placeholderInput === "string" && placeholderInput.startsWith("data:")) {
+    } else if (typeof placeholderInput === "string") {
       return `url(${placeholderInput})`;
     }
     return null;
@@ -25099,8 +26639,8 @@ var _NgOptimizedImage = class _NgOptimizedImage {
     this.renderer.setAttribute(this.imgElement, name, value);
   }
 };
-_NgOptimizedImage.\u0275fac = function NgOptimizedImage_Factory(t) {
-  return new (t || _NgOptimizedImage)();
+_NgOptimizedImage.\u0275fac = function NgOptimizedImage_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgOptimizedImage)();
 };
 _NgOptimizedImage.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgOptimizedImage,
@@ -25112,17 +26652,17 @@ _NgOptimizedImage.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
     }
   },
   inputs: {
-    ngSrc: [InputFlags.HasDecoratorInputTransform, "ngSrc", "ngSrc", unwrapSafeUrl],
+    ngSrc: [2, "ngSrc", "ngSrc", unwrapSafeUrl],
     ngSrcset: "ngSrcset",
     sizes: "sizes",
-    width: [InputFlags.HasDecoratorInputTransform, "width", "width", numberAttribute],
-    height: [InputFlags.HasDecoratorInputTransform, "height", "height", numberAttribute],
+    width: [2, "width", "width", numberAttribute],
+    height: [2, "height", "height", numberAttribute],
     loading: "loading",
-    priority: [InputFlags.HasDecoratorInputTransform, "priority", "priority", booleanAttribute],
+    priority: [2, "priority", "priority", booleanAttribute],
     loaderParams: "loaderParams",
-    disableOptimizedSrcset: [InputFlags.HasDecoratorInputTransform, "disableOptimizedSrcset", "disableOptimizedSrcset", booleanAttribute],
-    fill: [InputFlags.HasDecoratorInputTransform, "fill", "fill", booleanAttribute],
-    placeholder: [InputFlags.HasDecoratorInputTransform, "placeholder", "placeholder", booleanOrDataUrlAttribute],
+    disableOptimizedSrcset: [2, "disableOptimizedSrcset", "disableOptimizedSrcset", booleanAttribute],
+    fill: [2, "fill", "fill", booleanAttribute],
+    placeholder: [2, "placeholder", "placeholder", booleanOrUrlAttribute],
     placeholderConfig: "placeholderConfig",
     src: "src",
     srcset: "srcset"
@@ -25202,7 +26742,7 @@ var NgOptimizedImage = _NgOptimizedImage;
     placeholder: [{
       type: Input,
       args: [{
-        transform: booleanOrDataUrlAttribute
+        transform: booleanOrUrlAttribute
       }]
     }],
     placeholderConfig: [{
@@ -25287,8 +26827,7 @@ function assertNonEmptyInput(dir, name, value) {
   }
 }
 function assertValidNgSrcset(dir, value) {
-  if (value == null)
-    return;
+  if (value == null) return;
   assertNonEmptyInput(dir, "ngSrcset", value);
   const stringVal = value;
   const isValidWidthDescriptor = VALID_WIDTH_DESCRIPTOR_SRCSET.test(stringVal);
@@ -25393,10 +26932,8 @@ Note: Recommended intrinsic image size is calculated assuming a maximum DPR of $
 }
 function assertNonEmptyWidthAndHeight(dir) {
   let missingAttributes = [];
-  if (dir.width === void 0)
-    missingAttributes.push("width");
-  if (dir.height === void 0)
-    missingAttributes.push("height");
+  if (dir.width === void 0) missingAttributes.push("width");
+  if (dir.height === void 0) missingAttributes.push("height");
   if (missingAttributes.length > 0) {
     throw new RuntimeError(2954, `${imgDirectiveDetails(dir.ngSrc)} these required attributes are missing: ${missingAttributes.map((attr) => `"${attr}"`).join(", ")}. Including "width" and "height" attributes will prevent image-related layout shifts. To fix this, include "width" and "height" attributes on the image tag or turn on "fill" mode with the \`fill\` attribute.`);
   }
@@ -25453,6 +26990,27 @@ function assertNoLoaderParamsWithoutLoader(dir, imageLoader) {
     console.warn(formatRuntimeError(2963, `${imgDirectiveDetails(dir.ngSrc)} the \`loaderParams\` attribute is present but no image loader is configured (i.e. the default one is being used), which means that the loaderParams data will not be consumed and will not affect the URL. To fix this, provide a custom loader or remove the \`loaderParams\` attribute from the image.`));
   }
 }
+function assetPriorityCountBelowThreshold(appRef) {
+  return __async(this, null, function* () {
+    if (IMGS_WITH_PRIORITY_ATTR_COUNT === 0) {
+      IMGS_WITH_PRIORITY_ATTR_COUNT++;
+      yield whenStable(appRef);
+      if (IMGS_WITH_PRIORITY_ATTR_COUNT > PRIORITY_COUNT_THRESHOLD) {
+        console.warn(formatRuntimeError(2966, `NgOptimizedImage: The "priority" attribute is set to true more than ${PRIORITY_COUNT_THRESHOLD} times (${IMGS_WITH_PRIORITY_ATTR_COUNT} times). Marking too many images as "high" priority can hurt your application's LCP (https://web.dev/lcp). "Priority" should only be set on the image expected to be the page's LCP element.`));
+      }
+    } else {
+      IMGS_WITH_PRIORITY_ATTR_COUNT++;
+    }
+  });
+}
+function assertPlaceholderDimensions(dir, imgElement) {
+  const computedStyle = window.getComputedStyle(imgElement);
+  let renderedWidth = parseFloat(computedStyle.getPropertyValue("width"));
+  let renderedHeight = parseFloat(computedStyle.getPropertyValue("height"));
+  if (renderedWidth > PLACEHOLDER_DIMENSION_LIMIT || renderedHeight > PLACEHOLDER_DIMENSION_LIMIT) {
+    console.warn(formatRuntimeError(2967, `${imgDirectiveDetails(dir.ngSrc)} it uses a placeholder image, but at least one of the dimensions attribute (height or width) exceeds the limit of ${PLACEHOLDER_DIMENSION_LIMIT}px. To fix this, use a smaller image as a placeholder.`));
+  }
+}
 function round(input2) {
   return Number.isInteger(input2) ? input2 : input2.toFixed(2);
 }
@@ -25462,8 +27020,8 @@ function unwrapSafeUrl(value) {
   }
   return unwrapSafeValue(value);
 }
-function booleanOrDataUrlAttribute(value) {
-  if (typeof value === "string" && value.startsWith(`data:`)) {
+function booleanOrUrlAttribute(value) {
+  if (typeof value === "string" && value !== "true" && value !== "false" && value !== "") {
     return value;
   }
   return booleanAttribute(value);
@@ -25490,9 +27048,7 @@ var BrowserDomAdapter = class _BrowserDomAdapter extends GenericBrowserDomAdapte
     el.dispatchEvent(evt);
   }
   remove(node) {
-    if (node.parentNode) {
-      node.parentNode.removeChild(node);
-    }
+    node.remove();
   }
   createElement(tagName, doc) {
     doc = doc || this.getDefaultDocument();
@@ -25595,8 +27151,8 @@ var _BrowserXhr = class _BrowserXhr {
     return new XMLHttpRequest();
   }
 };
-_BrowserXhr.\u0275fac = function BrowserXhr_Factory(t) {
-  return new (t || _BrowserXhr)();
+_BrowserXhr.\u0275fac = function BrowserXhr_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _BrowserXhr)();
 };
 _BrowserXhr.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _BrowserXhr,
@@ -25655,8 +27211,8 @@ var _EventManager = class _EventManager {
     return plugin;
   }
 };
-_EventManager.\u0275fac = function EventManager_Factory(t) {
-  return new (t || _EventManager)(\u0275\u0275inject(EVENT_MANAGER_PLUGINS), \u0275\u0275inject(NgZone));
+_EventManager.\u0275fac = function EventManager_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _EventManager)(\u0275\u0275inject(EVENT_MANAGER_PLUGINS), \u0275\u0275inject(NgZone));
 };
 _EventManager.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _EventManager,
@@ -25812,8 +27368,8 @@ var _SharedStylesHost = class _SharedStylesHost {
     hostNodes.add(this.doc.head);
   }
 };
-_SharedStylesHost.\u0275fac = function SharedStylesHost_Factory(t) {
-  return new (t || _SharedStylesHost)(\u0275\u0275inject(DOCUMENT2), \u0275\u0275inject(APP_ID), \u0275\u0275inject(CSP_NONCE, 8), \u0275\u0275inject(PLATFORM_ID));
+_SharedStylesHost.\u0275fac = function SharedStylesHost_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _SharedStylesHost)(\u0275\u0275inject(DOCUMENT2), \u0275\u0275inject(APP_ID), \u0275\u0275inject(CSP_NONCE, 8), \u0275\u0275inject(PLATFORM_ID));
 };
 _SharedStylesHost.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _SharedStylesHost,
@@ -25857,7 +27413,7 @@ var NAMESPACE_URIS = {
   "xlink": "http://www.w3.org/1999/xlink",
   "xml": "http://www.w3.org/XML/1998/namespace",
   "xmlns": "http://www.w3.org/2000/xmlns/",
-  "math": "http://www.w3.org/1998/MathML/"
+  "math": "http://www.w3.org/1998/Math/MathML"
 };
 var COMPONENT_REGEX = /%COMP%/g;
 var COMPONENT_VARIABLE = "%COMP%";
@@ -25936,8 +27492,8 @@ var _DomRendererFactory2 = class _DomRendererFactory2 {
     this.rendererByCompId.clear();
   }
 };
-_DomRendererFactory2.\u0275fac = function DomRendererFactory2_Factory(t) {
-  return new (t || _DomRendererFactory2)(\u0275\u0275inject(EventManager), \u0275\u0275inject(SharedStylesHost), \u0275\u0275inject(APP_ID), \u0275\u0275inject(REMOVE_STYLES_ON_COMPONENT_DESTROY), \u0275\u0275inject(DOCUMENT2), \u0275\u0275inject(PLATFORM_ID), \u0275\u0275inject(NgZone), \u0275\u0275inject(CSP_NONCE));
+_DomRendererFactory2.\u0275fac = function DomRendererFactory2_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DomRendererFactory2)(\u0275\u0275inject(EventManager), \u0275\u0275inject(SharedStylesHost), \u0275\u0275inject(APP_ID), \u0275\u0275inject(REMOVE_STYLES_ON_COMPONENT_DESTROY), \u0275\u0275inject(DOCUMENT2), \u0275\u0275inject(PLATFORM_ID), \u0275\u0275inject(NgZone), \u0275\u0275inject(CSP_NONCE));
 };
 _DomRendererFactory2.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _DomRendererFactory2,
@@ -26019,10 +27575,8 @@ var DefaultDomRenderer2 = class {
       targetParent.insertBefore(newChild, refChild);
     }
   }
-  removeChild(parent, oldChild) {
-    if (parent) {
-      parent.removeChild(oldChild);
-    }
+  removeChild(_parent, oldChild) {
+    oldChild.remove();
   }
   selectRootElement(selectorOrNode, preserveContent) {
     let el = typeof selectorOrNode === "string" ? this.doc.querySelector(selectorOrNode) : selectorOrNode;
@@ -26157,8 +27711,8 @@ var ShadowDomRenderer = class extends DefaultDomRenderer2 {
   insertBefore(parent, newChild, refChild) {
     return super.insertBefore(this.nodeOrShadowRoot(parent), newChild, refChild);
   }
-  removeChild(parent, oldChild) {
-    return super.removeChild(this.nodeOrShadowRoot(parent), oldChild);
+  removeChild(_parent, oldChild) {
+    return super.removeChild(null, oldChild);
   }
   parentNode(node) {
     return this.nodeOrShadowRoot(super.parentNode(this.nodeOrShadowRoot(node)));
@@ -26218,8 +27772,8 @@ var _DomEventsPlugin = class _DomEventsPlugin extends EventManagerPlugin {
     return target.removeEventListener(eventName, callback);
   }
 };
-_DomEventsPlugin.\u0275fac = function DomEventsPlugin_Factory(t) {
-  return new (t || _DomEventsPlugin)(\u0275\u0275inject(DOCUMENT2));
+_DomEventsPlugin.\u0275fac = function DomEventsPlugin_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DomEventsPlugin)(\u0275\u0275inject(DOCUMENT2));
 };
 _DomEventsPlugin.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _DomEventsPlugin,
@@ -26228,6 +27782,42 @@ _DomEventsPlugin.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
 var DomEventsPlugin = _DomEventsPlugin;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(DomEventsPlugin, [{
+    type: Injectable
+  }], () => [{
+    type: void 0,
+    decorators: [{
+      type: Inject,
+      args: [DOCUMENT2]
+    }]
+  }], null);
+})();
+var _EventDelegationPlugin = class _EventDelegationPlugin extends EventManagerPlugin {
+  constructor(doc) {
+    super(doc);
+    this.delegate = inject(GLOBAL_EVENT_DELEGATION, {
+      optional: true
+    });
+  }
+  supports(eventName) {
+    return this.delegate ? this.delegate.supports(eventName) : false;
+  }
+  addEventListener(element, eventName, handler) {
+    return this.delegate.addEventListener(element, eventName, handler);
+  }
+  removeEventListener(element, eventName, callback) {
+    return this.delegate.removeEventListener(element, eventName, callback);
+  }
+};
+_EventDelegationPlugin.\u0275fac = function EventDelegationPlugin_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _EventDelegationPlugin)(\u0275\u0275inject(DOCUMENT2));
+};
+_EventDelegationPlugin.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+  token: _EventDelegationPlugin,
+  factory: _EventDelegationPlugin.\u0275fac
+});
+var EventDelegationPlugin = _EventDelegationPlugin;
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(EventDelegationPlugin, [{
     type: Injectable
   }], () => [{
     type: void 0,
@@ -26345,8 +27935,7 @@ var _KeyEventsPlugin = class _KeyEventsPlugin extends EventManagerPlugin {
       keycode = event.code;
       key = "code.";
     }
-    if (keycode == null || !keycode)
-      return false;
+    if (keycode == null || !keycode) return false;
     keycode = keycode.toLowerCase();
     if (keycode === " ") {
       keycode = "space";
@@ -26383,8 +27972,8 @@ var _KeyEventsPlugin = class _KeyEventsPlugin extends EventManagerPlugin {
     return keyName === "esc" ? "escape" : keyName;
   }
 };
-_KeyEventsPlugin.\u0275fac = function KeyEventsPlugin_Factory(t) {
-  return new (t || _KeyEventsPlugin)(\u0275\u0275inject(DOCUMENT2));
+_KeyEventsPlugin.\u0275fac = function KeyEventsPlugin_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _KeyEventsPlugin)(\u0275\u0275inject(DOCUMENT2));
 };
 _KeyEventsPlugin.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _KeyEventsPlugin,
@@ -26466,6 +28055,10 @@ var BROWSER_MODULE_PROVIDERS = [{
   useClass: KeyEventsPlugin,
   multi: true,
   deps: [DOCUMENT2]
+}, {
+  provide: EVENT_MANAGER_PLUGINS,
+  useClass: EventDelegationPlugin,
+  multi: true
 }, DomRendererFactory2, SharedStylesHost, EventManager, {
   provide: RendererFactory2,
   useExisting: DomRendererFactory2
@@ -26503,8 +28096,8 @@ var _BrowserModule = class _BrowserModule {
     };
   }
 };
-_BrowserModule.\u0275fac = function BrowserModule_Factory(t) {
-  return new (t || _BrowserModule)(\u0275\u0275inject(BROWSER_MODULE_PROVIDERS_MARKER, 12));
+_BrowserModule.\u0275fac = function BrowserModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _BrowserModule)(\u0275\u0275inject(BROWSER_MODULE_PROVIDERS_MARKER, 12));
 };
 _BrowserModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _BrowserModule
@@ -26549,8 +28142,7 @@ var _Meta = class _Meta {
    * the new element if no match is found, or `null` if the tag parameter is not defined.
    */
   addTag(tag, forceCreation = false) {
-    if (!tag)
-      return null;
+    if (!tag) return null;
     return this._getOrCreateElement(tag, forceCreation);
   }
   /**
@@ -26562,8 +28154,7 @@ var _Meta = class _Meta {
    * @returns The matching elements if found, or the new elements.
    */
   addTags(tags, forceCreation = false) {
-    if (!tags)
-      return [];
+    if (!tags) return [];
     return tags.reduce((result, tag) => {
       if (tag) {
         result.push(this._getOrCreateElement(tag, forceCreation));
@@ -26578,8 +28169,7 @@ var _Meta = class _Meta {
    * @returns The matching element, if any.
    */
   getTag(attrSelector) {
-    if (!attrSelector)
-      return null;
+    if (!attrSelector) return null;
     return this._doc.querySelector(`meta[${attrSelector}]`) || null;
   }
   /**
@@ -26589,8 +28179,7 @@ var _Meta = class _Meta {
    * @returns The matching elements, if any.
    */
   getTags(attrSelector) {
-    if (!attrSelector)
-      return [];
+    if (!attrSelector) return [];
     const list = this._doc.querySelectorAll(`meta[${attrSelector}]`);
     return list ? [].slice.call(list) : [];
   }
@@ -26604,8 +28193,7 @@ var _Meta = class _Meta {
    * @return The modified element.
    */
   updateTag(tag, selector) {
-    if (!tag)
-      return null;
+    if (!tag) return null;
     selector = selector || this._parseSelector(tag);
     const meta = this.getTag(selector);
     if (meta) {
@@ -26634,8 +28222,7 @@ var _Meta = class _Meta {
     if (!forceCreation) {
       const selector = this._parseSelector(meta);
       const elem = this.getTags(selector).filter((elem2) => this._containsAttributes(meta, elem2))[0];
-      if (elem !== void 0)
-        return elem;
+      if (elem !== void 0) return elem;
     }
     const element = this._dom.createElement("meta");
     this._setMetaElementAttributes(meta, element);
@@ -26658,8 +28245,8 @@ var _Meta = class _Meta {
     return META_KEYS_MAP[prop] || prop;
   }
 };
-_Meta.\u0275fac = function Meta_Factory(t) {
-  return new (t || _Meta)(\u0275\u0275inject(DOCUMENT2));
+_Meta.\u0275fac = function Meta_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _Meta)(\u0275\u0275inject(DOCUMENT2));
 };
 _Meta.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _Meta,
@@ -26702,8 +28289,8 @@ var _Title = class _Title {
     this._doc.title = newTitle || "";
   }
 };
-_Title.\u0275fac = function Title_Factory(t) {
-  return new (t || _Title)(\u0275\u0275inject(DOCUMENT2));
+_Title.\u0275fac = function Title_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _Title)(\u0275\u0275inject(DOCUMENT2));
 };
 _Title.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _Title,
@@ -26790,8 +28377,8 @@ var _HammerGestureConfig = class _HammerGestureConfig {
     return mc;
   }
 };
-_HammerGestureConfig.\u0275fac = function HammerGestureConfig_Factory(t) {
-  return new (t || _HammerGestureConfig)();
+_HammerGestureConfig.\u0275fac = function HammerGestureConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _HammerGestureConfig)();
 };
 _HammerGestureConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _HammerGestureConfig,
@@ -26875,8 +28462,8 @@ var _HammerGesturesPlugin = class _HammerGesturesPlugin extends EventManagerPlug
     return this._config.events.indexOf(eventName) > -1;
   }
 };
-_HammerGesturesPlugin.\u0275fac = function HammerGesturesPlugin_Factory(t) {
-  return new (t || _HammerGesturesPlugin)(\u0275\u0275inject(DOCUMENT2), \u0275\u0275inject(HAMMER_GESTURE_CONFIG), \u0275\u0275inject(Console), \u0275\u0275inject(HAMMER_LOADER, 8));
+_HammerGesturesPlugin.\u0275fac = function HammerGesturesPlugin_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _HammerGesturesPlugin)(\u0275\u0275inject(DOCUMENT2), \u0275\u0275inject(HAMMER_GESTURE_CONFIG), \u0275\u0275inject(Console), \u0275\u0275inject(HAMMER_LOADER, 8));
 };
 _HammerGesturesPlugin.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _HammerGesturesPlugin,
@@ -26912,8 +28499,8 @@ var HammerGesturesPlugin = _HammerGesturesPlugin;
 })();
 var _HammerModule = class _HammerModule {
 };
-_HammerModule.\u0275fac = function HammerModule_Factory(t) {
-  return new (t || _HammerModule)();
+_HammerModule.\u0275fac = function HammerModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _HammerModule)();
 };
 _HammerModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _HammerModule
@@ -26950,19 +28537,19 @@ var HammerModule = _HammerModule;
 })();
 var _DomSanitizer = class _DomSanitizer {
 };
-_DomSanitizer.\u0275fac = function DomSanitizer_Factory(t) {
-  return new (t || _DomSanitizer)();
+_DomSanitizer.\u0275fac = function DomSanitizer_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DomSanitizer)();
 };
 _DomSanitizer.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _DomSanitizer,
-  factory: function DomSanitizer_Factory(t) {
-    let r = null;
-    if (t) {
-      r = new (t || _DomSanitizer)();
+  factory: function DomSanitizer_Factory(__ngFactoryType__) {
+    let __ngConditionalFactory__ = null;
+    if (__ngFactoryType__) {
+      __ngConditionalFactory__ = new (__ngFactoryType__ || _DomSanitizer)();
     } else {
-      r = \u0275\u0275inject(DomSanitizerImpl);
+      __ngConditionalFactory__ = \u0275\u0275inject(DomSanitizerImpl);
     }
-    return r;
+    return __ngConditionalFactory__;
   },
   providedIn: "root"
 });
@@ -26982,8 +28569,7 @@ var _DomSanitizerImpl = class _DomSanitizerImpl extends DomSanitizer {
     this._doc = _doc;
   }
   sanitize(ctx, value) {
-    if (value == null)
-      return null;
+    if (value == null) return null;
     switch (ctx) {
       case SecurityContext.NONE:
         return value;
@@ -27052,8 +28638,8 @@ var _DomSanitizerImpl = class _DomSanitizerImpl extends DomSanitizer {
     return bypassSanitizationTrustResourceUrl(value);
   }
 };
-_DomSanitizerImpl.\u0275fac = function DomSanitizerImpl_Factory(t) {
-  return new (t || _DomSanitizerImpl)(\u0275\u0275inject(DOCUMENT2));
+_DomSanitizerImpl.\u0275fac = function DomSanitizerImpl_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DomSanitizerImpl)(\u0275\u0275inject(DOCUMENT2));
 };
 _DomSanitizerImpl.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _DomSanitizerImpl,
@@ -27079,8 +28665,10 @@ var HydrationFeatureKind;
 (function(HydrationFeatureKind2) {
   HydrationFeatureKind2[HydrationFeatureKind2["NoHttpTransferCache"] = 0] = "NoHttpTransferCache";
   HydrationFeatureKind2[HydrationFeatureKind2["HttpTransferCacheOptions"] = 1] = "HttpTransferCacheOptions";
+  HydrationFeatureKind2[HydrationFeatureKind2["I18nSupport"] = 2] = "I18nSupport";
+  HydrationFeatureKind2[HydrationFeatureKind2["EventReplay"] = 3] = "EventReplay";
 })(HydrationFeatureKind || (HydrationFeatureKind = {}));
-var VERSION3 = new Version("17.3.12");
+var VERSION3 = new Version("18.1.4");
 
 // node_modules/ngx-dynamic-hooks/fesm2022/ngx-dynamic-hooks.mjs
 var DYNAMICHOOKS_ALLSETTINGS = new InjectionToken("All of the settings registered in the whole app.");
@@ -27586,8 +29174,8 @@ var _SelectorHookParserConfigResolver = class _SelectorHookParserConfigResolver 
     return parserConfig;
   }
 };
-_SelectorHookParserConfigResolver.\u0275fac = function SelectorHookParserConfigResolver_Factory(t) {
-  return new (t || _SelectorHookParserConfigResolver)();
+_SelectorHookParserConfigResolver.\u0275fac = function SelectorHookParserConfigResolver_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _SelectorHookParserConfigResolver)();
 };
 _SelectorHookParserConfigResolver.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _SelectorHookParserConfigResolver,
@@ -27628,8 +29216,7 @@ var _DefaultPlatformService = class _DefaultPlatformService {
     return this.renderer.createElement(tagName);
   }
   sortElements(a, b) {
-    if (a === b)
-      return 0;
+    if (a === b) return 0;
     if (!a.compareDocumentPosition) {
       return a.sourceIndex - b.sourceIndex;
     }
@@ -27718,8 +29305,8 @@ var _DefaultPlatformService = class _DefaultPlatformService {
     }));
   }
 };
-_DefaultPlatformService.\u0275fac = function DefaultPlatformService_Factory(t) {
-  return new (t || _DefaultPlatformService)(\u0275\u0275inject(DOCUMENT2), \u0275\u0275inject(RendererFactory2), \u0275\u0275inject(DomSanitizer));
+_DefaultPlatformService.\u0275fac = function DefaultPlatformService_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DefaultPlatformService)(\u0275\u0275inject(DOCUMENT2), \u0275\u0275inject(RendererFactory2), \u0275\u0275inject(DomSanitizer));
 };
 _DefaultPlatformService.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _DefaultPlatformService,
@@ -27833,8 +29420,8 @@ var _AutoPlatformService = class _AutoPlatformService {
     return this.getFor("dispatchEvent").dispatchEvent(element, name, payload);
   }
 };
-_AutoPlatformService.\u0275fac = function AutoPlatformService_Factory(t) {
-  return new (t || _AutoPlatformService)(\u0275\u0275inject(PLATFORM_SERVICE, 8), \u0275\u0275inject(DefaultPlatformService));
+_AutoPlatformService.\u0275fac = function AutoPlatformService_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _AutoPlatformService)(\u0275\u0275inject(PLATFORM_SERVICE, 8), \u0275\u0275inject(DefaultPlatformService));
 };
 _AutoPlatformService.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _AutoPlatformService,
@@ -27892,8 +29479,8 @@ var _Logger = class _Logger {
     return isDevMode();
   }
 };
-_Logger.\u0275fac = function Logger_Factory(t) {
-  return new (t || _Logger)(\u0275\u0275inject(PLATFORM_ID));
+_Logger.\u0275fac = function Logger_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _Logger)(\u0275\u0275inject(PLATFORM_ID));
 };
 _Logger.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _Logger,
@@ -27999,41 +29586,40 @@ var _HookFinder = class _HookFinder {
     }
     allTags.sort((a, b) => a.startIndex - b.startIndex);
     const openedTags = [];
-    allTagsLoop:
-      for (const [index, tag] of allTags.entries()) {
-        if (index > 0 && tag.startIndex < allTags[index - 1].endIndex) {
-          this.logger.warn(['Syntax error - New tag "' + tag.value + '" started at position ' + tag.startIndex + ' before previous tag "' + allTags[index - 1].value + '" ended at position ' + allTags[index - 1].endIndex + ". Ignoring."], options);
+    allTagsLoop: for (const [index, tag] of allTags.entries()) {
+      if (index > 0 && tag.startIndex < allTags[index - 1].endIndex) {
+        this.logger.warn(['Syntax error - New tag "' + tag.value + '" started at position ' + tag.startIndex + ' before previous tag "' + allTags[index - 1].value + '" ended at position ' + allTags[index - 1].endIndex + ". Ignoring."], options);
+        continue;
+      }
+      if (tag.isOpening) {
+        openedTags.push(tag);
+      } else {
+        if (openedTags.length === 0) {
+          this.logger.warn(['Syntax error - Closing tag without preceding opening tag found: "' + tag.value + '". Ignoring.'], options);
           continue;
         }
-        if (tag.isOpening) {
-          openedTags.push(tag);
-        } else {
-          if (openedTags.length === 0) {
-            this.logger.warn(['Syntax error - Closing tag without preceding opening tag found: "' + tag.value + '". Ignoring.'], options);
-            continue;
-          }
-          if (includeNested === false && openedTags.length > 1) {
-            openedTags.pop();
-            continue;
-          }
-          const openingTag = openedTags[openedTags.length - 1];
-          result.push({
-            openingTagStartIndex: openingTag.startIndex,
-            openingTagEndIndex: openingTag.startIndex + openingTag.value.length,
-            closingTagStartIndex: tag.startIndex,
-            closingTagEndIndex: tag.startIndex + tag.value.length
-          });
+        if (includeNested === false && openedTags.length > 1) {
           openedTags.pop();
+          continue;
         }
+        const openingTag = openedTags[openedTags.length - 1];
+        result.push({
+          openingTagStartIndex: openingTag.startIndex,
+          openingTagEndIndex: openingTag.startIndex + openingTag.value.length,
+          closingTagStartIndex: tag.startIndex,
+          closingTagEndIndex: tag.startIndex + tag.value.length
+        });
+        openedTags.pop();
       }
+    }
     if (openedTags.length > 0) {
       this.logger.warn(["Syntax error - Opening tags without corresponding closing tags found."], options);
     }
     return result;
   }
 };
-_HookFinder.\u0275fac = function HookFinder_Factory(t) {
-  return new (t || _HookFinder)(\u0275\u0275inject(Logger));
+_HookFinder.\u0275fac = function HookFinder_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _HookFinder)(\u0275\u0275inject(Logger));
 };
 _HookFinder.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _HookFinder,
@@ -28134,8 +29720,8 @@ var _TagHookFinder = class _TagHookFinder {
     return text.replace(new RegExp("[-\\/\\\\^$*+?.()|[\\]{}]", "g"), "\\$&");
   }
 };
-_TagHookFinder.\u0275fac = function TagHookFinder_Factory(t) {
-  return new (t || _TagHookFinder)(\u0275\u0275inject(HookFinder));
+_TagHookFinder.\u0275fac = function TagHookFinder_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _TagHookFinder)(\u0275\u0275inject(HookFinder));
 };
 _TagHookFinder.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _TagHookFinder,
@@ -28451,8 +30037,8 @@ var _DataTypeEncoder = class _DataTypeEncoder {
     return result;
   }
 };
-_DataTypeEncoder.\u0275fac = function DataTypeEncoder_Factory(t) {
-  return new (t || _DataTypeEncoder)();
+_DataTypeEncoder.\u0275fac = function DataTypeEncoder_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DataTypeEncoder)();
 };
 _DataTypeEncoder.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _DataTypeEncoder,
@@ -28762,8 +30348,8 @@ var _DataTypeParser = class _DataTypeParser {
     return result;
   }
 };
-_DataTypeParser.\u0275fac = function DataTypeParser_Factory(t) {
-  return new (t || _DataTypeParser)(\u0275\u0275inject(DataTypeEncoder), \u0275\u0275inject(Logger));
+_DataTypeParser.\u0275fac = function DataTypeParser_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DataTypeParser)(\u0275\u0275inject(DataTypeEncoder), \u0275\u0275inject(Logger));
 };
 _DataTypeParser.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _DataTypeParser,
@@ -28882,8 +30468,8 @@ value: "` + outputBinding.value + `"`], options);
     }
   }
 };
-_BindingsValueManager.\u0275fac = function BindingsValueManager_Factory(t) {
-  return new (t || _BindingsValueManager)(\u0275\u0275inject(DataTypeParser), \u0275\u0275inject(Logger));
+_BindingsValueManager.\u0275fac = function BindingsValueManager_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _BindingsValueManager)(\u0275\u0275inject(DataTypeParser), \u0275\u0275inject(Logger));
 };
 _BindingsValueManager.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _BindingsValueManager,
@@ -29073,8 +30659,8 @@ var _ParserEntryResolver = class _ParserEntryResolver {
     }
   }
 };
-_ParserEntryResolver.\u0275fac = function ParserEntryResolver_Factory(t) {
-  return new (t || _ParserEntryResolver)(\u0275\u0275inject(Injector), \u0275\u0275inject(SelectorHookParserConfigResolver), \u0275\u0275inject(AutoPlatformService), \u0275\u0275inject(TagHookFinder), \u0275\u0275inject(BindingsValueManager), \u0275\u0275inject(Logger));
+_ParserEntryResolver.\u0275fac = function ParserEntryResolver_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ParserEntryResolver)(\u0275\u0275inject(Injector), \u0275\u0275inject(SelectorHookParserConfigResolver), \u0275\u0275inject(AutoPlatformService), \u0275\u0275inject(TagHookFinder), \u0275\u0275inject(BindingsValueManager), \u0275\u0275inject(Logger));
 };
 _ParserEntryResolver.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _ParserEntryResolver,
@@ -29190,18 +30776,16 @@ var _SettingsResolver = class _SettingsResolver {
    * @param b - The other object being merged
    */
   recursiveAssign(a, b) {
-    if (Object(b) !== b)
-      return b;
-    if (Object(a) !== a)
-      a = {};
+    if (Object(b) !== b) return b;
+    if (Object(a) !== a) a = {};
     for (const key in b) {
       a[key] = this.recursiveAssign(a[key], b[key]);
     }
     return a;
   }
 };
-_SettingsResolver.\u0275fac = function SettingsResolver_Factory(t) {
-  return new (t || _SettingsResolver)(\u0275\u0275inject(ParserEntryResolver));
+_SettingsResolver.\u0275fac = function SettingsResolver_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _SettingsResolver)(\u0275\u0275inject(ParserEntryResolver));
 };
 _SettingsResolver.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _SettingsResolver,
@@ -29432,50 +31016,48 @@ var _TextHookFinder = class _TextHookFinder {
    */
   validateHookPositions(parserResults, content, options) {
     const checkedParserResults = [];
-    outerloop:
-      for (const [index, parserResult] of parserResults.entries()) {
-        const enclosing = Number.isInteger(parserResult.hookPosition.closingTagStartIndex) && Number.isInteger(parserResult.hookPosition.closingTagEndIndex);
-        const hookPos = parserResult.hookPosition;
-        if (hookPos.openingTagStartIndex >= hookPos.openingTagEndIndex) {
-          this.logger.warn(["Text hook error: openingTagEndIndex has to be greater than openingTagStartIndex. Ignoring.", hookPos], options);
-          continue;
-        }
-        if (enclosing && hookPos.openingTagEndIndex > hookPos.closingTagStartIndex) {
-          this.logger.warn(["Text hook error: closingTagStartIndex has to be greater than openingTagEndIndex. Ignoring.", hookPos], options);
-          continue;
-        }
-        if (enclosing && hookPos.closingTagStartIndex >= hookPos.closingTagEndIndex) {
-          this.logger.warn(["Text hook error: closingTagEndIndex has to be greater than closingTagStartIndex. Ignoring.", hookPos], options);
-          continue;
-        }
-        const previousHooks = parserResults.slice(0, index);
-        innerloop:
-          for (const previousHook of previousHooks) {
-            const prevHookPos = previousHook.hookPosition;
-            const prevIsEnclosing = Number.isInteger(prevHookPos.closingTagStartIndex) && Number.isInteger(prevHookPos.closingTagEndIndex);
-            if (hookPos.openingTagStartIndex === prevHookPos.openingTagStartIndex && hookPos.openingTagEndIndex === prevHookPos.openingTagEndIndex && (!enclosing || !prevIsEnclosing || hookPos.closingTagStartIndex === prevHookPos.closingTagStartIndex && hookPos.closingTagEndIndex === prevHookPos.closingTagEndIndex)) {
-              this.generateHookPosWarning("A text hook with the same position as another text hook was found. There may be multiple parsers looking for the same text pattern. Ignoring duplicates.", hookPos, prevHookPos, content, options);
-              continue outerloop;
-            }
-            if (hookPos.openingTagStartIndex < prevHookPos.openingTagEndIndex) {
-              this.generateHookPosWarning("Text hook error: Hook opening tag starts before previous hook opening tag ends. Ignoring.", hookPos, prevHookPos, content, options);
-              continue outerloop;
-            }
-            if (prevIsEnclosing && !(hookPos.openingTagEndIndex <= prevHookPos.closingTagStartIndex || hookPos.openingTagStartIndex >= prevHookPos.closingTagEndIndex)) {
-              this.generateHookPosWarning("Text hook error: Opening tag of hook overlaps with closing tag of previous hook. Ignoring.", hookPos, prevHookPos, content, options);
-              continue outerloop;
-            }
-            if (prevIsEnclosing && enclosing && !(hookPos.closingTagEndIndex <= prevHookPos.closingTagStartIndex || hookPos.closingTagStartIndex >= prevHookPos.closingTagEndIndex)) {
-              this.generateHookPosWarning("Text hook error: Closing tag of hook overlaps with closing tag of previous hook. Ignoring.", hookPos, prevHookPos, content, options);
-              continue outerloop;
-            }
-            if (enclosing && prevIsEnclosing && hookPos.openingTagEndIndex <= prevHookPos.closingTagStartIndex && hookPos.closingTagStartIndex >= prevHookPos.closingTagEndIndex) {
-              this.generateHookPosWarning("Text hook error: The closing tag of a nested hook lies beyond the closing tag of the outer hook. Ignoring.", hookPos, prevHookPos, content, options);
-              continue outerloop;
-            }
-          }
-        checkedParserResults.push(parserResult);
+    outerloop: for (const [index, parserResult] of parserResults.entries()) {
+      const enclosing = Number.isInteger(parserResult.hookPosition.closingTagStartIndex) && Number.isInteger(parserResult.hookPosition.closingTagEndIndex);
+      const hookPos = parserResult.hookPosition;
+      if (hookPos.openingTagStartIndex >= hookPos.openingTagEndIndex) {
+        this.logger.warn(["Text hook error: openingTagEndIndex has to be greater than openingTagStartIndex. Ignoring.", hookPos], options);
+        continue;
       }
+      if (enclosing && hookPos.openingTagEndIndex > hookPos.closingTagStartIndex) {
+        this.logger.warn(["Text hook error: closingTagStartIndex has to be greater than openingTagEndIndex. Ignoring.", hookPos], options);
+        continue;
+      }
+      if (enclosing && hookPos.closingTagStartIndex >= hookPos.closingTagEndIndex) {
+        this.logger.warn(["Text hook error: closingTagEndIndex has to be greater than closingTagStartIndex. Ignoring.", hookPos], options);
+        continue;
+      }
+      const previousHooks = parserResults.slice(0, index);
+      innerloop: for (const previousHook of previousHooks) {
+        const prevHookPos = previousHook.hookPosition;
+        const prevIsEnclosing = Number.isInteger(prevHookPos.closingTagStartIndex) && Number.isInteger(prevHookPos.closingTagEndIndex);
+        if (hookPos.openingTagStartIndex === prevHookPos.openingTagStartIndex && hookPos.openingTagEndIndex === prevHookPos.openingTagEndIndex && (!enclosing || !prevIsEnclosing || hookPos.closingTagStartIndex === prevHookPos.closingTagStartIndex && hookPos.closingTagEndIndex === prevHookPos.closingTagEndIndex)) {
+          this.generateHookPosWarning("A text hook with the same position as another text hook was found. There may be multiple parsers looking for the same text pattern. Ignoring duplicates.", hookPos, prevHookPos, content, options);
+          continue outerloop;
+        }
+        if (hookPos.openingTagStartIndex < prevHookPos.openingTagEndIndex) {
+          this.generateHookPosWarning("Text hook error: Hook opening tag starts before previous hook opening tag ends. Ignoring.", hookPos, prevHookPos, content, options);
+          continue outerloop;
+        }
+        if (prevIsEnclosing && !(hookPos.openingTagEndIndex <= prevHookPos.closingTagStartIndex || hookPos.openingTagStartIndex >= prevHookPos.closingTagEndIndex)) {
+          this.generateHookPosWarning("Text hook error: Opening tag of hook overlaps with closing tag of previous hook. Ignoring.", hookPos, prevHookPos, content, options);
+          continue outerloop;
+        }
+        if (prevIsEnclosing && enclosing && !(hookPos.closingTagEndIndex <= prevHookPos.closingTagStartIndex || hookPos.closingTagStartIndex >= prevHookPos.closingTagEndIndex)) {
+          this.generateHookPosWarning("Text hook error: Closing tag of hook overlaps with closing tag of previous hook. Ignoring.", hookPos, prevHookPos, content, options);
+          continue outerloop;
+        }
+        if (enclosing && prevIsEnclosing && hookPos.openingTagEndIndex <= prevHookPos.closingTagStartIndex && hookPos.closingTagStartIndex >= prevHookPos.closingTagEndIndex) {
+          this.generateHookPosWarning("Text hook error: The closing tag of a nested hook lies beyond the closing tag of the outer hook. Ignoring.", hookPos, prevHookPos, content, options);
+          continue outerloop;
+        }
+      }
+      checkedParserResults.push(parserResult);
+    }
     return checkedParserResults;
   }
   /**
@@ -29568,8 +31150,8 @@ var _TextHookFinder = class _TextHookFinder {
     return result;
   }
 };
-_TextHookFinder.\u0275fac = function TextHookFinder_Factory(t) {
-  return new (t || _TextHookFinder)(\u0275\u0275inject(AutoPlatformService), \u0275\u0275inject(Logger));
+_TextHookFinder.\u0275fac = function TextHookFinder_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _TextHookFinder)(\u0275\u0275inject(AutoPlatformService), \u0275\u0275inject(Logger));
 };
 _TextHookFinder.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _TextHookFinder,
@@ -29667,8 +31249,8 @@ var _ElementHookFinder = class _ElementHookFinder {
     return checkedParserResults;
   }
 };
-_ElementHookFinder.\u0275fac = function ElementHookFinder_Factory(t) {
-  return new (t || _ElementHookFinder)(\u0275\u0275inject(AutoPlatformService), \u0275\u0275inject(Logger));
+_ElementHookFinder.\u0275fac = function ElementHookFinder_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ElementHookFinder)(\u0275\u0275inject(AutoPlatformService), \u0275\u0275inject(Logger));
 };
 _ElementHookFinder.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _ElementHookFinder,
@@ -29818,8 +31400,8 @@ var _ContentSanitizer = class _ContentSanitizer {
     return element;
   }
 };
-_ContentSanitizer.\u0275fac = function ContentSanitizer_Factory(t) {
-  return new (t || _ContentSanitizer)(\u0275\u0275inject(AutoPlatformService));
+_ContentSanitizer.\u0275fac = function ContentSanitizer_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ContentSanitizer)(\u0275\u0275inject(AutoPlatformService));
 };
 _ContentSanitizer.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _ContentSanitizer,
@@ -29954,8 +31536,8 @@ var _DeepComparer = class _DeepComparer {
     return true;
   }
 };
-_DeepComparer.\u0275fac = function DeepComparer_Factory(t) {
-  return new (t || _DeepComparer)(\u0275\u0275inject(Logger));
+_DeepComparer.\u0275fac = function DeepComparer_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DeepComparer)(\u0275\u0275inject(Logger));
 };
 _DeepComparer.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _DeepComparer,
@@ -30202,8 +31784,8 @@ var _ComponentUpdater = class _ComponentUpdater {
     return true;
   }
 };
-_ComponentUpdater.\u0275fac = function ComponentUpdater_Factory(t) {
-  return new (t || _ComponentUpdater)(\u0275\u0275inject(DeepComparer), \u0275\u0275inject(Logger));
+_ComponentUpdater.\u0275fac = function ComponentUpdater_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ComponentUpdater)(\u0275\u0275inject(DeepComparer), \u0275\u0275inject(Logger));
 };
 _ComponentUpdater.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _ComponentUpdater,
@@ -30497,8 +32079,8 @@ var _ComponentCreator = class _ComponentCreator {
     }
   }
 };
-_ComponentCreator.\u0275fac = function ComponentCreator_Factory(t) {
-  return new (t || _ComponentCreator)(\u0275\u0275inject(PLATFORM_ID), \u0275\u0275inject(ApplicationRef), \u0275\u0275inject(ComponentUpdater), \u0275\u0275inject(AutoPlatformService), \u0275\u0275inject(Logger));
+_ComponentCreator.\u0275fac = function ComponentCreator_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ComponentCreator)(\u0275\u0275inject(PLATFORM_ID), \u0275\u0275inject(ApplicationRef), \u0275\u0275inject(ComponentUpdater), \u0275\u0275inject(AutoPlatformService), \u0275\u0275inject(Logger));
 };
 _ComponentCreator.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _ComponentCreator,
@@ -30649,8 +32231,8 @@ var _DynamicHooksService = class _DynamicHooksService {
     }
   }
 };
-_DynamicHooksService.\u0275fac = function DynamicHooksService_Factory(t) {
-  return new (t || _DynamicHooksService)(\u0275\u0275inject(DYNAMICHOOKS_ALLSETTINGS, 8), \u0275\u0275inject(DYNAMICHOOKS_ANCESTORSETTINGS, 8), \u0275\u0275inject(DYNAMICHOOKS_MODULESETTINGS, 8), \u0275\u0275inject(SettingsResolver), \u0275\u0275inject(TextHookFinder), \u0275\u0275inject(ElementHookFinder), \u0275\u0275inject(ContentSanitizer), \u0275\u0275inject(ComponentCreator), \u0275\u0275inject(AutoPlatformService), \u0275\u0275inject(EnvironmentInjector), \u0275\u0275inject(Injector));
+_DynamicHooksService.\u0275fac = function DynamicHooksService_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DynamicHooksService)(\u0275\u0275inject(DYNAMICHOOKS_ALLSETTINGS, 8), \u0275\u0275inject(DYNAMICHOOKS_ANCESTORSETTINGS, 8), \u0275\u0275inject(DYNAMICHOOKS_MODULESETTINGS, 8), \u0275\u0275inject(SettingsResolver), \u0275\u0275inject(TextHookFinder), \u0275\u0275inject(ElementHookFinder), \u0275\u0275inject(ContentSanitizer), \u0275\u0275inject(ComponentCreator), \u0275\u0275inject(AutoPlatformService), \u0275\u0275inject(EnvironmentInjector), \u0275\u0275inject(Injector));
 };
 _DynamicHooksService.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _DynamicHooksService,
@@ -30712,8 +32294,8 @@ var _DynamicHooksInitService = class _DynamicHooksInitService {
     allSettings.length = 0;
   }
 };
-_DynamicHooksInitService.\u0275fac = function DynamicHooksInitService_Factory(t) {
-  return new (t || _DynamicHooksInitService)();
+_DynamicHooksInitService.\u0275fac = function DynamicHooksInitService_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DynamicHooksInitService)();
 };
 _DynamicHooksInitService.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _DynamicHooksInitService,
@@ -30861,8 +32443,7 @@ var observeElement = (content, callbackFn) => {
   return observer;
 };
 var findClosestCommonParent = (elements) => {
-  if (elements.length === 0)
-    return null;
+  if (elements.length === 0) return null;
   let parent = elements[0];
   for (const element of elements) {
     while (parent === element || !parent.contains(element)) {
@@ -30956,8 +32537,8 @@ var _DynamicHooksComponent = class _DynamicHooksComponent {
     }
   }
 };
-_DynamicHooksComponent.\u0275fac = function DynamicHooksComponent_Factory(t) {
-  return new (t || _DynamicHooksComponent)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(DynamicHooksService), \u0275\u0275directiveInject(ComponentUpdater), \u0275\u0275directiveInject(AutoPlatformService), \u0275\u0275directiveInject(EnvironmentInjector), \u0275\u0275directiveInject(Injector));
+_DynamicHooksComponent.\u0275fac = function DynamicHooksComponent_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DynamicHooksComponent)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(DynamicHooksService), \u0275\u0275directiveInject(ComponentUpdater), \u0275\u0275directiveInject(AutoPlatformService), \u0275\u0275directiveInject(EnvironmentInjector), \u0275\u0275directiveInject(Injector));
 };
 _DynamicHooksComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _DynamicHooksComponent,
@@ -31135,8 +32716,8 @@ var _DynamicSingleComponent = class _DynamicSingleComponent {
     }
   }
 };
-_DynamicSingleComponent.\u0275fac = function DynamicSingleComponent_Factory(t) {
-  return new (t || _DynamicSingleComponent)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(AutoPlatformService), \u0275\u0275directiveInject(DynamicHooksService), \u0275\u0275directiveInject(ComponentUpdater));
+_DynamicSingleComponent.\u0275fac = function DynamicSingleComponent_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DynamicSingleComponent)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(AutoPlatformService), \u0275\u0275directiveInject(DynamicHooksService), \u0275\u0275directiveInject(ComponentUpdater));
 };
 _DynamicSingleComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _DynamicSingleComponent,
@@ -31200,8 +32781,8 @@ var _ExampleComponent = class _ExampleComponent {
     this.customMessage = "\u{1F680} Hello from ExampleComponent!";
   }
 };
-_ExampleComponent.\u0275fac = function ExampleComponent_Factory(t) {
-  return new (t || _ExampleComponent)();
+_ExampleComponent.\u0275fac = function ExampleComponent_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ExampleComponent)();
 };
 _ExampleComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _ExampleComponent, selectors: [["app-example"]], inputs: { customMessage: "customMessage" }, standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 2, vars: 1, consts: [[1, "example-component"]], template: function ExampleComponent_Template(rf, ctx) {
   if (rf & 1) {
@@ -31235,8 +32816,8 @@ var _CounterWriteComponent = class _CounterWriteComponent {
     this.counterService = counterService;
   }
 };
-_CounterWriteComponent.\u0275fac = function CounterWriteComponent_Factory(t) {
-  return new (t || _CounterWriteComponent)(\u0275\u0275directiveInject(CounterService));
+_CounterWriteComponent.\u0275fac = function CounterWriteComponent_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _CounterWriteComponent)(\u0275\u0275directiveInject(CounterService));
 };
 _CounterWriteComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _CounterWriteComponent, selectors: [["app-counter-write"]], standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 3, vars: 0, consts: [[1, "counter-write"], ["type", "button", 3, "click"]], template: function CounterWriteComponent_Template(rf, ctx) {
   if (rf & 1) {
@@ -31259,8 +32840,8 @@ var _CounterReadComponent = class _CounterReadComponent {
     this.counterService = counterService;
   }
 };
-_CounterReadComponent.\u0275fac = function CounterReadComponent_Factory(t) {
-  return new (t || _CounterReadComponent)(\u0275\u0275directiveInject(CounterService));
+_CounterReadComponent.\u0275fac = function CounterReadComponent_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _CounterReadComponent)(\u0275\u0275directiveInject(CounterService));
 };
 _CounterReadComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _CounterReadComponent, selectors: [["app-counter-read"]], standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 3, vars: 1, consts: [[1, "counter-read"]], template: function CounterReadComponent_Template(rf, ctx) {
   if (rf & 1) {
@@ -31281,8 +32862,8 @@ var CounterReadComponent = _CounterReadComponent;
 // src/components/widget/widget.component.ts
 var _WidgetComponent = class _WidgetComponent {
 };
-_WidgetComponent.\u0275fac = function WidgetComponent_Factory(t) {
-  return new (t || _WidgetComponent)();
+_WidgetComponent.\u0275fac = function WidgetComponent_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _WidgetComponent)();
 };
 _WidgetComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _WidgetComponent, selectors: [["app-widget"]], inputs: { imgUrl: "imgUrl" }, standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 9, vars: 1, consts: [[1, "widget-component"], [3, "src"]], template: function WidgetComponent_Template(rf, ctx) {
   if (rf & 1) {
@@ -31313,8 +32894,8 @@ var WidgetComponent = _WidgetComponent;
 var _c0 = ["*"];
 var _NoticeComponent = class _NoticeComponent {
 };
-_NoticeComponent.\u0275fac = function NoticeComponent_Factory(t) {
-  return new (t || _NoticeComponent)();
+_NoticeComponent.\u0275fac = function NoticeComponent_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NoticeComponent)();
 };
 _NoticeComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _NoticeComponent, selectors: [["app-notice"]], standalone: true, features: [\u0275\u0275StandaloneFeature], ngContentSelectors: _c0, decls: 5, vars: 0, consts: [[1, "notice-component"], [1, "notice-icon"], [1, "notice-content"]], template: function NoticeComponent_Template(rf, ctx) {
   if (rf & 1) {
@@ -31387,8 +32968,8 @@ var _BaseControlValueAccessor = class _BaseControlValueAccessor {
     this.setProperty("disabled", isDisabled);
   }
 };
-_BaseControlValueAccessor.\u0275fac = function BaseControlValueAccessor_Factory(t) {
-  return new (t || _BaseControlValueAccessor)(\u0275\u0275directiveInject(Renderer2), \u0275\u0275directiveInject(ElementRef));
+_BaseControlValueAccessor.\u0275fac = function BaseControlValueAccessor_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _BaseControlValueAccessor)(\u0275\u0275directiveInject(Renderer2), \u0275\u0275directiveInject(ElementRef));
 };
 _BaseControlValueAccessor.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _BaseControlValueAccessor
@@ -31407,8 +32988,8 @@ var _BuiltInControlValueAccessor = class _BuiltInControlValueAccessor extends Ba
 };
 _BuiltInControlValueAccessor.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275BuiltInControlValueAccessor_BaseFactory;
-  return function BuiltInControlValueAccessor_Factory(t) {
-    return (\u0275BuiltInControlValueAccessor_BaseFactory || (\u0275BuiltInControlValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_BuiltInControlValueAccessor)))(t || _BuiltInControlValueAccessor);
+  return function BuiltInControlValueAccessor_Factory(__ngFactoryType__) {
+    return (\u0275BuiltInControlValueAccessor_BaseFactory || (\u0275BuiltInControlValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_BuiltInControlValueAccessor)))(__ngFactoryType__ || _BuiltInControlValueAccessor);
   };
 })();
 _BuiltInControlValueAccessor.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -31438,8 +33019,8 @@ var _CheckboxControlValueAccessor = class _CheckboxControlValueAccessor extends 
 };
 _CheckboxControlValueAccessor.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275CheckboxControlValueAccessor_BaseFactory;
-  return function CheckboxControlValueAccessor_Factory(t) {
-    return (\u0275CheckboxControlValueAccessor_BaseFactory || (\u0275CheckboxControlValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_CheckboxControlValueAccessor)))(t || _CheckboxControlValueAccessor);
+  return function CheckboxControlValueAccessor_Factory(__ngFactoryType__) {
+    return (\u0275CheckboxControlValueAccessor_BaseFactory || (\u0275CheckboxControlValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_CheckboxControlValueAccessor)))(__ngFactoryType__ || _CheckboxControlValueAccessor);
   };
 })();
 _CheckboxControlValueAccessor.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -31513,8 +33094,8 @@ var _DefaultValueAccessor = class _DefaultValueAccessor extends BaseControlValue
     this._compositionMode && this.onChange(value);
   }
 };
-_DefaultValueAccessor.\u0275fac = function DefaultValueAccessor_Factory(t) {
-  return new (t || _DefaultValueAccessor)(\u0275\u0275directiveInject(Renderer2), \u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(COMPOSITION_BUFFER_MODE, 8));
+_DefaultValueAccessor.\u0275fac = function DefaultValueAccessor_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _DefaultValueAccessor)(\u0275\u0275directiveInject(Renderer2), \u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(COMPOSITION_BUFFER_MODE, 8));
 };
 _DefaultValueAccessor.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _DefaultValueAccessor,
@@ -31644,17 +33225,14 @@ function maxLengthValidator(maxLength) {
   };
 }
 function patternValidator(pattern) {
-  if (!pattern)
-    return nullValidator;
+  if (!pattern) return nullValidator;
   let regex;
   let regexStr;
   if (typeof pattern === "string") {
     regexStr = "";
-    if (pattern.charAt(0) !== "^")
-      regexStr += "^";
+    if (pattern.charAt(0) !== "^") regexStr += "^";
     regexStr += pattern;
-    if (pattern.charAt(pattern.length - 1) !== "$")
-      regexStr += "$";
+    if (pattern.charAt(pattern.length - 1) !== "$") regexStr += "$";
     regex = new RegExp(regexStr);
   } else {
     regexStr = pattern.toString();
@@ -31709,11 +33287,9 @@ function normalizeValidators(validators) {
   });
 }
 function compose(validators) {
-  if (!validators)
-    return null;
+  if (!validators) return null;
   const presentValidators = validators.filter(isPresent);
-  if (presentValidators.length == 0)
-    return null;
+  if (presentValidators.length == 0) return null;
   return function(control) {
     return mergeErrors(executeValidators(control, presentValidators));
   };
@@ -31722,11 +33298,9 @@ function composeValidators(validators) {
   return validators != null ? compose(normalizeValidators(validators)) : null;
 }
 function composeAsync(validators) {
-  if (!validators)
-    return null;
+  if (!validators) return null;
   const presentValidators = validators.filter(isPresent);
-  if (presentValidators.length == 0)
-    return null;
+  if (presentValidators.length == 0) return null;
   return function(control) {
     const observables = executeValidators(control, presentValidators).map(toObservable);
     return forkJoin(observables).pipe(map(mergeErrors));
@@ -31736,8 +33310,7 @@ function composeAsyncValidators(validators) {
   return validators != null ? composeAsync(normalizeValidators(validators)) : null;
 }
 function mergeValidators(controlValidators, dirValidator) {
-  if (controlValidators === null)
-    return [dirValidator];
+  if (controlValidators === null) return [dirValidator];
   return Array.isArray(controlValidators) ? [...controlValidators, dirValidator] : [controlValidators, dirValidator];
 }
 function getControlValidators(control) {
@@ -31747,8 +33320,7 @@ function getControlAsyncValidators(control) {
   return control._rawAsyncValidators;
 }
 function makeValidatorsArray(validators) {
-  if (!validators)
-    return [];
+  if (!validators) return [];
   return Array.isArray(validators) ? validators : [validators];
 }
 function hasValidator(validators, validator) {
@@ -31950,8 +33522,7 @@ var AbstractControlDirective = class {
    * Resets the control with the provided value if the control is present.
    */
   reset(value = void 0) {
-    if (this.control)
-      this.control.reset(value);
+    if (this.control) this.control.reset(value);
   }
   /**
    * @description
@@ -32046,18 +33617,21 @@ var AbstractControlStatus = class {
     this._cd = cd;
   }
   get isTouched() {
+    this._cd?.control?._touched?.();
     return !!this._cd?.control?.touched;
   }
   get isUntouched() {
     return !!this._cd?.control?.untouched;
   }
   get isPristine() {
+    this._cd?.control?._pristine?.();
     return !!this._cd?.control?.pristine;
   }
   get isDirty() {
     return !!this._cd?.control?.dirty;
   }
   get isValid() {
+    this._cd?.control?._status?.();
     return !!this._cd?.control?.valid;
   }
   get isInvalid() {
@@ -32067,6 +33641,7 @@ var AbstractControlStatus = class {
     return !!this._cd?.control?.pending;
   }
   get isSubmitted() {
+    this._cd?._submitted?.();
     return !!this._cd?.submitted;
   }
 };
@@ -32087,8 +33662,8 @@ var _NgControlStatus = class _NgControlStatus extends AbstractControlStatus {
     super(cd);
   }
 };
-_NgControlStatus.\u0275fac = function NgControlStatus_Factory(t) {
-  return new (t || _NgControlStatus)(\u0275\u0275directiveInject(NgControl, 2));
+_NgControlStatus.\u0275fac = function NgControlStatus_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgControlStatus)(\u0275\u0275directiveInject(NgControl, 2));
 };
 _NgControlStatus.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgControlStatus,
@@ -32121,8 +33696,8 @@ var _NgControlStatusGroup = class _NgControlStatusGroup extends AbstractControlS
     super(cd);
   }
 };
-_NgControlStatusGroup.\u0275fac = function NgControlStatusGroup_Factory(t) {
-  return new (t || _NgControlStatusGroup)(\u0275\u0275directiveInject(ControlContainer, 10));
+_NgControlStatusGroup.\u0275fac = function NgControlStatusGroup_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgControlStatusGroup)(\u0275\u0275directiveInject(ControlContainer, 10));
 };
 _NgControlStatusGroup.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgControlStatusGroup,
@@ -32201,13 +33776,22 @@ var ngModelWithFormGroupExample = `
       <input [(ngModel)]="showMoreControls" [ngModelOptions]="{standalone: true}">
   </div>
 `;
-function controlParentException() {
-  return new RuntimeError(1050, `formControlName must be used with a parent formGroup directive.  You'll want to add a formGroup
+function controlParentException(nameOrIndex) {
+  return new RuntimeError(1050, `formControlName must be used with a parent formGroup directive. You'll want to add a formGroup
       directive and pass it an existing FormGroup instance (you can create one in your class).
+
+      ${describeFormControl(nameOrIndex)}
 
     Example:
 
     ${formControlNameExample}`);
+}
+function describeFormControl(nameOrIndex) {
+  if (nameOrIndex == null || nameOrIndex === "") {
+    return "";
+  }
+  const valueType = typeof nameOrIndex === "string" ? "name" : "index";
+  return `Affected Form Control ${valueType}: "${nameOrIndex}"`;
 }
 function ngModelGroupException() {
   return new RuntimeError(1051, `formControlName cannot be used with an ngModelGroup parent. It is only compatible with parents
@@ -32305,6 +33889,48 @@ var VALID = "VALID";
 var INVALID = "INVALID";
 var PENDING = "PENDING";
 var DISABLED = "DISABLED";
+var ControlEvent = class {
+};
+var ValueChangeEvent = class extends ControlEvent {
+  constructor(value, source) {
+    super();
+    this.value = value;
+    this.source = source;
+  }
+};
+var PristineChangeEvent = class extends ControlEvent {
+  constructor(pristine, source) {
+    super();
+    this.pristine = pristine;
+    this.source = source;
+  }
+};
+var TouchedChangeEvent = class extends ControlEvent {
+  constructor(touched, source) {
+    super();
+    this.touched = touched;
+    this.source = source;
+  }
+};
+var StatusChangeEvent = class extends ControlEvent {
+  constructor(status, source) {
+    super();
+    this.status = status;
+    this.source = source;
+  }
+};
+var FormSubmittedEvent = class extends ControlEvent {
+  constructor(source) {
+    super();
+    this.source = source;
+  }
+};
+var FormResetEvent = class extends ControlEvent {
+  constructor(source) {
+    super();
+    this.source = source;
+  }
+};
 function pickValidators(validatorOrOpts) {
   return (isOptionsObj(validatorOrOpts) ? validatorOrOpts.validators : validatorOrOpts) || null;
 }
@@ -32353,13 +33979,19 @@ var AbstractControl = class {
    */
   constructor(validators, asyncValidators) {
     this._pendingDirty = false;
-    this._hasOwnPendingAsyncValidator = false;
+    this._hasOwnPendingAsyncValidator = null;
     this._pendingTouched = false;
     this._onCollectionChange = () => {
     };
     this._parent = null;
-    this.pristine = true;
-    this.touched = false;
+    this._status = computed(() => this.statusReactive());
+    this.statusReactive = signal(void 0);
+    this._pristine = computed(() => this.pristineReactive());
+    this.pristineReactive = signal(true);
+    this._touched = computed(() => this.touchedReactive());
+    this.touchedReactive = signal(false);
+    this._events = new Subject();
+    this.events = this._events.asObservable();
     this._onDisabledChange = [];
     this._assignValidators(validators);
     this._assignAsyncValidators(asyncValidators);
@@ -32391,6 +34023,20 @@ var AbstractControl = class {
    */
   get parent() {
     return this._parent;
+  }
+  /**
+   * The validation status of the control.
+   *
+   * @see {@link FormControlStatus}
+   *
+   * These status values are mutually exclusive, so a control cannot be
+   * both valid AND invalid or invalid AND disabled.
+   */
+  get status() {
+    return untracked(this.statusReactive);
+  }
+  set status(v) {
+    untracked(() => this.statusReactive.set(v));
   }
   /**
    * A control is `valid` when its `status` is `VALID`.
@@ -32452,6 +34098,19 @@ var AbstractControl = class {
     return this.status !== DISABLED;
   }
   /**
+   * A control is `pristine` if the user has not yet changed
+   * the value in the UI.
+   *
+   * @returns True if the user has not yet changed the value in the UI; compare `dirty`.
+   * Programmatic changes to a control's value do not mark it dirty.
+   */
+  get pristine() {
+    return untracked(this.pristineReactive);
+  }
+  set pristine(v) {
+    untracked(() => this.pristineReactive.set(v));
+  }
+  /**
    * A control is `dirty` if the user has changed the value
    * in the UI.
    *
@@ -32460,6 +34119,18 @@ var AbstractControl = class {
    */
   get dirty() {
     return !this.pristine;
+  }
+  /**
+   * True if the control is marked as `touched`.
+   *
+   * A control is marked `touched` once the user has triggered
+   * a `blur` event on it.
+   */
+  get touched() {
+    return untracked(this.touchedReactive);
+  }
+  set touched(v) {
+    untracked(() => this.touchedReactive.set(v));
   }
   /**
    * True if the control has not been marked as touched
@@ -32637,151 +34308,100 @@ var AbstractControl = class {
   clearAsyncValidators() {
     this.asyncValidator = null;
   }
-  /**
-   * Marks the control as `touched`. A control is touched by focus and
-   * blur events that do not change the value.
-   *
-   * @see {@link markAsUntouched()}
-   * @see {@link markAsDirty()}
-   * @see {@link markAsPristine()}
-   *
-   * @param opts Configuration options that determine how the control propagates changes
-   * and emits events after marking is applied.
-   * * `onlySelf`: When true, mark only this control. When false or not supplied,
-   * marks all direct ancestors. Default is false.
-   */
   markAsTouched(opts = {}) {
+    const changed = this.touched === false;
     this.touched = true;
+    const sourceControl = opts.sourceControl ?? this;
     if (this._parent && !opts.onlySelf) {
-      this._parent.markAsTouched(opts);
+      this._parent.markAsTouched(__spreadProps(__spreadValues({}, opts), {
+        sourceControl
+      }));
+    }
+    if (changed && opts.emitEvent !== false) {
+      this._events.next(new TouchedChangeEvent(true, sourceControl));
     }
   }
   /**
    * Marks the control and all its descendant controls as `touched`.
    * @see {@link markAsTouched()}
-   */
-  markAllAsTouched() {
-    this.markAsTouched({
-      onlySelf: true
-    });
-    this._forEachChild((control) => control.markAllAsTouched());
-  }
-  /**
-   * Marks the control as `untouched`.
-   *
-   * If the control has any children, also marks all children as `untouched`
-   * and recalculates the `touched` status of all parent controls.
-   *
-   * @see {@link markAsTouched()}
-   * @see {@link markAsDirty()}
-   * @see {@link markAsPristine()}
-   *
-   * @param opts Configuration options that determine how the control propagates changes
-   * and emits events after the marking is applied.
-   * * `onlySelf`: When true, mark only this control. When false or not supplied,
-   * marks all direct ancestors. Default is false.
-   */
-  markAsUntouched(opts = {}) {
-    this.touched = false;
-    this._pendingTouched = false;
-    this._forEachChild((control) => {
-      control.markAsUntouched({
-        onlySelf: true
-      });
-    });
-    if (this._parent && !opts.onlySelf) {
-      this._parent._updateTouched(opts);
-    }
-  }
-  /**
-   * Marks the control as `dirty`. A control becomes dirty when
-   * the control's value is changed through the UI; compare `markAsTouched`.
-   *
-   * @see {@link markAsTouched()}
-   * @see {@link markAsUntouched()}
-   * @see {@link markAsPristine()}
    *
    * @param opts Configuration options that determine how the control propagates changes
    * and emits events after marking is applied.
-   * * `onlySelf`: When true, mark only this control. When false or not supplied,
-   * marks all direct ancestors. Default is false.
+   * * `emitEvent`: When true or not supplied (the default), the `events`
+   * observable emits a `TouchedChangeEvent` with the `touched` property being `true`.
+   * When false, no events are emitted.
    */
-  markAsDirty(opts = {}) {
-    this.pristine = false;
-    if (this._parent && !opts.onlySelf) {
-      this._parent.markAsDirty(opts);
-    }
+  markAllAsTouched(opts = {}) {
+    this.markAsTouched({
+      onlySelf: true,
+      emitEvent: opts.emitEvent,
+      sourceControl: this
+    });
+    this._forEachChild((control) => control.markAllAsTouched(opts));
   }
-  /**
-   * Marks the control as `pristine`.
-   *
-   * If the control has any children, marks all children as `pristine`,
-   * and recalculates the `pristine` status of all parent
-   * controls.
-   *
-   * @see {@link markAsTouched()}
-   * @see {@link markAsUntouched()}
-   * @see {@link markAsDirty()}
-   *
-   * @param opts Configuration options that determine how the control emits events after
-   * marking is applied.
-   * * `onlySelf`: When true, mark only this control. When false or not supplied,
-   * marks all direct ancestors. Default is false.
-   */
-  markAsPristine(opts = {}) {
-    this.pristine = true;
-    this._pendingDirty = false;
+  markAsUntouched(opts = {}) {
+    const changed = this.touched === true;
+    this.touched = false;
+    this._pendingTouched = false;
+    const sourceControl = opts.sourceControl ?? this;
     this._forEachChild((control) => {
-      control.markAsPristine({
-        onlySelf: true
+      control.markAsUntouched({
+        onlySelf: true,
+        emitEvent: opts.emitEvent,
+        sourceControl
       });
     });
     if (this._parent && !opts.onlySelf) {
-      this._parent._updatePristine(opts);
+      this._parent._updateTouched(opts, sourceControl);
+    }
+    if (changed && opts.emitEvent !== false) {
+      this._events.next(new TouchedChangeEvent(false, sourceControl));
     }
   }
-  /**
-   * Marks the control as `pending`.
-   *
-   * A control is pending while the control performs async validation.
-   *
-   * @see {@link AbstractControl.status}
-   *
-   * @param opts Configuration options that determine how the control propagates changes and
-   * emits events after marking is applied.
-   * * `onlySelf`: When true, mark only this control. When false or not supplied,
-   * marks all direct ancestors. Default is false.
-   * * `emitEvent`: When true or not supplied (the default), the `statusChanges`
-   * observable emits an event with the latest status the control is marked pending.
-   * When false, no events are emitted.
-   *
-   */
+  markAsDirty(opts = {}) {
+    const changed = this.pristine === true;
+    this.pristine = false;
+    const sourceControl = opts.sourceControl ?? this;
+    if (this._parent && !opts.onlySelf) {
+      this._parent.markAsDirty(__spreadProps(__spreadValues({}, opts), {
+        sourceControl
+      }));
+    }
+    if (changed && opts.emitEvent !== false) {
+      this._events.next(new PristineChangeEvent(false, sourceControl));
+    }
+  }
+  markAsPristine(opts = {}) {
+    const changed = this.pristine === false;
+    this.pristine = true;
+    this._pendingDirty = false;
+    const sourceControl = opts.sourceControl ?? this;
+    this._forEachChild((control) => {
+      control.markAsPristine({
+        onlySelf: true,
+        emitEvent: opts.emitEvent
+      });
+    });
+    if (this._parent && !opts.onlySelf) {
+      this._parent._updatePristine(opts, sourceControl);
+    }
+    if (changed && opts.emitEvent !== false) {
+      this._events.next(new PristineChangeEvent(true, sourceControl));
+    }
+  }
   markAsPending(opts = {}) {
     this.status = PENDING;
+    const sourceControl = opts.sourceControl ?? this;
     if (opts.emitEvent !== false) {
+      this._events.next(new StatusChangeEvent(this.status, sourceControl));
       this.statusChanges.emit(this.status);
     }
     if (this._parent && !opts.onlySelf) {
-      this._parent.markAsPending(opts);
+      this._parent.markAsPending(__spreadProps(__spreadValues({}, opts), {
+        sourceControl
+      }));
     }
   }
-  /**
-   * Disables the control. This means the control is exempt from validation checks and
-   * excluded from the aggregate value of any parent. Its status is `DISABLED`.
-   *
-   * If the control has children, all children are also disabled.
-   *
-   * @see {@link AbstractControl.status}
-   *
-   * @param opts Configuration options that determine how the control propagates
-   * changes and emits events after the control is disabled.
-   * * `onlySelf`: When true, mark only this control. When false or not supplied,
-   * marks all direct ancestors. Default is false.
-   * * `emitEvent`: When true or not supplied (the default), both the `statusChanges` and
-   * `valueChanges`
-   * observables emit events with the latest status and value when the control is disabled.
-   * When false, no events are emitted.
-   */
   disable(opts = {}) {
     const skipPristineCheck = this._parentMarkedDirty(opts.onlySelf);
     this.status = DISABLED;
@@ -32792,13 +34412,16 @@ var AbstractControl = class {
       }));
     });
     this._updateValue();
+    const sourceControl = opts.sourceControl ?? this;
     if (opts.emitEvent !== false) {
+      this._events.next(new ValueChangeEvent(this.value, sourceControl));
+      this._events.next(new StatusChangeEvent(this.status, sourceControl));
       this.valueChanges.emit(this.value);
       this.statusChanges.emit(this.status);
     }
     this._updateAncestors(__spreadProps(__spreadValues({}, opts), {
       skipPristineCheck
-    }));
+    }), this);
     this._onDisabledChange.forEach((changeFn) => changeFn(true));
   }
   /**
@@ -32814,8 +34437,8 @@ var AbstractControl = class {
    * emits events when marked as untouched
    * * `onlySelf`: When true, mark only this control. When false or not supplied,
    * marks all direct ancestors. Default is false.
-   * * `emitEvent`: When true or not supplied (the default), both the `statusChanges` and
-   * `valueChanges`
+   * * `emitEvent`: When true or not supplied (the default), the `statusChanges`,
+   * `valueChanges` and `events`
    * observables emit events with the latest status and value when the control is enabled.
    * When false, no events are emitted.
    */
@@ -32833,16 +34456,16 @@ var AbstractControl = class {
     });
     this._updateAncestors(__spreadProps(__spreadValues({}, opts), {
       skipPristineCheck
-    }));
+    }), this);
     this._onDisabledChange.forEach((changeFn) => changeFn(false));
   }
-  _updateAncestors(opts) {
+  _updateAncestors(opts, sourceControl) {
     if (this._parent && !opts.onlySelf) {
       this._parent.updateValueAndValidity(opts);
       if (!opts.skipPristineCheck) {
-        this._parent._updatePristine();
+        this._parent._updatePristine({}, sourceControl);
       }
-      this._parent._updateTouched();
+      this._parent._updateTouched({}, sourceControl);
     }
   }
   /**
@@ -32860,37 +34483,28 @@ var AbstractControl = class {
   getRawValue() {
     return this.value;
   }
-  /**
-   * Recalculates the value and validation status of the control.
-   *
-   * By default, it also updates the value and validity of its ancestors.
-   *
-   * @param opts Configuration options determine how the control propagates changes and emits events
-   * after updates and validity checks are applied.
-   * * `onlySelf`: When true, only update this control. When false or not supplied,
-   * update all direct ancestors. Default is false.
-   * * `emitEvent`: When true or not supplied (the default), both the `statusChanges` and
-   * `valueChanges`
-   * observables emit events with the latest status and value when the control is updated.
-   * When false, no events are emitted.
-   */
   updateValueAndValidity(opts = {}) {
     this._setInitialStatus();
     this._updateValue();
     if (this.enabled) {
-      this._cancelExistingSubscription();
+      const shouldHaveEmitted = this._cancelExistingSubscription();
       this.errors = this._runValidator();
       this.status = this._calculateStatus();
       if (this.status === VALID || this.status === PENDING) {
-        this._runAsyncValidator(opts.emitEvent);
+        this._runAsyncValidator(shouldHaveEmitted, opts.emitEvent);
       }
     }
+    const sourceControl = opts.sourceControl ?? this;
     if (opts.emitEvent !== false) {
+      this._events.next(new ValueChangeEvent(this.value, sourceControl));
+      this._events.next(new StatusChangeEvent(this.status, sourceControl));
       this.valueChanges.emit(this.value);
       this.statusChanges.emit(this.status);
     }
     if (this._parent && !opts.onlySelf) {
-      this._parent.updateValueAndValidity(opts);
+      this._parent.updateValueAndValidity(__spreadProps(__spreadValues({}, opts), {
+        sourceControl
+      }));
     }
   }
   /** @internal */
@@ -32909,15 +34523,18 @@ var AbstractControl = class {
   _runValidator() {
     return this.validator ? this.validator(this) : null;
   }
-  _runAsyncValidator(emitEvent) {
+  _runAsyncValidator(shouldHaveEmitted, emitEvent) {
     if (this.asyncValidator) {
       this.status = PENDING;
-      this._hasOwnPendingAsyncValidator = true;
+      this._hasOwnPendingAsyncValidator = {
+        emitEvent: emitEvent !== false
+      };
       const obs = toObservable(this.asyncValidator(this));
       this._asyncValidationSubscription = obs.subscribe((errors) => {
-        this._hasOwnPendingAsyncValidator = false;
+        this._hasOwnPendingAsyncValidator = null;
         this.setErrors(errors, {
-          emitEvent
+          emitEvent,
+          shouldHaveEmitted
         });
       });
     }
@@ -32925,40 +34542,15 @@ var AbstractControl = class {
   _cancelExistingSubscription() {
     if (this._asyncValidationSubscription) {
       this._asyncValidationSubscription.unsubscribe();
-      this._hasOwnPendingAsyncValidator = false;
+      const shouldHaveEmitted = this._hasOwnPendingAsyncValidator?.emitEvent ?? false;
+      this._hasOwnPendingAsyncValidator = null;
+      return shouldHaveEmitted;
     }
+    return false;
   }
-  /**
-   * Sets errors on a form control when running validations manually, rather than automatically.
-   *
-   * Calling `setErrors` also updates the validity of the parent control.
-   *
-   * @param opts Configuration options that determine how the control propagates
-   * changes and emits events after the control errors are set.
-   * * `emitEvent`: When true or not supplied (the default), the `statusChanges`
-   * observable emits an event after the errors are set.
-   *
-   * @usageNotes
-   *
-   * ### Manually set the errors for a control
-   *
-   * ```
-   * const login = new FormControl('someLogin');
-   * login.setErrors({
-   *   notUnique: true
-   * });
-   *
-   * expect(login.valid).toEqual(false);
-   * expect(login.errors).toEqual({ notUnique: true });
-   *
-   * login.setValue('someOtherLogin');
-   *
-   * expect(login.valid).toEqual(true);
-   * ```
-   */
   setErrors(errors, opts = {}) {
     this.errors = errors;
-    this._updateControlsErrors(opts.emitEvent !== false);
+    this._updateControlsErrors(opts.emitEvent !== false, this, opts.shouldHaveEmitted);
   }
   /**
    * Retrieves a child control given the control's name or path.
@@ -32992,12 +34584,9 @@ var AbstractControl = class {
    */
   get(path) {
     let currPath = path;
-    if (currPath == null)
-      return null;
-    if (!Array.isArray(currPath))
-      currPath = currPath.split(".");
-    if (currPath.length === 0)
-      return null;
+    if (currPath == null) return null;
+    if (!Array.isArray(currPath)) currPath = currPath.split(".");
+    if (currPath.length === 0) return null;
     return currPath.reduce((control, name) => control && control._find(name), this);
   }
   /**
@@ -33075,13 +34664,16 @@ var AbstractControl = class {
     return x;
   }
   /** @internal */
-  _updateControlsErrors(emitEvent) {
+  _updateControlsErrors(emitEvent, changedControl, shouldHaveEmitted) {
     this.status = this._calculateStatus();
     if (emitEvent) {
       this.statusChanges.emit(this.status);
     }
+    if (emitEvent || shouldHaveEmitted) {
+      this._events.next(new StatusChangeEvent(this.status, changedControl));
+    }
     if (this._parent) {
-      this._parent._updateControlsErrors(emitEvent);
+      this._parent._updateControlsErrors(emitEvent, changedControl, shouldHaveEmitted);
     }
   }
   /** @internal */
@@ -33090,14 +34682,10 @@ var AbstractControl = class {
     this.statusChanges = new EventEmitter();
   }
   _calculateStatus() {
-    if (this._allControlsDisabled())
-      return DISABLED;
-    if (this.errors)
-      return INVALID;
-    if (this._hasOwnPendingAsyncValidator || this._anyControlsHaveStatus(PENDING))
-      return PENDING;
-    if (this._anyControlsHaveStatus(INVALID))
-      return INVALID;
+    if (this._allControlsDisabled()) return DISABLED;
+    if (this.errors) return INVALID;
+    if (this._hasOwnPendingAsyncValidator || this._anyControlsHaveStatus(PENDING)) return PENDING;
+    if (this._anyControlsHaveStatus(INVALID)) return INVALID;
     return VALID;
   }
   /** @internal */
@@ -33113,17 +34701,23 @@ var AbstractControl = class {
     return this._anyControls((control) => control.touched);
   }
   /** @internal */
-  _updatePristine(opts = {}) {
-    this.pristine = !this._anyControlsDirty();
+  _updatePristine(opts, changedControl) {
+    const newPristine = !this._anyControlsDirty();
+    const changed = this.pristine !== newPristine;
+    this.pristine = newPristine;
     if (this._parent && !opts.onlySelf) {
-      this._parent._updatePristine(opts);
+      this._parent._updatePristine(opts, changedControl);
+    }
+    if (changed) {
+      this._events.next(new PristineChangeEvent(this.pristine, changedControl));
     }
   }
   /** @internal */
-  _updateTouched(opts = {}) {
+  _updateTouched(opts = {}, changedControl) {
     this.touched = this._anyControlsTouched();
+    this._events.next(new TouchedChangeEvent(this.touched, changedControl));
     if (this._parent && !opts.onlySelf) {
-      this._parent._updateTouched(opts);
+      this._parent._updateTouched(opts, changedControl);
     }
   }
   /** @internal */
@@ -33198,8 +34792,7 @@ var FormGroup = class extends AbstractControl {
     });
   }
   registerControl(name, control) {
-    if (this.controls[name])
-      return this.controls[name];
+    if (this.controls[name]) return this.controls[name];
     this.controls[name] = control;
     control.setParent(this);
     control._registerOnCollectionChange(this._onCollectionChange);
@@ -33226,9 +34819,8 @@ var FormGroup = class extends AbstractControl {
    * removed. When false, no events are emitted.
    */
   removeControl(name, options = {}) {
-    if (this.controls[name])
-      this.controls[name]._registerOnCollectionChange(() => {
-      });
+    if (this.controls[name]) this.controls[name]._registerOnCollectionChange(() => {
+    });
     delete this.controls[name];
     this.updateValueAndValidity({
       emitEvent: options.emitEvent
@@ -33236,12 +34828,10 @@ var FormGroup = class extends AbstractControl {
     this._onCollectionChange();
   }
   setControl(name, control, options = {}) {
-    if (this.controls[name])
-      this.controls[name]._registerOnCollectionChange(() => {
-      });
+    if (this.controls[name]) this.controls[name]._registerOnCollectionChange(() => {
+    });
     delete this.controls[name];
-    if (control)
-      this.registerControl(name, control);
+    if (control) this.registerControl(name, control);
     this.updateValueAndValidity({
       emitEvent: options.emitEvent
     });
@@ -33328,8 +34918,7 @@ var FormGroup = class extends AbstractControl {
    * the {@link AbstractControl#updateValueAndValidity updateValueAndValidity} method.
    */
   patchValue(value, options = {}) {
-    if (value == null)
-      return;
+    if (value == null) return;
     Object.keys(value).forEach((name) => {
       const control = this.controls[name];
       if (control) {
@@ -33409,8 +34998,8 @@ var FormGroup = class extends AbstractControl {
         emitEvent: options.emitEvent
       });
     });
-    this._updatePristine(options);
-    this._updateTouched(options);
+    this._updatePristine(options, this);
+    this._updateTouched(options, this);
     this.updateValueAndValidity(options);
   }
   /**
@@ -33429,10 +35018,9 @@ var FormGroup = class extends AbstractControl {
     let subtreeUpdated = this._reduceChildren(false, (updated, child) => {
       return child._syncPendingControls() ? true : updated;
     });
-    if (subtreeUpdated)
-      this.updateValueAndValidity({
-        onlySelf: true
-      });
+    if (subtreeUpdated) this.updateValueAndValidity({
+      onlySelf: true
+    });
     return subtreeUpdated;
   }
   /** @internal */
@@ -33512,10 +35100,8 @@ function controlPath(name, parent) {
 }
 function setUpControl(control, dir, callSetDisabledState = setDisabledStateDefault) {
   if (typeof ngDevMode === "undefined" || ngDevMode) {
-    if (!control)
-      _throwError(dir, "Cannot find control with");
-    if (!dir.valueAccessor)
-      _throwMissingValueAccessorError(dir);
+    if (!control) _throwError(dir, "Cannot find control with");
+    if (!dir.valueAccessor) _throwMissingValueAccessorError(dir);
   }
   setUpValidators(control, dir);
   dir.valueAccessor.writeValue(control.value);
@@ -33546,8 +35132,7 @@ function cleanUpControl(control, dir, validateControlPresenceOnChange = true) {
 }
 function registerOnValidatorChange(validators, onChange) {
   validators.forEach((validator) => {
-    if (validator.registerOnValidatorChange)
-      validator.registerOnValidatorChange(onChange);
+    if (validator.registerOnValidatorChange) validator.registerOnValidatorChange(onChange);
   });
 }
 function setUpDisabledChangeHandler(control, dir) {
@@ -33613,22 +35198,18 @@ function setUpViewChangePipeline(control, dir) {
     control._pendingValue = newValue;
     control._pendingChange = true;
     control._pendingDirty = true;
-    if (control.updateOn === "change")
-      updateControl(control, dir);
+    if (control.updateOn === "change") updateControl(control, dir);
   });
 }
 function setUpBlurPipeline(control, dir) {
   dir.valueAccessor.registerOnTouched(() => {
     control._pendingTouched = true;
-    if (control.updateOn === "blur" && control._pendingChange)
-      updateControl(control, dir);
-    if (control.updateOn !== "submit")
-      control.markAsTouched();
+    if (control.updateOn === "blur" && control._pendingChange) updateControl(control, dir);
+    if (control.updateOn !== "submit") control.markAsTouched();
   });
 }
 function updateControl(control, dir) {
-  if (control._pendingDirty)
-    control.markAsDirty();
+  if (control._pendingDirty) control.markAsDirty();
   control.setValue(control._pendingValue, {
     emitModelToViewChange: false
   });
@@ -33638,8 +35219,7 @@ function updateControl(control, dir) {
 function setUpModelChangePipeline(control, dir) {
   const onChange = (newValue, emitModelEvent) => {
     dir.valueAccessor.writeValue(newValue);
-    if (emitModelEvent)
-      dir.viewToModelUpdate(newValue);
+    if (emitModelEvent) dir.viewToModelUpdate(newValue);
   };
   control.registerOnChange(onChange);
   dir._registerOnDestroy(() => {
@@ -33647,8 +35227,7 @@ function setUpModelChangePipeline(control, dir) {
   });
 }
 function setUpFormContainer(control, dir) {
-  if (control == null && (typeof ngDevMode === "undefined" || ngDevMode))
-    _throwError(dir, "Cannot find control with");
+  if (control == null && (typeof ngDevMode === "undefined" || ngDevMode)) _throwError(dir, "Cannot find control with");
   setUpValidators(control, dir);
 }
 function cleanUpFormContainer(control, dir) {
@@ -33663,10 +35242,8 @@ function _throwError(dir, message) {
 }
 function _describeControlLocation(dir) {
   const path = dir.path;
-  if (path && path.length > 1)
-    return `path: '${path.join(" -> ")}'`;
-  if (path?.[0])
-    return `name: '${path}'`;
+  if (path && path.length > 1) return `path: '${path.join(" -> ")}'`;
+  if (path?.[0]) return `name: '${path}'`;
   return "unspecified name attribute";
 }
 function _throwMissingValueAccessorError(dir) {
@@ -33678,11 +35255,9 @@ function _throwInvalidValueAccessorError(dir) {
   throw new RuntimeError(1200, `Value accessor was not provided as an array for form control with ${loc}. Check that the \`NG_VALUE_ACCESSOR\` token is configured as a \`multi: true\` provider.`);
 }
 function isPropertyUpdated(changes, viewModel) {
-  if (!changes.hasOwnProperty("model"))
-    return false;
+  if (!changes.hasOwnProperty("model")) return false;
   const change = changes["model"];
-  if (change.isFirstChange())
-    return true;
+  if (change.isFirstChange()) return true;
   return !Object.is(viewModel, change.currentValue);
 }
 function isBuiltInAccessor(valueAccessor) {
@@ -33699,10 +35274,8 @@ function syncPendingControls(form, directives) {
   });
 }
 function selectValueAccessor(dir, valueAccessors) {
-  if (!valueAccessors)
-    return null;
-  if (!Array.isArray(valueAccessors) && (typeof ngDevMode === "undefined" || ngDevMode))
-    _throwInvalidValueAccessorError(dir);
+  if (!valueAccessors) return null;
+  if (!Array.isArray(valueAccessors) && (typeof ngDevMode === "undefined" || ngDevMode)) _throwInvalidValueAccessorError(dir);
   let defaultAccessor = void 0;
   let builtinAccessor = void 0;
   let customAccessor = void 0;
@@ -33710,21 +35283,16 @@ function selectValueAccessor(dir, valueAccessors) {
     if (v.constructor === DefaultValueAccessor) {
       defaultAccessor = v;
     } else if (isBuiltInAccessor(v)) {
-      if (builtinAccessor && (typeof ngDevMode === "undefined" || ngDevMode))
-        _throwError(dir, "More than one built-in value accessor matches form control with");
+      if (builtinAccessor && (typeof ngDevMode === "undefined" || ngDevMode)) _throwError(dir, "More than one built-in value accessor matches form control with");
       builtinAccessor = v;
     } else {
-      if (customAccessor && (typeof ngDevMode === "undefined" || ngDevMode))
-        _throwError(dir, "More than one custom value accessor matches form control with");
+      if (customAccessor && (typeof ngDevMode === "undefined" || ngDevMode)) _throwError(dir, "More than one custom value accessor matches form control with");
       customAccessor = v;
     }
   });
-  if (customAccessor)
-    return customAccessor;
-  if (builtinAccessor)
-    return builtinAccessor;
-  if (defaultAccessor)
-    return defaultAccessor;
+  if (customAccessor) return customAccessor;
+  if (builtinAccessor) return builtinAccessor;
+  if (defaultAccessor) return defaultAccessor;
   if (typeof ngDevMode === "undefined" || ngDevMode) {
     _throwError(dir, "No valid value accessor for form control with");
   }
@@ -33732,12 +35300,10 @@ function selectValueAccessor(dir, valueAccessors) {
 }
 function removeListItem$1(list, el) {
   const index = list.indexOf(el);
-  if (index > -1)
-    list.splice(index, 1);
+  if (index > -1) list.splice(index, 1);
 }
 function _ngModelWarning(name, type, instance, warningConfig) {
-  if (warningConfig === "never")
-    return;
+  if (warningConfig === "never") return;
   if ((warningConfig === null || warningConfig === "once") && !type._ngModelWarningSentOnce || warningConfig === "always" && !instance._ngModelWarningSent) {
     console.warn(ngModelWarning(name));
     type._ngModelWarningSentOnce = true;
@@ -33750,10 +35316,18 @@ var formDirectiveProvider$1 = {
 };
 var resolvedPromise$1 = (() => Promise.resolve())();
 var _NgForm = class _NgForm extends ControlContainer {
+  /**
+   * @description
+   * Returns whether the form submission has been triggered.
+   */
+  get submitted() {
+    return untracked(this.submittedReactive);
+  }
   constructor(validators, asyncValidators, callSetDisabledState) {
     super();
     this.callSetDisabledState = callSetDisabledState;
-    this.submitted = false;
+    this._submitted = computed(() => this.submittedReactive());
+    this.submittedReactive = signal(false);
     this._directives = /* @__PURE__ */ new Set();
     this.ngSubmit = new EventEmitter();
     this.form = new FormGroup({}, composeValidators(validators), composeAsyncValidators(asyncValidators));
@@ -33902,7 +35476,7 @@ var _NgForm = class _NgForm extends ControlContainer {
    * @param $event The "submit" event object
    */
   onSubmit($event) {
-    this.submitted = true;
+    this.submittedReactive.set(true);
     syncPendingControls(this.form, this._directives);
     this.ngSubmit.emit($event);
     return $event?.target?.method === "dialog";
@@ -33922,7 +35496,7 @@ var _NgForm = class _NgForm extends ControlContainer {
    */
   resetForm(value = void 0) {
     this.form.reset(value);
-    this.submitted = false;
+    this.submittedReactive.set(false);
   }
   _setUpdateStrategy() {
     if (this.options && this.options.updateOn != null) {
@@ -33934,8 +35508,8 @@ var _NgForm = class _NgForm extends ControlContainer {
     return path.length ? this.form.get(path) : this.form;
   }
 };
-_NgForm.\u0275fac = function NgForm_Factory(t) {
-  return new (t || _NgForm)(\u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10), \u0275\u0275directiveInject(CALL_SET_DISABLED_STATE, 8));
+_NgForm.\u0275fac = function NgForm_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgForm)(\u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10), \u0275\u0275directiveInject(CALL_SET_DISABLED_STATE, 8));
 };
 _NgForm.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgForm,
@@ -33950,7 +35524,7 @@ _NgForm.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
     }
   },
   inputs: {
-    options: [InputFlags.None, "ngFormOptions", "options"]
+    options: [0, "ngFormOptions", "options"]
   },
   outputs: {
     ngSubmit: "ngSubmit"
@@ -34009,8 +35583,7 @@ var NgForm = _NgForm;
 })();
 function removeListItem(list, el) {
   const index = list.indexOf(el);
-  if (index > -1)
-    list.splice(index, 1);
+  if (index > -1) list.splice(index, 1);
 }
 function isFormControlState(formState) {
   return typeof formState === "object" && formState !== null && Object.keys(formState).length === 2 && "value" in formState && "disabled" in formState;
@@ -34088,10 +35661,8 @@ var FormControl = class FormControl2 extends AbstractControl {
   /** @internal */
   _syncPendingControls() {
     if (this.updateOn === "submit") {
-      if (this._pendingDirty)
-        this.markAsDirty();
-      if (this._pendingTouched)
-        this.markAsTouched();
+      if (this._pendingDirty) this.markAsDirty();
+      if (this._pendingTouched) this.markAsTouched();
       if (this._pendingChange) {
         this.setValue(this._pendingValue, {
           onlySelf: true,
@@ -34157,8 +35728,8 @@ var _AbstractFormGroupDirective = class _AbstractFormGroupDirective extends Cont
 };
 _AbstractFormGroupDirective.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275AbstractFormGroupDirective_BaseFactory;
-  return function AbstractFormGroupDirective_Factory(t) {
-    return (\u0275AbstractFormGroupDirective_BaseFactory || (\u0275AbstractFormGroupDirective_BaseFactory = \u0275\u0275getInheritedFactory(_AbstractFormGroupDirective)))(t || _AbstractFormGroupDirective);
+  return function AbstractFormGroupDirective_Factory(__ngFactoryType__) {
+    return (\u0275AbstractFormGroupDirective_BaseFactory || (\u0275AbstractFormGroupDirective_BaseFactory = \u0275\u0275getInheritedFactory(_AbstractFormGroupDirective)))(__ngFactoryType__ || _AbstractFormGroupDirective);
   };
 })();
 _AbstractFormGroupDirective.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -34234,14 +35805,14 @@ var _NgModelGroup = class _NgModelGroup extends AbstractFormGroupDirective {
     }
   }
 };
-_NgModelGroup.\u0275fac = function NgModelGroup_Factory(t) {
-  return new (t || _NgModelGroup)(\u0275\u0275directiveInject(ControlContainer, 5), \u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10));
+_NgModelGroup.\u0275fac = function NgModelGroup_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgModelGroup)(\u0275\u0275directiveInject(ControlContainer, 5), \u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10));
 };
 _NgModelGroup.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgModelGroup,
   selectors: [["", "ngModelGroup", ""]],
   inputs: {
-    name: [InputFlags.None, "ngModelGroup", "name"]
+    name: [0, "ngModelGroup", "name"]
   },
   exportAs: ["ngModelGroup"],
   features: [\u0275\u0275ProvidersFeature([modelGroupProvider]), \u0275\u0275InheritDefinitionFeature]
@@ -34396,8 +35967,7 @@ var _NgModel = class _NgModel extends NgControl {
     }
   }
   _checkName() {
-    if (this.options && this.options.name)
-      this.name = this.options.name;
+    if (this.options && this.options.name) this.name = this.options.name;
     if (!this._isStandalone() && !this.name && (typeof ngDevMode === "undefined" || ngDevMode)) {
       throw missingNameException();
     }
@@ -34426,17 +35996,17 @@ var _NgModel = class _NgModel extends NgControl {
     return this._parent ? controlPath(controlName, this._parent) : [controlName];
   }
 };
-_NgModel.\u0275fac = function NgModel_Factory(t) {
-  return new (t || _NgModel)(\u0275\u0275directiveInject(ControlContainer, 9), \u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10), \u0275\u0275directiveInject(NG_VALUE_ACCESSOR, 10), \u0275\u0275directiveInject(ChangeDetectorRef, 8), \u0275\u0275directiveInject(CALL_SET_DISABLED_STATE, 8));
+_NgModel.\u0275fac = function NgModel_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgModel)(\u0275\u0275directiveInject(ControlContainer, 9), \u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10), \u0275\u0275directiveInject(NG_VALUE_ACCESSOR, 10), \u0275\u0275directiveInject(ChangeDetectorRef, 8), \u0275\u0275directiveInject(CALL_SET_DISABLED_STATE, 8));
 };
 _NgModel.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgModel,
   selectors: [["", "ngModel", "", 3, "formControlName", "", 3, "formControl", ""]],
   inputs: {
     name: "name",
-    isDisabled: [InputFlags.None, "disabled", "isDisabled"],
-    model: [InputFlags.None, "ngModel", "model"],
-    options: [InputFlags.None, "ngModelOptions", "options"]
+    isDisabled: [0, "disabled", "isDisabled"],
+    model: [0, "ngModel", "model"],
+    options: [0, "ngModelOptions", "options"]
   },
   outputs: {
     update: "ngModelChange"
@@ -34530,8 +36100,8 @@ var NgModel = _NgModel;
 })();
 var _\u0275NgNoValidate = class _\u0275NgNoValidate {
 };
-_\u0275NgNoValidate.\u0275fac = function \u0275NgNoValidate_Factory(t) {
-  return new (t || _\u0275NgNoValidate)();
+_\u0275NgNoValidate.\u0275fac = function \u0275NgNoValidate_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _\u0275NgNoValidate)();
 };
 _\u0275NgNoValidate.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _\u0275NgNoValidate,
@@ -34576,8 +36146,8 @@ var _NumberValueAccessor = class _NumberValueAccessor extends BuiltInControlValu
 };
 _NumberValueAccessor.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NumberValueAccessor_BaseFactory;
-  return function NumberValueAccessor_Factory(t) {
-    return (\u0275NumberValueAccessor_BaseFactory || (\u0275NumberValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_NumberValueAccessor)))(t || _NumberValueAccessor);
+  return function NumberValueAccessor_Factory(__ngFactoryType__) {
+    return (\u0275NumberValueAccessor_BaseFactory || (\u0275NumberValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_NumberValueAccessor)))(__ngFactoryType__ || _NumberValueAccessor);
   };
 })();
 _NumberValueAccessor.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -34654,13 +36224,12 @@ var _RadioControlRegistry = class _RadioControlRegistry {
     });
   }
   _isSameGroup(controlPair, accessor) {
-    if (!controlPair[0].control)
-      return false;
+    if (!controlPair[0].control) return false;
     return controlPair[0]._parent === accessor._control._parent && controlPair[1].name === accessor.name;
   }
 };
-_RadioControlRegistry.\u0275fac = function RadioControlRegistry_Factory(t) {
-  return new (t || _RadioControlRegistry)();
+_RadioControlRegistry.\u0275fac = function RadioControlRegistry_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _RadioControlRegistry)();
 };
 _RadioControlRegistry.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _RadioControlRegistry,
@@ -34736,12 +36305,11 @@ var _RadioControlValueAccessor = class _RadioControlValueAccessor extends BuiltI
     if (this.name && this.formControlName && this.name !== this.formControlName && (typeof ngDevMode === "undefined" || ngDevMode)) {
       throwNameError();
     }
-    if (!this.name && this.formControlName)
-      this.name = this.formControlName;
+    if (!this.name && this.formControlName) this.name = this.formControlName;
   }
 };
-_RadioControlValueAccessor.\u0275fac = function RadioControlValueAccessor_Factory(t) {
-  return new (t || _RadioControlValueAccessor)(\u0275\u0275directiveInject(Renderer2), \u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(RadioControlRegistry), \u0275\u0275directiveInject(Injector));
+_RadioControlValueAccessor.\u0275fac = function RadioControlValueAccessor_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _RadioControlValueAccessor)(\u0275\u0275directiveInject(Renderer2), \u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(RadioControlRegistry), \u0275\u0275directiveInject(Injector));
 };
 _RadioControlValueAccessor.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _RadioControlValueAccessor,
@@ -34819,8 +36387,8 @@ var _RangeValueAccessor = class _RangeValueAccessor extends BuiltInControlValueA
 };
 _RangeValueAccessor.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275RangeValueAccessor_BaseFactory;
-  return function RangeValueAccessor_Factory(t) {
-    return (\u0275RangeValueAccessor_BaseFactory || (\u0275RangeValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_RangeValueAccessor)))(t || _RangeValueAccessor);
+  return function RangeValueAccessor_Factory(__ngFactoryType__) {
+    return (\u0275RangeValueAccessor_BaseFactory || (\u0275RangeValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_RangeValueAccessor)))(__ngFactoryType__ || _RangeValueAccessor);
   };
 })();
 _RangeValueAccessor.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -34945,16 +36513,16 @@ var _FormControlDirective = class _FormControlDirective extends NgControl {
   }
 };
 _FormControlDirective._ngModelWarningSentOnce = false;
-_FormControlDirective.\u0275fac = function FormControlDirective_Factory(t) {
-  return new (t || _FormControlDirective)(\u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10), \u0275\u0275directiveInject(NG_VALUE_ACCESSOR, 10), \u0275\u0275directiveInject(NG_MODEL_WITH_FORM_CONTROL_WARNING, 8), \u0275\u0275directiveInject(CALL_SET_DISABLED_STATE, 8));
+_FormControlDirective.\u0275fac = function FormControlDirective_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _FormControlDirective)(\u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10), \u0275\u0275directiveInject(NG_VALUE_ACCESSOR, 10), \u0275\u0275directiveInject(NG_MODEL_WITH_FORM_CONTROL_WARNING, 8), \u0275\u0275directiveInject(CALL_SET_DISABLED_STATE, 8));
 };
 _FormControlDirective.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _FormControlDirective,
   selectors: [["", "formControl", ""]],
   inputs: {
-    form: [InputFlags.None, "formControl", "form"],
-    isDisabled: [InputFlags.None, "disabled", "isDisabled"],
-    model: [InputFlags.None, "ngModel", "model"]
+    form: [0, "formControl", "form"],
+    isDisabled: [0, "disabled", "isDisabled"],
+    model: [0, "ngModel", "model"]
   },
   outputs: {
     update: "ngModelChange"
@@ -35041,10 +36609,22 @@ var formDirectiveProvider = {
   useExisting: forwardRef(() => FormGroupDirective)
 };
 var _FormGroupDirective = class _FormGroupDirective extends ControlContainer {
+  /**
+   * @description
+   * Reports whether the form submission has been triggered.
+   */
+  get submitted() {
+    return untracked(this._submittedReactive);
+  }
+  // TODO(atscott): Remove once invalid API usage is cleaned up internally
+  set submitted(value) {
+    this._submittedReactive.set(value);
+  }
   constructor(validators, asyncValidators, callSetDisabledState) {
     super();
     this.callSetDisabledState = callSetDisabledState;
-    this.submitted = false;
+    this._submitted = computed(() => this._submittedReactive());
+    this._submittedReactive = signal(false);
     this._onCollectionChange = () => this._updateDomValue();
     this.directives = [];
     this.form = null;
@@ -35204,9 +36784,10 @@ var _FormGroupDirective = class _FormGroupDirective extends ControlContainer {
    * @param $event The "submit" event object
    */
   onSubmit($event) {
-    this.submitted = true;
+    this._submittedReactive.set(true);
     syncPendingControls(this.form, this.directives);
     this.ngSubmit.emit($event);
+    this.form._events.next(new FormSubmittedEvent(this.control));
     return $event?.target?.method === "dialog";
   }
   /**
@@ -35224,7 +36805,8 @@ var _FormGroupDirective = class _FormGroupDirective extends ControlContainer {
    */
   resetForm(value = void 0) {
     this.form.reset(value);
-    this.submitted = false;
+    this._submittedReactive.set(false);
+    this.form._events.next(new FormResetEvent(this.form));
   }
   /** @internal */
   _updateDomValue() {
@@ -35282,8 +36864,8 @@ var _FormGroupDirective = class _FormGroupDirective extends ControlContainer {
     }
   }
 };
-_FormGroupDirective.\u0275fac = function FormGroupDirective_Factory(t) {
-  return new (t || _FormGroupDirective)(\u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10), \u0275\u0275directiveInject(CALL_SET_DISABLED_STATE, 8));
+_FormGroupDirective.\u0275fac = function FormGroupDirective_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _FormGroupDirective)(\u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10), \u0275\u0275directiveInject(CALL_SET_DISABLED_STATE, 8));
 };
 _FormGroupDirective.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _FormGroupDirective,
@@ -35298,7 +36880,7 @@ _FormGroupDirective.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
     }
   },
   inputs: {
-    form: [InputFlags.None, "formGroup", "form"]
+    form: [0, "formGroup", "form"]
   },
   outputs: {
     ngSubmit: "ngSubmit"
@@ -35376,14 +36958,14 @@ var _FormGroupName = class _FormGroupName extends AbstractFormGroupDirective {
     }
   }
 };
-_FormGroupName.\u0275fac = function FormGroupName_Factory(t) {
-  return new (t || _FormGroupName)(\u0275\u0275directiveInject(ControlContainer, 13), \u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10));
+_FormGroupName.\u0275fac = function FormGroupName_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _FormGroupName)(\u0275\u0275directiveInject(ControlContainer, 13), \u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10));
 };
 _FormGroupName.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _FormGroupName,
   selectors: [["", "formGroupName", ""]],
   inputs: {
-    name: [InputFlags.None, "formGroupName", "name"]
+    name: [0, "formGroupName", "name"]
   },
   features: [\u0275\u0275ProvidersFeature([formGroupNameProvider]), \u0275\u0275InheritDefinitionFeature]
 });
@@ -35489,14 +37071,14 @@ var _FormArrayName = class _FormArrayName extends ControlContainer {
     }
   }
 };
-_FormArrayName.\u0275fac = function FormArrayName_Factory(t) {
-  return new (t || _FormArrayName)(\u0275\u0275directiveInject(ControlContainer, 13), \u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10));
+_FormArrayName.\u0275fac = function FormArrayName_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _FormArrayName)(\u0275\u0275directiveInject(ControlContainer, 13), \u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10));
 };
 _FormArrayName.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _FormArrayName,
   selectors: [["", "formArrayName", ""]],
   inputs: {
-    name: [InputFlags.None, "formArrayName", "name"]
+    name: [0, "formArrayName", "name"]
   },
   features: [\u0275\u0275ProvidersFeature([formArrayNameProvider]), \u0275\u0275InheritDefinitionFeature]
 });
@@ -35575,8 +37157,7 @@ var _FormControlName = class _FormControlName extends NgControl {
   }
   /** @nodoc */
   ngOnChanges(changes) {
-    if (!this._added)
-      this._setUpControl();
+    if (!this._added) this._setUpControl();
     if (isPropertyUpdated(changes, this.viewModel)) {
       if (typeof ngDevMode === "undefined" || ngDevMode) {
         _ngModelWarning("formControlName", _FormControlName, this, this._ngModelWarningConfig);
@@ -35621,7 +37202,7 @@ var _FormControlName = class _FormControlName extends NgControl {
       if (!(this._parent instanceof FormGroupName) && this._parent instanceof AbstractFormGroupDirective) {
         throw ngModelGroupException();
       } else if (!(this._parent instanceof FormGroupName) && !(this._parent instanceof FormGroupDirective) && !(this._parent instanceof FormArrayName)) {
-        throw controlParentException();
+        throw controlParentException(this.name);
       }
     }
   }
@@ -35632,16 +37213,16 @@ var _FormControlName = class _FormControlName extends NgControl {
   }
 };
 _FormControlName._ngModelWarningSentOnce = false;
-_FormControlName.\u0275fac = function FormControlName_Factory(t) {
-  return new (t || _FormControlName)(\u0275\u0275directiveInject(ControlContainer, 13), \u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10), \u0275\u0275directiveInject(NG_VALUE_ACCESSOR, 10), \u0275\u0275directiveInject(NG_MODEL_WITH_FORM_CONTROL_WARNING, 8));
+_FormControlName.\u0275fac = function FormControlName_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _FormControlName)(\u0275\u0275directiveInject(ControlContainer, 13), \u0275\u0275directiveInject(NG_VALIDATORS, 10), \u0275\u0275directiveInject(NG_ASYNC_VALIDATORS, 10), \u0275\u0275directiveInject(NG_VALUE_ACCESSOR, 10), \u0275\u0275directiveInject(NG_MODEL_WITH_FORM_CONTROL_WARNING, 8));
 };
 _FormControlName.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _FormControlName,
   selectors: [["", "formControlName", ""]],
   inputs: {
-    name: [InputFlags.None, "formControlName", "name"],
-    isDisabled: [InputFlags.None, "disabled", "isDisabled"],
-    model: [InputFlags.None, "ngModel", "model"]
+    name: [0, "formControlName", "name"],
+    isDisabled: [0, "disabled", "isDisabled"],
+    model: [0, "ngModel", "model"]
   },
   outputs: {
     update: "ngModelChange"
@@ -35728,10 +37309,8 @@ var SELECT_VALUE_ACCESSOR = {
   multi: true
 };
 function _buildValueString$1(id, value) {
-  if (id == null)
-    return `${value}`;
-  if (value && typeof value === "object")
-    value = "Object";
+  if (id == null) return `${value}`;
+  if (value && typeof value === "object") value = "Object";
   return `${id}: ${value}`.slice(0, 50);
 }
 function _extractId$1(valueString) {
@@ -35782,8 +37361,7 @@ var _SelectControlValueAccessor = class _SelectControlValueAccessor extends Buil
   /** @internal */
   _getOptionId(value) {
     for (const id of this._optionMap.keys()) {
-      if (this._compareWith(this._optionMap.get(id), value))
-        return id;
+      if (this._compareWith(this._optionMap.get(id), value)) return id;
     }
     return null;
   }
@@ -35795,8 +37373,8 @@ var _SelectControlValueAccessor = class _SelectControlValueAccessor extends Buil
 };
 _SelectControlValueAccessor.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275SelectControlValueAccessor_BaseFactory;
-  return function SelectControlValueAccessor_Factory(t) {
-    return (\u0275SelectControlValueAccessor_BaseFactory || (\u0275SelectControlValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_SelectControlValueAccessor)))(t || _SelectControlValueAccessor);
+  return function SelectControlValueAccessor_Factory(__ngFactoryType__) {
+    return (\u0275SelectControlValueAccessor_BaseFactory || (\u0275SelectControlValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_SelectControlValueAccessor)))(__ngFactoryType__ || _SelectControlValueAccessor);
   };
 })();
 _SelectControlValueAccessor.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -35839,8 +37417,7 @@ var _NgSelectOption = class _NgSelectOption {
     this._element = _element;
     this._renderer = _renderer;
     this._select = _select;
-    if (this._select)
-      this.id = this._select._registerOption();
+    if (this._select) this.id = this._select._registerOption();
   }
   /**
    * @description
@@ -35848,8 +37425,7 @@ var _NgSelectOption = class _NgSelectOption {
    * ngValue supports binding to objects.
    */
   set ngValue(value) {
-    if (this._select == null)
-      return;
+    if (this._select == null) return;
     this._select._optionMap.set(this.id, value);
     this._setElementValue(_buildValueString$1(this.id, value));
     this._select.writeValue(this._select.value);
@@ -35861,8 +37437,7 @@ var _NgSelectOption = class _NgSelectOption {
    */
   set value(value) {
     this._setElementValue(value);
-    if (this._select)
-      this._select.writeValue(this._select.value);
+    if (this._select) this._select.writeValue(this._select.value);
   }
   /** @internal */
   _setElementValue(value) {
@@ -35876,8 +37451,8 @@ var _NgSelectOption = class _NgSelectOption {
     }
   }
 };
-_NgSelectOption.\u0275fac = function NgSelectOption_Factory(t) {
-  return new (t || _NgSelectOption)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(Renderer2), \u0275\u0275directiveInject(SelectControlValueAccessor, 9));
+_NgSelectOption.\u0275fac = function NgSelectOption_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgSelectOption)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(Renderer2), \u0275\u0275directiveInject(SelectControlValueAccessor, 9));
 };
 _NgSelectOption.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgSelectOption,
@@ -35922,12 +37497,9 @@ var SELECT_MULTIPLE_VALUE_ACCESSOR = {
   multi: true
 };
 function _buildValueString(id, value) {
-  if (id == null)
-    return `${value}`;
-  if (typeof value === "string")
-    value = `'${value}'`;
-  if (value && typeof value === "object")
-    value = "Object";
+  if (id == null) return `${value}`;
+  if (typeof value === "string") value = `'${value}'`;
+  if (value && typeof value === "object") value = "Object";
   return `${id}: ${value}`.slice(0, 50);
 }
 function _extractId(valueString) {
@@ -36009,8 +37581,7 @@ var _SelectMultipleControlValueAccessor = class _SelectMultipleControlValueAcces
   /** @internal */
   _getOptionId(value) {
     for (const id of this._optionMap.keys()) {
-      if (this._compareWith(this._optionMap.get(id)._value, value))
-        return id;
+      if (this._compareWith(this._optionMap.get(id)._value, value)) return id;
     }
     return null;
   }
@@ -36022,8 +37593,8 @@ var _SelectMultipleControlValueAccessor = class _SelectMultipleControlValueAcces
 };
 _SelectMultipleControlValueAccessor.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275SelectMultipleControlValueAccessor_BaseFactory;
-  return function SelectMultipleControlValueAccessor_Factory(t) {
-    return (\u0275SelectMultipleControlValueAccessor_BaseFactory || (\u0275SelectMultipleControlValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_SelectMultipleControlValueAccessor)))(t || _SelectMultipleControlValueAccessor);
+  return function SelectMultipleControlValueAccessor_Factory(__ngFactoryType__) {
+    return (\u0275SelectMultipleControlValueAccessor_BaseFactory || (\u0275SelectMultipleControlValueAccessor_BaseFactory = \u0275\u0275getInheritedFactory(_SelectMultipleControlValueAccessor)))(__ngFactoryType__ || _SelectMultipleControlValueAccessor);
   };
 })();
 _SelectMultipleControlValueAccessor.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -36076,8 +37647,7 @@ var _\u0275NgSelectMultipleOption = class _\u0275NgSelectMultipleOption {
    * ngValue supports binding to objects.
    */
   set ngValue(value) {
-    if (this._select == null)
-      return;
+    if (this._select == null) return;
     this._value = value;
     this._setElementValue(_buildValueString(this.id, value));
     this._select.writeValue(this._select.value);
@@ -36112,8 +37682,8 @@ var _\u0275NgSelectMultipleOption = class _\u0275NgSelectMultipleOption {
     }
   }
 };
-_\u0275NgSelectMultipleOption.\u0275fac = function \u0275NgSelectMultipleOption_Factory(t) {
-  return new (t || _\u0275NgSelectMultipleOption)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(Renderer2), \u0275\u0275directiveInject(SelectMultipleControlValueAccessor, 9));
+_\u0275NgSelectMultipleOption.\u0275fac = function \u0275NgSelectMultipleOption_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _\u0275NgSelectMultipleOption)(\u0275\u0275directiveInject(ElementRef), \u0275\u0275directiveInject(Renderer2), \u0275\u0275directiveInject(SelectMultipleControlValueAccessor, 9));
 };
 _\u0275NgSelectMultipleOption.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _\u0275NgSelectMultipleOption,
@@ -36192,8 +37762,8 @@ var _AbstractValidatorDirective = class _AbstractValidatorDirective {
     return input2 != null;
   }
 };
-_AbstractValidatorDirective.\u0275fac = function AbstractValidatorDirective_Factory(t) {
-  return new (t || _AbstractValidatorDirective)();
+_AbstractValidatorDirective.\u0275fac = function AbstractValidatorDirective_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _AbstractValidatorDirective)();
 };
 _AbstractValidatorDirective.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _AbstractValidatorDirective,
@@ -36220,8 +37790,8 @@ var _MaxValidator = class _MaxValidator extends AbstractValidatorDirective {
 };
 _MaxValidator.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275MaxValidator_BaseFactory;
-  return function MaxValidator_Factory(t) {
-    return (\u0275MaxValidator_BaseFactory || (\u0275MaxValidator_BaseFactory = \u0275\u0275getInheritedFactory(_MaxValidator)))(t || _MaxValidator);
+  return function MaxValidator_Factory(__ngFactoryType__) {
+    return (\u0275MaxValidator_BaseFactory || (\u0275MaxValidator_BaseFactory = \u0275\u0275getInheritedFactory(_MaxValidator)))(__ngFactoryType__ || _MaxValidator);
   };
 })();
 _MaxValidator.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -36270,8 +37840,8 @@ var _MinValidator = class _MinValidator extends AbstractValidatorDirective {
 };
 _MinValidator.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275MinValidator_BaseFactory;
-  return function MinValidator_Factory(t) {
-    return (\u0275MinValidator_BaseFactory || (\u0275MinValidator_BaseFactory = \u0275\u0275getInheritedFactory(_MinValidator)))(t || _MinValidator);
+  return function MinValidator_Factory(__ngFactoryType__) {
+    return (\u0275MinValidator_BaseFactory || (\u0275MinValidator_BaseFactory = \u0275\u0275getInheritedFactory(_MinValidator)))(__ngFactoryType__ || _MinValidator);
   };
 })();
 _MinValidator.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -36329,8 +37899,8 @@ var _RequiredValidator = class _RequiredValidator extends AbstractValidatorDirec
 };
 _RequiredValidator.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275RequiredValidator_BaseFactory;
-  return function RequiredValidator_Factory(t) {
-    return (\u0275RequiredValidator_BaseFactory || (\u0275RequiredValidator_BaseFactory = \u0275\u0275getInheritedFactory(_RequiredValidator)))(t || _RequiredValidator);
+  return function RequiredValidator_Factory(__ngFactoryType__) {
+    return (\u0275RequiredValidator_BaseFactory || (\u0275RequiredValidator_BaseFactory = \u0275\u0275getInheritedFactory(_RequiredValidator)))(__ngFactoryType__ || _RequiredValidator);
   };
 })();
 _RequiredValidator.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -36372,8 +37942,8 @@ var _CheckboxRequiredValidator = class _CheckboxRequiredValidator extends Requir
 };
 _CheckboxRequiredValidator.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275CheckboxRequiredValidator_BaseFactory;
-  return function CheckboxRequiredValidator_Factory(t) {
-    return (\u0275CheckboxRequiredValidator_BaseFactory || (\u0275CheckboxRequiredValidator_BaseFactory = \u0275\u0275getInheritedFactory(_CheckboxRequiredValidator)))(t || _CheckboxRequiredValidator);
+  return function CheckboxRequiredValidator_Factory(__ngFactoryType__) {
+    return (\u0275CheckboxRequiredValidator_BaseFactory || (\u0275CheckboxRequiredValidator_BaseFactory = \u0275\u0275getInheritedFactory(_CheckboxRequiredValidator)))(__ngFactoryType__ || _CheckboxRequiredValidator);
   };
 })();
 _CheckboxRequiredValidator.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -36419,8 +37989,8 @@ var _EmailValidator = class _EmailValidator extends AbstractValidatorDirective {
 };
 _EmailValidator.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275EmailValidator_BaseFactory;
-  return function EmailValidator_Factory(t) {
-    return (\u0275EmailValidator_BaseFactory || (\u0275EmailValidator_BaseFactory = \u0275\u0275getInheritedFactory(_EmailValidator)))(t || _EmailValidator);
+  return function EmailValidator_Factory(__ngFactoryType__) {
+    return (\u0275EmailValidator_BaseFactory || (\u0275EmailValidator_BaseFactory = \u0275\u0275getInheritedFactory(_EmailValidator)))(__ngFactoryType__ || _EmailValidator);
   };
 })();
 _EmailValidator.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -36460,8 +38030,8 @@ var _MinLengthValidator = class _MinLengthValidator extends AbstractValidatorDir
 };
 _MinLengthValidator.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275MinLengthValidator_BaseFactory;
-  return function MinLengthValidator_Factory(t) {
-    return (\u0275MinLengthValidator_BaseFactory || (\u0275MinLengthValidator_BaseFactory = \u0275\u0275getInheritedFactory(_MinLengthValidator)))(t || _MinLengthValidator);
+  return function MinLengthValidator_Factory(__ngFactoryType__) {
+    return (\u0275MinLengthValidator_BaseFactory || (\u0275MinLengthValidator_BaseFactory = \u0275\u0275getInheritedFactory(_MinLengthValidator)))(__ngFactoryType__ || _MinLengthValidator);
   };
 })();
 _MinLengthValidator.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -36510,8 +38080,8 @@ var _MaxLengthValidator = class _MaxLengthValidator extends AbstractValidatorDir
 };
 _MaxLengthValidator.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275MaxLengthValidator_BaseFactory;
-  return function MaxLengthValidator_Factory(t) {
-    return (\u0275MaxLengthValidator_BaseFactory || (\u0275MaxLengthValidator_BaseFactory = \u0275\u0275getInheritedFactory(_MaxLengthValidator)))(t || _MaxLengthValidator);
+  return function MaxLengthValidator_Factory(__ngFactoryType__) {
+    return (\u0275MaxLengthValidator_BaseFactory || (\u0275MaxLengthValidator_BaseFactory = \u0275\u0275getInheritedFactory(_MaxLengthValidator)))(__ngFactoryType__ || _MaxLengthValidator);
   };
 })();
 _MaxLengthValidator.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -36560,8 +38130,8 @@ var _PatternValidator = class _PatternValidator extends AbstractValidatorDirecti
 };
 _PatternValidator.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275PatternValidator_BaseFactory;
-  return function PatternValidator_Factory(t) {
-    return (\u0275PatternValidator_BaseFactory || (\u0275PatternValidator_BaseFactory = \u0275\u0275getInheritedFactory(_PatternValidator)))(t || _PatternValidator);
+  return function PatternValidator_Factory(__ngFactoryType__) {
+    return (\u0275PatternValidator_BaseFactory || (\u0275PatternValidator_BaseFactory = \u0275\u0275getInheritedFactory(_PatternValidator)))(__ngFactoryType__ || _PatternValidator);
   };
 })();
 _PatternValidator.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -36600,8 +38170,8 @@ var TEMPLATE_DRIVEN_DIRECTIVES = [NgModel, NgModelGroup, NgForm];
 var REACTIVE_DRIVEN_DIRECTIVES = [FormControlDirective, FormGroupDirective, FormControlName, FormGroupName, FormArrayName];
 var _\u0275InternalFormsSharedModule = class _\u0275InternalFormsSharedModule {
 };
-_\u0275InternalFormsSharedModule.\u0275fac = function \u0275InternalFormsSharedModule_Factory(t) {
-  return new (t || _\u0275InternalFormsSharedModule)();
+_\u0275InternalFormsSharedModule.\u0275fac = function \u0275InternalFormsSharedModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _\u0275InternalFormsSharedModule)();
 };
 _\u0275InternalFormsSharedModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _\u0275InternalFormsSharedModule
@@ -36708,11 +38278,9 @@ var FormArray = class extends AbstractControl {
    */
   removeAt(index, options = {}) {
     let adjustedIndex = this._adjustIndex(index);
-    if (adjustedIndex < 0)
-      adjustedIndex = 0;
-    if (this.controls[adjustedIndex])
-      this.controls[adjustedIndex]._registerOnCollectionChange(() => {
-      });
+    if (adjustedIndex < 0) adjustedIndex = 0;
+    if (this.controls[adjustedIndex]) this.controls[adjustedIndex]._registerOnCollectionChange(() => {
+    });
     this.controls.splice(adjustedIndex, 1);
     this.updateValueAndValidity({
       emitEvent: options.emitEvent
@@ -36733,11 +38301,9 @@ var FormArray = class extends AbstractControl {
    */
   setControl(index, control, options = {}) {
     let adjustedIndex = this._adjustIndex(index);
-    if (adjustedIndex < 0)
-      adjustedIndex = 0;
-    if (this.controls[adjustedIndex])
-      this.controls[adjustedIndex]._registerOnCollectionChange(() => {
-      });
+    if (adjustedIndex < 0) adjustedIndex = 0;
+    if (this.controls[adjustedIndex]) this.controls[adjustedIndex]._registerOnCollectionChange(() => {
+    });
     this.controls.splice(adjustedIndex, 1);
     if (control) {
       this.controls.splice(adjustedIndex, 0, control);
@@ -36833,8 +38399,7 @@ var FormArray = class extends AbstractControl {
    * the {@link AbstractControl#updateValueAndValidity updateValueAndValidity} method.
    */
   patchValue(value, options = {}) {
-    if (value == null)
-      return;
+    if (value == null) return;
     value.forEach((newValue, index) => {
       if (this.at(index)) {
         this.at(index).patchValue(newValue, {
@@ -36898,8 +38463,8 @@ var FormArray = class extends AbstractControl {
         emitEvent: options.emitEvent
       });
     });
-    this._updatePristine(options);
-    this._updateTouched(options);
+    this._updatePristine(options, this);
+    this._updateTouched(options, this);
     this.updateValueAndValidity(options);
   }
   /**
@@ -36947,8 +38512,7 @@ var FormArray = class extends AbstractControl {
    * ```
    */
   clear(options = {}) {
-    if (this.controls.length < 1)
-      return;
+    if (this.controls.length < 1) return;
     this._forEachChild((control) => control._registerOnCollectionChange(() => {
     }));
     this.controls.splice(0);
@@ -36969,10 +38533,9 @@ var FormArray = class extends AbstractControl {
     let subtreeUpdated = this.controls.reduce((updated, child) => {
       return child._syncPendingControls() ? true : updated;
     }, false);
-    if (subtreeUpdated)
-      this.updateValueAndValidity({
-        onlySelf: true
-      });
+    if (subtreeUpdated) this.updateValueAndValidity({
+      onlySelf: true
+    });
     return subtreeUpdated;
   }
   /** @internal */
@@ -36996,8 +38559,7 @@ var FormArray = class extends AbstractControl {
   /** @internal */
   _allControlsDisabled() {
     for (const control of this.controls) {
-      if (control.enabled)
-        return false;
+      if (control.enabled) return false;
     }
     return this.controls.length > 0 || this.disabled;
   }
@@ -37177,8 +38739,8 @@ var _FormBuilder = class _FormBuilder {
     }
   }
 };
-_FormBuilder.\u0275fac = function FormBuilder_Factory(t) {
-  return new (t || _FormBuilder)();
+_FormBuilder.\u0275fac = function FormBuilder_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _FormBuilder)();
 };
 _FormBuilder.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _FormBuilder,
@@ -37196,8 +38758,8 @@ var FormBuilder = _FormBuilder;
 })();
 var _NonNullableFormBuilder = class _NonNullableFormBuilder {
 };
-_NonNullableFormBuilder.\u0275fac = function NonNullableFormBuilder_Factory(t) {
-  return new (t || _NonNullableFormBuilder)();
+_NonNullableFormBuilder.\u0275fac = function NonNullableFormBuilder_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NonNullableFormBuilder)();
 };
 _NonNullableFormBuilder.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NonNullableFormBuilder,
@@ -37233,8 +38795,8 @@ var _UntypedFormBuilder = class _UntypedFormBuilder extends FormBuilder {
 };
 _UntypedFormBuilder.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275UntypedFormBuilder_BaseFactory;
-  return function UntypedFormBuilder_Factory(t) {
-    return (\u0275UntypedFormBuilder_BaseFactory || (\u0275UntypedFormBuilder_BaseFactory = \u0275\u0275getInheritedFactory(_UntypedFormBuilder)))(t || _UntypedFormBuilder);
+  return function UntypedFormBuilder_Factory(__ngFactoryType__) {
+    return (\u0275UntypedFormBuilder_BaseFactory || (\u0275UntypedFormBuilder_BaseFactory = \u0275\u0275getInheritedFactory(_UntypedFormBuilder)))(__ngFactoryType__ || _UntypedFormBuilder);
   };
 })();
 _UntypedFormBuilder.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -37251,7 +38813,7 @@ var UntypedFormBuilder = _UntypedFormBuilder;
     }]
   }], null, null);
 })();
-var VERSION4 = new Version("17.3.12");
+var VERSION4 = new Version("18.1.4");
 var _FormsModule = class _FormsModule {
   /**
    * @description
@@ -37271,8 +38833,8 @@ var _FormsModule = class _FormsModule {
     };
   }
 };
-_FormsModule.\u0275fac = function FormsModule_Factory(t) {
-  return new (t || _FormsModule)();
+_FormsModule.\u0275fac = function FormsModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _FormsModule)();
 };
 _FormsModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _FormsModule
@@ -37314,8 +38876,8 @@ var _ReactiveFormsModule = class _ReactiveFormsModule {
     };
   }
 };
-_ReactiveFormsModule.\u0275fac = function ReactiveFormsModule_Factory(t) {
-  return new (t || _ReactiveFormsModule)();
+_ReactiveFormsModule.\u0275fac = function ReactiveFormsModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ReactiveFormsModule)();
 };
 _ReactiveFormsModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _ReactiveFormsModule
@@ -38287,8 +39849,7 @@ function flip(_ref) {
     };
     for (var _i = numberOfChecks; _i > 0; _i--) {
       var _ret = _loop(_i);
-      if (_ret === "break")
-        break;
+      if (_ret === "break") break;
     }
   }
   if (state.placement !== firstFittingPlacement) {
@@ -38783,11 +40344,11 @@ function NgbCarousel_For_5_Template(rf, ctx) {
   }
   if (rf & 2) {
     const slide_r4 = ctx.$implicit;
-    const i_r5 = ctx.$index;
-    const c_r6 = ctx.$count;
+    const \u0275$index_8_r5 = ctx.$index;
+    const \u0275$count_8_r6 = ctx.$count;
     \u0275\u0275property("id", "slide-" + slide_r4.id);
     \u0275\u0275advance(2);
-    \u0275\u0275i18nExp(i_r5 + 1)(c_r6);
+    \u0275\u0275i18nExp(\u0275$index_8_r5 + 1)(\u0275$count_8_r6);
     \u0275\u0275i18nApply(2);
     \u0275\u0275advance();
     \u0275\u0275property("ngTemplateOutlet", slide_r4.templateRef);
@@ -38896,13 +40457,13 @@ function NgbDatepickerNavigation_Conditional_4_For_1_Template(rf, ctx) {
   }
   if (rf & 2) {
     const month_r3 = ctx.$implicit;
-    const i_r4 = ctx.$index;
+    const \u0275$index_11_r4 = ctx.$index;
     const ctx_r1 = \u0275\u0275nextContext(2);
-    \u0275\u0275conditional(0, i_r4 > 0 ? 0 : -1);
+    \u0275\u0275conditional(\u0275$index_11_r4 > 0 ? 0 : -1);
     \u0275\u0275advance(2);
     \u0275\u0275textInterpolate1(" ", ctx_r1.i18n.getMonthLabel(month_r3.firstDate), " ");
     \u0275\u0275advance();
-    \u0275\u0275conditional(3, i_r4 !== ctx_r1.months.length - 1 ? 3 : -1);
+    \u0275\u0275conditional(\u0275$index_11_r4 !== ctx_r1.months.length - 1 ? 3 : -1);
   }
 }
 function NgbDatepickerNavigation_Conditional_4_Template(rf, ctx) {
@@ -38942,13 +40503,13 @@ function NgbDatepickerMonth_Conditional_0_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 0);
     \u0275\u0275template(1, NgbDatepickerMonth_Conditional_0_Conditional_1_Template, 2, 1, "div", 1);
-    \u0275\u0275repeaterCreate(2, NgbDatepickerMonth_Conditional_0_For_3_Template, 2, 1, "div", 2, \u0275\u0275repeaterTrackByIdentity);
+    \u0275\u0275repeaterCreate(2, NgbDatepickerMonth_Conditional_0_For_3_Template, 2, 1, "div", 2, \u0275\u0275repeaterTrackByIndex);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
     const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance();
-    \u0275\u0275conditional(1, ctx_r0.datepicker.showWeekNumbers ? 1 : -1);
+    \u0275\u0275conditional(ctx_r0.datepicker.showWeekNumbers ? 1 : -1);
     \u0275\u0275advance();
     \u0275\u0275repeater(ctx_r0.viewModel.weekdays);
   }
@@ -38997,7 +40558,7 @@ function NgbDatepickerMonth_For_2_Conditional_0_For_3_Template(rf, ctx) {
     \u0275\u0275property("tabindex", day_r5.tabindex);
     \u0275\u0275attribute("aria-label", day_r5.ariaLabel);
     \u0275\u0275advance();
-    \u0275\u0275conditional(1, !day_r5.hidden ? 1 : -1);
+    \u0275\u0275conditional(!day_r5.hidden ? 1 : -1);
   }
 }
 function NgbDatepickerMonth_For_2_Conditional_0_Template(rf, ctx) {
@@ -39011,7 +40572,7 @@ function NgbDatepickerMonth_For_2_Conditional_0_Template(rf, ctx) {
     const week_r3 = \u0275\u0275nextContext().$implicit;
     const ctx_r0 = \u0275\u0275nextContext();
     \u0275\u0275advance();
-    \u0275\u0275conditional(1, ctx_r0.datepicker.showWeekNumbers ? 1 : -1);
+    \u0275\u0275conditional(ctx_r0.datepicker.showWeekNumbers ? 1 : -1);
     \u0275\u0275advance();
     \u0275\u0275repeater(week_r3.days);
   }
@@ -39022,7 +40583,7 @@ function NgbDatepickerMonth_For_2_Template(rf, ctx) {
   }
   if (rf & 2) {
     const week_r3 = ctx.$implicit;
-    \u0275\u0275conditional(0, !week_r3.collapsed ? 0 : -1);
+    \u0275\u0275conditional(!week_r3.collapsed ? 0 : -1);
   }
 }
 var _c4 = ["defaultDayTemplate"];
@@ -39067,7 +40628,7 @@ function NgbDatepicker_ng_template_2_For_1_Template(rf, ctx) {
     const month_r6 = ctx.$implicit;
     const ctx_r6 = \u0275\u0275nextContext(2);
     \u0275\u0275advance();
-    \u0275\u0275conditional(1, ctx_r6.navigation === "none" || ctx_r6.displayMonths > 1 && ctx_r6.navigation === "select" ? 1 : -1);
+    \u0275\u0275conditional(ctx_r6.navigation === "none" || ctx_r6.displayMonths > 1 && ctx_r6.navigation === "select" ? 1 : -1);
     \u0275\u0275advance();
     \u0275\u0275property("month", month_r6.firstDate);
   }
@@ -39130,7 +40691,7 @@ function NgbNavOutlet_For_1_Template(rf, ctx) {
   if (rf & 2) {
     const item_r1 = ctx.$implicit;
     const ctx_r1 = \u0275\u0275nextContext();
-    \u0275\u0275conditional(0, item_r1.isPanelInDom() || ctx_r1.isPanelTransitioning(item_r1) ? 0 : -1);
+    \u0275\u0275conditional(item_r1.isPanelInDom() || ctx_r1.isPanelTransitioning(item_r1) ? 0 : -1);
   }
 }
 var _c9 = (a0, a1, a2) => ({
@@ -39217,7 +40778,7 @@ function NgbPagination_ng_template_12_For_1_Conditional_2_ng_template_1_Template
 function NgbPagination_ng_template_12_For_1_Conditional_2_Template(rf, ctx) {
   if (rf & 1) {
     const _r5 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "a", 17);
+    \u0275\u0275elementStart(0, "a", 18);
     \u0275\u0275listener("click", function NgbPagination_ng_template_12_For_1_Conditional_2_Template_a_click_0_listener($event) {
       \u0275\u0275restoreView(_r5);
       const pageNumber_r6 = \u0275\u0275nextContext().$implicit;
@@ -39243,7 +40804,7 @@ function NgbPagination_ng_template_12_For_1_Conditional_2_Template(rf, ctx) {
 function NgbPagination_ng_template_12_For_1_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "li", 15);
-    \u0275\u0275template(1, NgbPagination_ng_template_12_For_1_Conditional_1_Template, 2, 4, "a", 16)(2, NgbPagination_ng_template_12_For_1_Conditional_2_Template, 2, 8);
+    \u0275\u0275template(1, NgbPagination_ng_template_12_For_1_Conditional_1_Template, 2, 4, "a", 16)(2, NgbPagination_ng_template_12_For_1_Conditional_2_Template, 2, 8, "a", 17);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -39255,12 +40816,12 @@ function NgbPagination_ng_template_12_For_1_Template(rf, ctx) {
     \u0275\u0275classProp("active", pageNumber_r6 === page_r2)("disabled", ctx_r2.isEllipsis(pageNumber_r6) || disabled_r8);
     \u0275\u0275attribute("aria-current", pageNumber_r6 === page_r2 ? "page" : null);
     \u0275\u0275advance();
-    \u0275\u0275conditional(1, ctx_r2.isEllipsis(pageNumber_r6) ? 1 : 2);
+    \u0275\u0275conditional(ctx_r2.isEllipsis(pageNumber_r6) ? 1 : 2);
   }
 }
 function NgbPagination_ng_template_12_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275repeaterCreate(0, NgbPagination_ng_template_12_For_1_Template, 3, 6, "li", 14, \u0275\u0275repeaterTrackByIdentity);
+    \u0275\u0275repeaterCreate(0, NgbPagination_ng_template_12_For_1_Template, 3, 6, "li", 14, \u0275\u0275repeaterTrackByIndex);
   }
   if (rf & 2) {
     const pages_r10 = ctx.pages;
@@ -39272,7 +40833,7 @@ function NgbPagination_Conditional_15_ng_template_2_Template(rf, ctx) {
 function NgbPagination_Conditional_15_Template(rf, ctx) {
   if (rf & 1) {
     const _r11 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "li", 15)(1, "a", 18);
+    \u0275\u0275elementStart(0, "li", 15)(1, "a", 19);
     \u0275\u0275listener("click", function NgbPagination_Conditional_15_Template_a_click_1_listener($event) {
       \u0275\u0275restoreView(_r11);
       const ctx_r2 = \u0275\u0275nextContext();
@@ -39297,7 +40858,7 @@ function NgbPagination_Conditional_16_ng_template_2_Template(rf, ctx) {
 function NgbPagination_Conditional_16_Template(rf, ctx) {
   if (rf & 1) {
     const _r13 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "li", 15)(1, "a", 19);
+    \u0275\u0275elementStart(0, "li", 15)(1, "a", 20);
     \u0275\u0275listener("click", function NgbPagination_Conditional_16_Template_a_click_1_listener($event) {
       \u0275\u0275restoreView(_r13);
       const ctx_r2 = \u0275\u0275nextContext();
@@ -39324,7 +40885,7 @@ function NgbPagination_Conditional_18_ng_template_2_Template(rf, ctx) {
 function NgbPagination_Conditional_18_Template(rf, ctx) {
   if (rf & 1) {
     const _r15 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "li", 15)(1, "a", 20);
+    \u0275\u0275elementStart(0, "li", 15)(1, "a", 21);
     \u0275\u0275listener("click", function NgbPagination_Conditional_18_Template_a_click_1_listener($event) {
       \u0275\u0275restoreView(_r15);
       const ctx_r2 = \u0275\u0275nextContext();
@@ -39349,7 +40910,7 @@ function NgbPagination_Conditional_19_ng_template_2_Template(rf, ctx) {
 function NgbPagination_Conditional_19_Template(rf, ctx) {
   if (rf & 1) {
     const _r17 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "li", 15)(1, "a", 21);
+    \u0275\u0275elementStart(0, "li", 15)(1, "a", 22);
     \u0275\u0275listener("click", function NgbPagination_Conditional_19_Template_a_click_1_listener($event) {
       \u0275\u0275restoreView(_r17);
       const ctx_r2 = \u0275\u0275nextContext();
@@ -39426,27 +40987,27 @@ function NgbRating_For_3_Template(rf, ctx) {
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(2, "span", 2);
     \u0275\u0275listener("mouseenter", function NgbRating_For_3_Template_span_mouseenter_2_listener() {
-      const index_r3 = \u0275\u0275restoreView(_r2).$index;
+      const \u0275$index_4_r3 = \u0275\u0275restoreView(_r2).$index;
       const ctx_r3 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r3.enter(index_r3 + 1));
+      return \u0275\u0275resetView(ctx_r3.enter(\u0275$index_4_r3 + 1));
     })("click", function NgbRating_For_3_Template_span_click_2_listener() {
-      const index_r3 = \u0275\u0275restoreView(_r2).$index;
+      const \u0275$index_4_r3 = \u0275\u0275restoreView(_r2).$index;
       const ctx_r3 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r3.handleClick(index_r3 + 1));
+      return \u0275\u0275resetView(ctx_r3.handleClick(\u0275$index_4_r3 + 1));
     });
     \u0275\u0275template(3, NgbRating_For_3_ng_template_3_Template, 0, 0, "ng-template", 3);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const index_r3 = ctx.$index;
+    const \u0275$index_4_r3 = ctx.$index;
     const ctx_r3 = \u0275\u0275nextContext();
     const t_r5 = \u0275\u0275reference(1);
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate1("(", index_r3 < ctx_r3.nextRate ? "*" : " ", ")");
+    \u0275\u0275textInterpolate1("(", \u0275$index_4_r3 < ctx_r3.nextRate ? "*" : " ", ")");
     \u0275\u0275advance();
     \u0275\u0275styleProp("cursor", ctx_r3.isInteractive() ? "pointer" : "default");
     \u0275\u0275advance();
-    \u0275\u0275property("ngTemplateOutlet", ctx_r3.starTemplate || ctx_r3.starTemplateFromContent || t_r5)("ngTemplateOutletContext", ctx_r3.contexts[index_r3]);
+    \u0275\u0275property("ngTemplateOutlet", ctx_r3.starTemplate || ctx_r3.starTemplateFromContent || t_r5)("ngTemplateOutletContext", ctx_r3.contexts[\u0275$index_4_r3]);
   }
 }
 function NgbTimepicker_Conditional_3_Template(rf, ctx) {
@@ -39608,12 +41169,12 @@ function NgbTimepicker_Conditional_12_Template(rf, ctx) {
   if (rf & 2) {
     const ctx_r1 = \u0275\u0275nextContext();
     \u0275\u0275advance(3);
-    \u0275\u0275conditional(3, ctx_r1.spinners ? 3 : -1);
+    \u0275\u0275conditional(ctx_r1.spinners ? 3 : -1);
     \u0275\u0275advance();
     \u0275\u0275classProp("form-control-sm", ctx_r1.isSmallSize)("form-control-lg", ctx_r1.isLargeSize);
     \u0275\u0275property("value", ctx_r1.formatMinSec(ctx_r1.model == null ? null : ctx_r1.model.second))("readOnly", ctx_r1.readonlyInputs)("disabled", ctx_r1.disabled);
     \u0275\u0275advance();
-    \u0275\u0275conditional(5, ctx_r1.spinners ? 5 : -1);
+    \u0275\u0275conditional(ctx_r1.spinners ? 5 : -1);
   }
 }
 function NgbTimepicker_Conditional_13_Conditional_3_Template(rf, ctx) {
@@ -39651,7 +41212,7 @@ function NgbTimepicker_Conditional_13_Template(rf, ctx) {
       const ctx_r1 = \u0275\u0275nextContext();
       return \u0275\u0275resetView(ctx_r1.toggleMeridian());
     });
-    \u0275\u0275template(3, NgbTimepicker_Conditional_13_Conditional_3_Template, 2, 1, "ng-container")(4, NgbTimepicker_Conditional_13_Conditional_4_Template, 2, 1);
+    \u0275\u0275template(3, NgbTimepicker_Conditional_13_Conditional_3_Template, 2, 1, "ng-container")(4, NgbTimepicker_Conditional_13_Conditional_4_Template, 2, 1, "ng-container");
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
@@ -39660,7 +41221,7 @@ function NgbTimepicker_Conditional_13_Template(rf, ctx) {
     \u0275\u0275classProp("btn-sm", ctx_r1.isSmallSize)("btn-lg", ctx_r1.isLargeSize)("disabled", ctx_r1.disabled);
     \u0275\u0275property("disabled", ctx_r1.disabled);
     \u0275\u0275advance();
-    \u0275\u0275conditional(3, ctx_r1.model && ctx_r1.model.hour >= 12 ? 3 : 4);
+    \u0275\u0275conditional(ctx_r1.model && ctx_r1.model.hour >= 12 ? 3 : 4);
   }
 }
 function NgbToast_ng_template_0_Template(rf, ctx) {
@@ -39725,11 +41286,11 @@ function NgbHighlight_For_1_Conditional_1_Template(rf, ctx) {
 }
 function NgbHighlight_For_1_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275template(0, NgbHighlight_For_1_Conditional_0_Template, 2, 4, "span", 0)(1, NgbHighlight_For_1_Conditional_1_Template, 2, 1);
+    \u0275\u0275template(0, NgbHighlight_For_1_Conditional_0_Template, 2, 4, "span", 0)(1, NgbHighlight_For_1_Conditional_1_Template, 2, 1, "ng-container");
   }
   if (rf & 2) {
     const \u0275$index_1_r3 = ctx.$index;
-    \u0275\u0275conditional(0, \u0275$index_1_r3 % 2 !== 0 ? 0 : 1);
+    \u0275\u0275conditional(\u0275$index_1_r3 % 2 !== 0 ? 0 : 1);
   }
 }
 var _c14 = (a0, a1, a2) => ({
@@ -39755,9 +41316,9 @@ function NgbTypeaheadWindow_For_3_Template(rf, ctx) {
     const _r4 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "button", 3);
     \u0275\u0275listener("mouseenter", function NgbTypeaheadWindow_For_3_Template_button_mouseenter_0_listener() {
-      const idx_r5 = \u0275\u0275restoreView(_r4).$index;
+      const $index_r5 = \u0275\u0275restoreView(_r4).$index;
       const ctx_r5 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r5.markActive(idx_r5));
+      return \u0275\u0275resetView(ctx_r5.markActive($index_r5));
     })("click", function NgbTypeaheadWindow_For_3_Template_button_click_0_listener() {
       const result_r7 = \u0275\u0275restoreView(_r4).$implicit;
       const ctx_r5 = \u0275\u0275nextContext();
@@ -39768,11 +41329,11 @@ function NgbTypeaheadWindow_For_3_Template(rf, ctx) {
   }
   if (rf & 2) {
     const result_r7 = ctx.$implicit;
-    const idx_r5 = ctx.$index;
+    const $index_r5 = ctx.$index;
     const ctx_r5 = \u0275\u0275nextContext();
     const rt_r8 = \u0275\u0275reference(1);
-    \u0275\u0275classProp("active", idx_r5 === ctx_r5.activeIdx);
-    \u0275\u0275property("id", ctx_r5.id + "-" + idx_r5);
+    \u0275\u0275classProp("active", $index_r5 === ctx_r5.activeIdx);
+    \u0275\u0275property("id", ctx_r5.id + "-" + $index_r5);
     \u0275\u0275advance();
     \u0275\u0275property("ngTemplateOutlet", ctx_r5.resultTemplate || rt_r8)("ngTemplateOutletContext", \u0275\u0275pureFunction3(5, _c14, result_r7, ctx_r5.term, ctx_r5.formatter));
   }
@@ -39786,8 +41347,8 @@ var _NgbConfig = class _NgbConfig {
     this.animation = environment.animation;
   }
 };
-_NgbConfig.\u0275fac = function NgbConfig_Factory(t) {
-  return new (t || _NgbConfig)();
+_NgbConfig.\u0275fac = function NgbConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbConfig)();
 };
 _NgbConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbConfig,
@@ -39816,8 +41377,8 @@ var _NgbAccordionConfig = class _NgbAccordionConfig {
     this._animation = animation;
   }
 };
-_NgbAccordionConfig.\u0275fac = function NgbAccordionConfig_Factory(t) {
-  return new (t || _NgbAccordionConfig)();
+_NgbAccordionConfig.\u0275fac = function NgbAccordionConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAccordionConfig)();
 };
 _NgbAccordionConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbAccordionConfig,
@@ -40010,9 +41571,7 @@ var ngbCollapsingTransition = (element, animation, context2) => {
     maxSize = measureCollapsingElementDimensionPx(element, dimension);
     context2.maxSize = maxSize;
     element.style[dimension] = direction !== "show" ? maxSize : "0px";
-    classList.remove("collapse");
-    classList.remove("collapsing");
-    classList.remove("show");
+    classList.remove("collapse", "collapsing", "show");
     reflow(element);
     classList.add("collapsing");
   }
@@ -40035,8 +41594,8 @@ var _NgbCollapseConfig = class _NgbCollapseConfig {
     this._animation = animation;
   }
 };
-_NgbCollapseConfig.\u0275fac = function NgbCollapseConfig_Factory(t) {
-  return new (t || _NgbCollapseConfig)();
+_NgbCollapseConfig.\u0275fac = function NgbCollapseConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbCollapseConfig)();
 };
 _NgbCollapseConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbCollapseConfig,
@@ -40112,8 +41671,8 @@ var _NgbCollapse = class _NgbCollapse {
     });
   }
 };
-_NgbCollapse.\u0275fac = function NgbCollapse_Factory(t) {
-  return new (t || _NgbCollapse)();
+_NgbCollapse.\u0275fac = function NgbCollapse_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbCollapse)();
 };
 _NgbCollapse.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbCollapse,
@@ -40126,7 +41685,7 @@ _NgbCollapse.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   },
   inputs: {
     animation: "animation",
-    collapsed: [InputFlags.None, "ngbCollapse", "collapsed"],
+    collapsed: [0, "ngbCollapse", "collapsed"],
     horizontal: "horizontal"
   },
   outputs: {
@@ -40192,10 +41751,8 @@ var _NgbAccordionBody = class _NgbAccordionBody {
     this._destroyViewIfExists();
   }
   _destroyViewIfExists() {
-    if (this._viewRef) {
-      this._viewRef.destroy();
-      this._viewRef = null;
-    }
+    this._viewRef?.destroy();
+    this._viewRef = null;
   }
   _createViewIfNotExists() {
     if (!this._viewRef) {
@@ -40207,8 +41764,8 @@ var _NgbAccordionBody = class _NgbAccordionBody {
     }
   }
 };
-_NgbAccordionBody.\u0275fac = function NgbAccordionBody_Factory(t) {
-  return new (t || _NgbAccordionBody)();
+_NgbAccordionBody.\u0275fac = function NgbAccordionBody_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAccordionBody)();
 };
 _NgbAccordionBody.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbAccordionBody,
@@ -40222,12 +41779,7 @@ _NgbAccordionBody.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
       \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._bodyTpl = _t.first);
     }
   },
-  hostVars: 2,
-  hostBindings: function NgbAccordionBody_HostBindings(rf, ctx) {
-    if (rf & 2) {
-      \u0275\u0275classProp("accordion-body", true);
-    }
-  },
+  hostAttrs: [1, "accordion-body"],
   standalone: true
 });
 var NgbAccordionBody = _NgbAccordionBody;
@@ -40238,7 +41790,7 @@ var NgbAccordionBody = _NgbAccordionBody;
       selector: "[ngbAccordionBody]",
       standalone: true,
       host: {
-        "[class.accordion-body]": "true"
+        class: "accordion-body"
       }
     }]
   }], null, {
@@ -40256,19 +41808,18 @@ var _NgbAccordionCollapse = class _NgbAccordionCollapse {
     this.ngbCollapse = inject(NgbCollapse);
   }
 };
-_NgbAccordionCollapse.\u0275fac = function NgbAccordionCollapse_Factory(t) {
-  return new (t || _NgbAccordionCollapse)();
+_NgbAccordionCollapse.\u0275fac = function NgbAccordionCollapse_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAccordionCollapse)();
 };
 _NgbAccordionCollapse.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbAccordionCollapse,
   selectors: [["", "ngbAccordionCollapse", ""]],
-  hostAttrs: ["role", "region"],
-  hostVars: 4,
+  hostAttrs: ["role", "region", 1, "accordion-collapse"],
+  hostVars: 2,
   hostBindings: function NgbAccordionCollapse_HostBindings(rf, ctx) {
     if (rf & 2) {
       \u0275\u0275hostProperty("id", ctx.item.collapseId);
       \u0275\u0275attribute("aria-labelledby", ctx.item.toggleId);
-      \u0275\u0275classProp("accordion-collapse", true);
     }
   },
   exportAs: ["ngbAccordionCollapse"],
@@ -40285,7 +41836,7 @@ var NgbAccordionCollapse = _NgbAccordionCollapse;
       selector: "[ngbAccordionCollapse]",
       host: {
         role: "region",
-        "[class.accordion-collapse]": "true",
+        class: "accordion-collapse",
         "[id]": "item.collapseId",
         "[attr.aria-labelledby]": "item.toggleId"
       },
@@ -40299,8 +41850,8 @@ var _NgbAccordionToggle = class _NgbAccordionToggle {
     this.accordion = inject(NgbAccordionDirective);
   }
 };
-_NgbAccordionToggle.\u0275fac = function NgbAccordionToggle_Factory(t) {
-  return new (t || _NgbAccordionToggle)();
+_NgbAccordionToggle.\u0275fac = function NgbAccordionToggle_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAccordionToggle)();
 };
 _NgbAccordionToggle.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbAccordionToggle,
@@ -40342,18 +41893,17 @@ var _NgbAccordionButton = class _NgbAccordionButton {
     this.item = inject(NgbAccordionItem);
   }
 };
-_NgbAccordionButton.\u0275fac = function NgbAccordionButton_Factory(t) {
-  return new (t || _NgbAccordionButton)();
+_NgbAccordionButton.\u0275fac = function NgbAccordionButton_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAccordionButton)();
 };
 _NgbAccordionButton.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbAccordionButton,
   selectors: [["button", "ngbAccordionButton", ""]],
-  hostAttrs: ["type", "button"],
-  hostVars: 3,
+  hostAttrs: ["type", "button", 1, "accordion-button"],
+  hostVars: 1,
   hostBindings: function NgbAccordionButton_HostBindings(rf, ctx) {
     if (rf & 2) {
       \u0275\u0275hostProperty("disabled", ctx.item.disabled);
-      \u0275\u0275classProp("accordion-button", true);
     }
   },
   standalone: true,
@@ -40368,7 +41918,7 @@ var NgbAccordionButton = _NgbAccordionButton;
       standalone: true,
       host: {
         "[disabled]": "item.disabled",
-        "[class.accordion-button]": "true",
+        class: "accordion-button",
         type: "button"
       },
       hostDirectives: [NgbAccordionToggle]
@@ -40380,17 +41930,17 @@ var _NgbAccordionHeader = class _NgbAccordionHeader {
     this.item = inject(NgbAccordionItem);
   }
 };
-_NgbAccordionHeader.\u0275fac = function NgbAccordionHeader_Factory(t) {
-  return new (t || _NgbAccordionHeader)();
+_NgbAccordionHeader.\u0275fac = function NgbAccordionHeader_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAccordionHeader)();
 };
 _NgbAccordionHeader.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbAccordionHeader,
   selectors: [["", "ngbAccordionHeader", ""]],
-  hostAttrs: ["role", "heading"],
-  hostVars: 4,
+  hostAttrs: ["role", "heading", 1, "accordion-header"],
+  hostVars: 2,
   hostBindings: function NgbAccordionHeader_HostBindings(rf, ctx) {
     if (rf & 2) {
-      \u0275\u0275classProp("accordion-header", true)("collapsed", ctx.item.collapsed);
+      \u0275\u0275classProp("collapsed", ctx.item.collapsed);
     }
   },
   standalone: true
@@ -40404,7 +41954,7 @@ var NgbAccordionHeader = _NgbAccordionHeader;
       standalone: true,
       host: {
         role: "heading",
-        "[class.accordion-header]": "true",
+        class: "accordion-header",
         "[class.collapsed]": "item.collapsed"
       }
     }]
@@ -40527,8 +42077,8 @@ var _NgbAccordionItem = class _NgbAccordionItem {
     }
   }
 };
-_NgbAccordionItem.\u0275fac = function NgbAccordionItem_Factory(t) {
-  return new (t || _NgbAccordionItem)();
+_NgbAccordionItem.\u0275fac = function NgbAccordionItem_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAccordionItem)();
 };
 _NgbAccordionItem.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbAccordionItem,
@@ -40542,15 +42092,15 @@ _NgbAccordionItem.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
       \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._collapse = _t.first);
     }
   },
-  hostVars: 3,
+  hostAttrs: [1, "accordion-item"],
+  hostVars: 1,
   hostBindings: function NgbAccordionItem_HostBindings(rf, ctx) {
     if (rf & 2) {
       \u0275\u0275hostProperty("id", ctx.id);
-      \u0275\u0275classProp("accordion-item", true);
     }
   },
   inputs: {
-    id: [InputFlags.None, "ngbAccordionItem", "id"],
+    id: [0, "ngbAccordionItem", "id"],
     destroyOnHide: "destroyOnHide",
     disabled: "disabled",
     collapsed: "collapsed"
@@ -40573,8 +42123,8 @@ var NgbAccordionItem = _NgbAccordionItem;
       exportAs: "ngbAccordionItem",
       standalone: true,
       host: {
-        "[class.accordion-item]": "true",
-        "[id]": "id"
+        "[id]": "id",
+        class: "accordion-item"
       }
     }]
   }], null, {
@@ -40710,8 +42260,8 @@ var _NgbAccordionDirective = class _NgbAccordionDirective {
     return this._items?.find((item) => item.id === itemId);
   }
 };
-_NgbAccordionDirective.\u0275fac = function NgbAccordionDirective_Factory(t) {
-  return new (t || _NgbAccordionDirective)();
+_NgbAccordionDirective.\u0275fac = function NgbAccordionDirective_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAccordionDirective)();
 };
 _NgbAccordionDirective.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbAccordionDirective,
@@ -40725,12 +42275,7 @@ _NgbAccordionDirective.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
       \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._items = _t);
     }
   },
-  hostVars: 2,
-  hostBindings: function NgbAccordionDirective_HostBindings(rf, ctx) {
-    if (rf & 2) {
-      \u0275\u0275classProp("accordion", true);
-    }
-  },
+  hostAttrs: [1, "accordion"],
   inputs: {
     animation: "animation",
     closeOthers: "closeOthers",
@@ -40754,7 +42299,7 @@ var NgbAccordionDirective = _NgbAccordionDirective;
       standalone: true,
       exportAs: "ngbAccordion",
       host: {
-        "[class.accordion]": "true"
+        class: "accordion"
       }
     }]
   }], null, {
@@ -40790,8 +42335,8 @@ var NgbAccordionDirective = _NgbAccordionDirective;
 var NGB_ACCORDION_DIRECTIVES = [NgbAccordionButton, NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, NgbAccordionToggle, NgbAccordionBody, NgbAccordionCollapse];
 var _NgbAccordionModule = class _NgbAccordionModule {
 };
-_NgbAccordionModule.\u0275fac = function NgbAccordionModule_Factory(t) {
-  return new (t || _NgbAccordionModule)();
+_NgbAccordionModule.\u0275fac = function NgbAccordionModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAccordionModule)();
 };
 _NgbAccordionModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbAccordionModule
@@ -40820,8 +42365,8 @@ var _NgbAlertConfig = class _NgbAlertConfig {
     this._animation = animation;
   }
 };
-_NgbAlertConfig.\u0275fac = function NgbAlertConfig_Factory(t) {
-  return new (t || _NgbAlertConfig)();
+_NgbAlertConfig.\u0275fac = function NgbAlertConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAlertConfig)();
 };
 _NgbAlertConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbAlertConfig,
@@ -40871,8 +42416,8 @@ var _NgbAlert = class _NgbAlert {
     return transition;
   }
 };
-_NgbAlert.\u0275fac = function NgbAlert_Factory(t) {
-  return new (t || _NgbAlert)();
+_NgbAlert.\u0275fac = function NgbAlert_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAlert)();
 };
 _NgbAlert.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbAlert,
@@ -40902,8 +42447,8 @@ _NgbAlert.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   consts: () => {
     let i18n_0;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_0 = goog.getMsg("Close");
-      i18n_0 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_0;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_0 = goog.getMsg("Close");
+      i18n_0 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_0;
     } else {
       i18n_0 = $localize`:@@ngb.alert.close:Close`;
     }
@@ -40917,7 +42462,7 @@ _NgbAlert.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
     }
     if (rf & 2) {
       \u0275\u0275advance();
-      \u0275\u0275conditional(1, ctx.dismissible ? 1 : -1);
+      \u0275\u0275conditional(ctx.dismissible ? 1 : -1);
     }
   },
   styles: ["ngb-alert{display:block}\n"],
@@ -40971,8 +42516,8 @@ var NgbAlert = _NgbAlert;
 })();
 var _NgbAlertModule = class _NgbAlertModule {
 };
-_NgbAlertModule.\u0275fac = function NgbAlertModule_Factory(t) {
-  return new (t || _NgbAlertModule)();
+_NgbAlertModule.\u0275fac = function NgbAlertModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbAlertModule)();
 };
 _NgbAlertModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbAlertModule
@@ -41006,8 +42551,8 @@ var _NgbCarouselConfig = class _NgbCarouselConfig {
     this._animation = animation;
   }
 };
-_NgbCarouselConfig.\u0275fac = function NgbCarouselConfig_Factory(t) {
-  return new (t || _NgbCarouselConfig)();
+_NgbCarouselConfig.\u0275fac = function NgbCarouselConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbCarouselConfig)();
 };
 _NgbCarouselConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbCarouselConfig,
@@ -41034,13 +42579,11 @@ var isBeingAnimated = ({
   return classList.contains("carousel-item-start") || classList.contains("carousel-item-end");
 };
 var removeDirectionClasses = (classList) => {
-  classList.remove("carousel-item-start");
-  classList.remove("carousel-item-end");
+  classList.remove("carousel-item-start", "carousel-item-end");
 };
 var removeClasses = (classList) => {
   removeDirectionClasses(classList);
-  classList.remove("carousel-item-prev");
-  classList.remove("carousel-item-next");
+  classList.remove("carousel-item-prev", "carousel-item-next");
 };
 var ngbCarouselTransitionIn = (element, animation, {
   direction
@@ -41049,7 +42592,6 @@ var ngbCarouselTransitionIn = (element, animation, {
     classList
   } = element;
   if (!animation) {
-    removeDirectionClasses(classList);
     removeClasses(classList);
     classList.add("active");
     return;
@@ -41073,7 +42615,6 @@ var ngbCarouselTransitionOut = (element, animation, {
     classList
   } = element;
   if (!animation) {
-    removeDirectionClasses(classList);
     removeClasses(classList);
     classList.remove("active");
     return;
@@ -41097,8 +42638,8 @@ var _NgbSlide = class _NgbSlide {
     this.slid = new EventEmitter();
   }
 };
-_NgbSlide.\u0275fac = function NgbSlide_Factory(t) {
-  return new (t || _NgbSlide)();
+_NgbSlide.\u0275fac = function NgbSlide_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbSlide)();
 };
 _NgbSlide.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbSlide,
@@ -41376,8 +42917,8 @@ var _NgbCarousel = class _NgbCarousel {
     return this._container.nativeElement.querySelector(`#slide-${slideId}`);
   }
 };
-_NgbCarousel.\u0275fac = function NgbCarousel_Factory(t) {
-  return new (t || _NgbCarousel)();
+_NgbCarousel.\u0275fac = function NgbCarousel_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbCarousel)();
 };
 _NgbCarousel.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbCarousel,
@@ -41437,7 +42978,7 @@ _NgbCarousel.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   consts: () => {
     let i18n_1;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_1 = goog.getMsg(" Slide {$interpolation} of {$interpolation_1} ", {
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_1 = goog.getMsg(" Slide {$interpolation} of {$interpolation_1} ", {
         "interpolation": "\uFFFD0\uFFFD",
         "interpolation_1": "\uFFFD1\uFFFD"
       }, {
@@ -41446,21 +42987,21 @@ _NgbCarousel.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
           "interpolation_1": "{{ c }}"
         }
       });
-      i18n_1 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_1;
+      i18n_1 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_1;
     } else {
       i18n_1 = $localize`:Currently selected slide number read by screen reader@@ngb.carousel.slide-number: Slide ${"\uFFFD0\uFFFD"}:INTERPOLATION: of ${"\uFFFD1\uFFFD"}:INTERPOLATION_1: `;
     }
     let i18n_2;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_2 = goog.getMsg("Previous");
-      i18n_2 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_2;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_2 = goog.getMsg("Previous");
+      i18n_2 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_2;
     } else {
       i18n_2 = $localize`:@@ngb.carousel.previous:Previous`;
     }
     let i18n_3;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_3 = goog.getMsg("Next");
-      i18n_3 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_3;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_3 = goog.getMsg("Next");
+      i18n_3 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_3;
     } else {
       i18n_3 = $localize`:@@ngb.carousel.next:Next`;
     }
@@ -41483,7 +43024,7 @@ _NgbCarousel.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
       \u0275\u0275advance(3);
       \u0275\u0275repeater(ctx.slides);
       \u0275\u0275advance(2);
-      \u0275\u0275conditional(6, ctx.showNavigationArrows ? 6 : -1);
+      \u0275\u0275conditional(ctx.showNavigationArrows ? 6 : -1);
     }
   },
   dependencies: [NgTemplateOutlet],
@@ -41607,8 +43148,8 @@ var NgbSlideEventSource;
 })(NgbSlideEventSource || (NgbSlideEventSource = {}));
 var _NgbCarouselModule = class _NgbCarouselModule {
 };
-_NgbCarouselModule.\u0275fac = function NgbCarouselModule_Factory(t) {
-  return new (t || _NgbCarouselModule)();
+_NgbCarouselModule.\u0275fac = function NgbCarouselModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbCarouselModule)();
 };
 _NgbCarouselModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbCarouselModule
@@ -41626,8 +43167,8 @@ var NgbCarouselModule = _NgbCarouselModule;
 })();
 var _NgbCollapseModule = class _NgbCollapseModule {
 };
-_NgbCollapseModule.\u0275fac = function NgbCollapseModule_Factory(t) {
-  return new (t || _NgbCollapseModule)();
+_NgbCollapseModule.\u0275fac = function NgbCollapseModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbCollapseModule)();
 };
 _NgbCollapseModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbCollapseModule
@@ -41718,8 +43259,8 @@ function NGB_DATEPICKER_CALENDAR_FACTORY() {
 }
 var _NgbCalendar = class _NgbCalendar {
 };
-_NgbCalendar.\u0275fac = function NgbCalendar_Factory(t) {
-  return new (t || _NgbCalendar)();
+_NgbCalendar.\u0275fac = function NgbCalendar_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbCalendar)();
 };
 _NgbCalendar.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbCalendar,
@@ -41811,8 +43352,8 @@ var _NgbCalendarGregorian = class _NgbCalendarGregorian extends NgbCalendar {
 };
 _NgbCalendarGregorian.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbCalendarGregorian_BaseFactory;
-  return function NgbCalendarGregorian_Factory(t) {
-    return (\u0275NgbCalendarGregorian_BaseFactory || (\u0275NgbCalendarGregorian_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarGregorian)))(t || _NgbCalendarGregorian);
+  return function NgbCalendarGregorian_Factory(__ngFactoryType__) {
+    return (\u0275NgbCalendarGregorian_BaseFactory || (\u0275NgbCalendarGregorian_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarGregorian)))(__ngFactoryType__ || _NgbCalendarGregorian);
   };
 })();
 _NgbCalendarGregorian.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -42059,8 +43600,8 @@ var _NgbDatepickerI18n = class _NgbDatepickerI18n {
     return "";
   }
 };
-_NgbDatepickerI18n.\u0275fac = function NgbDatepickerI18n_Factory(t) {
-  return new (t || _NgbDatepickerI18n)();
+_NgbDatepickerI18n.\u0275fac = function NgbDatepickerI18n_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDatepickerI18n)();
 };
 _NgbDatepickerI18n.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbDatepickerI18n,
@@ -42081,11 +43622,17 @@ var _NgbDatepickerI18nDefault = class _NgbDatepickerI18nDefault extends NgbDatep
   constructor() {
     super(...arguments);
     this._locale = inject(LOCALE_ID);
-    this._monthsShort = getLocaleMonthNames(this._locale, FormStyle.Standalone, TranslationWidth.Abbreviated);
-    this._monthsFull = getLocaleMonthNames(this._locale, FormStyle.Standalone, TranslationWidth.Wide);
+    this._monthsShort = [...Array(12).keys()].map((month) => Intl.DateTimeFormat(this._locale, {
+      month: "short"
+    }).format(new Date(2e3, month)));
+    this._monthsFull = [...Array(12).keys()].map((month) => Intl.DateTimeFormat(this._locale, {
+      month: "long"
+    }).format(new Date(2e3, month)));
   }
-  getWeekdayLabel(weekday, width) {
-    const weekdaysStartingOnSunday = getLocaleDayNames(this._locale, FormStyle.Standalone, width === void 0 ? TranslationWidth.Short : width);
+  getWeekdayLabel(weekday, width = "narrow") {
+    const weekdaysStartingOnSunday = [...Array(7).keys()].map((day) => Intl.DateTimeFormat(this._locale, {
+      weekday: width
+    }).format(new Date(Date.UTC(2021, 5, day - 1))));
     const weekdays = weekdaysStartingOnSunday.map((day, index) => weekdaysStartingOnSunday[(index + 1) % 7]);
     return weekdays[weekday - 1] || "";
   }
@@ -42102,8 +43649,8 @@ var _NgbDatepickerI18nDefault = class _NgbDatepickerI18nDefault extends NgbDatep
 };
 _NgbDatepickerI18nDefault.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbDatepickerI18nDefault_BaseFactory;
-  return function NgbDatepickerI18nDefault_Factory(t) {
-    return (\u0275NgbDatepickerI18nDefault_BaseFactory || (\u0275NgbDatepickerI18nDefault_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDatepickerI18nDefault)))(t || _NgbDatepickerI18nDefault);
+  return function NgbDatepickerI18nDefault_Factory(__ngFactoryType__) {
+    return (\u0275NgbDatepickerI18nDefault_BaseFactory || (\u0275NgbDatepickerI18nDefault_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDatepickerI18nDefault)))(__ngFactoryType__ || _NgbDatepickerI18nDefault);
   };
 })();
 _NgbDatepickerI18nDefault.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -42194,7 +43741,7 @@ var _NgbDatepickerService = class _NgbDatepickerService {
         }
       },
       weekdays: (weekdays) => {
-        const weekdayWidth = weekdays === true || weekdays === false ? TranslationWidth.Short : weekdays;
+        const weekdayWidth = weekdays === true || weekdays === false ? "narrow" : weekdays;
         const weekdaysVisible = weekdays === true || weekdays === false ? weekdays : true;
         if (this._state.weekdayWidth !== weekdayWidth || this._state.weekdaysVisible !== weekdaysVisible) {
           return {
@@ -42230,7 +43777,7 @@ var _NgbDatepickerService = class _NgbDatepickerService {
         years: [],
         months: []
       },
-      weekdayWidth: TranslationWidth.Short,
+      weekdayWidth: "narrow",
       weekdaysVisible: true
     };
   }
@@ -42399,8 +43946,8 @@ var _NgbDatepickerService = class _NgbDatepickerService {
     return state;
   }
 };
-_NgbDatepickerService.\u0275fac = function NgbDatepickerService_Factory(t) {
-  return new (t || _NgbDatepickerService)();
+_NgbDatepickerService.\u0275fac = function NgbDatepickerService_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDatepickerService)();
 };
 _NgbDatepickerService.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbDatepickerService,
@@ -42424,11 +43971,11 @@ var _NgbDatepickerConfig = class _NgbDatepickerConfig {
     this.navigation = "select";
     this.outsideDays = "visible";
     this.showWeekNumbers = false;
-    this.weekdays = TranslationWidth.Short;
+    this.weekdays = "narrow";
   }
 };
-_NgbDatepickerConfig.\u0275fac = function NgbDatepickerConfig_Factory(t) {
-  return new (t || _NgbDatepickerConfig)();
+_NgbDatepickerConfig.\u0275fac = function NgbDatepickerConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDatepickerConfig)();
 };
 _NgbDatepickerConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbDatepickerConfig,
@@ -42449,8 +43996,8 @@ function NGB_DATEPICKER_DATE_ADAPTER_FACTORY() {
 }
 var _NgbDateAdapter = class _NgbDateAdapter {
 };
-_NgbDateAdapter.\u0275fac = function NgbDateAdapter_Factory(t) {
-  return new (t || _NgbDateAdapter)();
+_NgbDateAdapter.\u0275fac = function NgbDateAdapter_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDateAdapter)();
 };
 _NgbDateAdapter.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbDateAdapter,
@@ -42491,8 +44038,8 @@ var _NgbDateStructAdapter = class _NgbDateStructAdapter extends NgbDateAdapter {
 };
 _NgbDateStructAdapter.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbDateStructAdapter_BaseFactory;
-  return function NgbDateStructAdapter_Factory(t) {
-    return (\u0275NgbDateStructAdapter_BaseFactory || (\u0275NgbDateStructAdapter_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDateStructAdapter)))(t || _NgbDateStructAdapter);
+  return function NgbDateStructAdapter_Factory(__ngFactoryType__) {
+    return (\u0275NgbDateStructAdapter_BaseFactory || (\u0275NgbDateStructAdapter_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDateStructAdapter)))(__ngFactoryType__ || _NgbDateStructAdapter);
   };
 })();
 _NgbDateStructAdapter.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -42505,21 +44052,6 @@ var NgbDateStructAdapter = _NgbDateStructAdapter;
     type: Injectable
   }], null, null);
 })();
-var Key;
-(function(Key2) {
-  Key2[Key2["Tab"] = 9] = "Tab";
-  Key2[Key2["Enter"] = 13] = "Enter";
-  Key2[Key2["Escape"] = 27] = "Escape";
-  Key2[Key2["Space"] = 32] = "Space";
-  Key2[Key2["PageUp"] = 33] = "PageUp";
-  Key2[Key2["PageDown"] = 34] = "PageDown";
-  Key2[Key2["End"] = 35] = "End";
-  Key2[Key2["Home"] = 36] = "Home";
-  Key2[Key2["ArrowLeft"] = 37] = "ArrowLeft";
-  Key2[Key2["ArrowUp"] = 38] = "ArrowUp";
-  Key2[Key2["ArrowRight"] = 39] = "ArrowRight";
-  Key2[Key2["ArrowDown"] = 40] = "ArrowDown";
-})(Key || (Key = {}));
 var _NgbDatepickerKeyboardService = class _NgbDatepickerKeyboardService {
   /**
    * Processes a keyboard event.
@@ -42529,33 +44061,33 @@ var _NgbDatepickerKeyboardService = class _NgbDatepickerKeyboardService {
       state,
       calendar
     } = datepicker;
-    switch (event.which) {
-      case Key.PageUp:
+    switch (event.key) {
+      case "PageUp":
         datepicker.focusDate(calendar.getPrev(state.focusedDate, event.shiftKey ? "y" : "m", 1));
         break;
-      case Key.PageDown:
+      case "PageDown":
         datepicker.focusDate(calendar.getNext(state.focusedDate, event.shiftKey ? "y" : "m", 1));
         break;
-      case Key.End:
+      case "End":
         datepicker.focusDate(event.shiftKey ? state.maxDate : state.lastDate);
         break;
-      case Key.Home:
+      case "Home":
         datepicker.focusDate(event.shiftKey ? state.minDate : state.firstDate);
         break;
-      case Key.ArrowLeft:
+      case "ArrowLeft":
         datepicker.focusDate(calendar.getPrev(state.focusedDate, "d", 1));
         break;
-      case Key.ArrowUp:
+      case "ArrowUp":
         datepicker.focusDate(calendar.getPrev(state.focusedDate, "d", calendar.getDaysPerWeek()));
         break;
-      case Key.ArrowRight:
+      case "ArrowRight":
         datepicker.focusDate(calendar.getNext(state.focusedDate, "d", 1));
         break;
-      case Key.ArrowDown:
+      case "ArrowDown":
         datepicker.focusDate(calendar.getNext(state.focusedDate, "d", calendar.getDaysPerWeek()));
         break;
-      case Key.Enter:
-      case Key.Space:
+      case "Enter":
+      case " ":
         datepicker.focusSelect();
         break;
       default:
@@ -42565,8 +44097,8 @@ var _NgbDatepickerKeyboardService = class _NgbDatepickerKeyboardService {
     event.stopPropagation();
   }
 };
-_NgbDatepickerKeyboardService.\u0275fac = function NgbDatepickerKeyboardService_Factory(t) {
-  return new (t || _NgbDatepickerKeyboardService)();
+_NgbDatepickerKeyboardService.\u0275fac = function NgbDatepickerKeyboardService_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDatepickerKeyboardService)();
 };
 _NgbDatepickerKeyboardService.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbDatepickerKeyboardService,
@@ -42590,8 +44122,8 @@ var _NgbDatepickerDayView = class _NgbDatepickerDayView {
     return !this.selected && (this.date.month !== this.currentMonth || this.disabled);
   }
 };
-_NgbDatepickerDayView.\u0275fac = function NgbDatepickerDayView_Factory(t) {
-  return new (t || _NgbDatepickerDayView)();
+_NgbDatepickerDayView.\u0275fac = function NgbDatepickerDayView_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDatepickerDayView)();
 };
 _NgbDatepickerDayView.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbDatepickerDayView,
@@ -42691,8 +44223,8 @@ var _NgbDatepickerNavigationSelect = class _NgbDatepickerNavigationSelect {
     }
   }
 };
-_NgbDatepickerNavigationSelect.\u0275fac = function NgbDatepickerNavigationSelect_Factory(t) {
-  return new (t || _NgbDatepickerNavigationSelect)();
+_NgbDatepickerNavigationSelect.\u0275fac = function NgbDatepickerNavigationSelect_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDatepickerNavigationSelect)();
 };
 _NgbDatepickerNavigationSelect.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbDatepickerNavigationSelect,
@@ -42724,29 +44256,29 @@ _NgbDatepickerNavigationSelect.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineCom
   consts: () => {
     let i18n_4;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_4 = goog.getMsg("Select month");
-      i18n_4 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_4;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_4 = goog.getMsg("Select month");
+      i18n_4 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_4;
     } else {
       i18n_4 = $localize`:@@ngb.datepicker.select-month:Select month`;
     }
     let i18n_5;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_5 = goog.getMsg("Select month");
-      i18n_5 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_5;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_5 = goog.getMsg("Select month");
+      i18n_5 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_5;
     } else {
       i18n_5 = $localize`:@@ngb.datepicker.select-month:Select month`;
     }
     let i18n_6;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_6 = goog.getMsg("Select year");
-      i18n_6 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_6;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_6 = goog.getMsg("Select year");
+      i18n_6 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_6;
     } else {
       i18n_6 = $localize`:@@ngb.datepicker.select-year:Select year`;
     }
     let i18n_7;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_7 = goog.getMsg("Select year");
-      i18n_7 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_7;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_7 = goog.getMsg("Select year");
+      i18n_7 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_7;
     } else {
       i18n_7 = $localize`:@@ngb.datepicker.select-year:Select year`;
     }
@@ -42875,8 +44407,8 @@ var _NgbDatepickerNavigation = class _NgbDatepickerNavigation {
     this.navigate.emit(this.navigation.NEXT);
   }
 };
-_NgbDatepickerNavigation.\u0275fac = function NgbDatepickerNavigation_Factory(t) {
-  return new (t || _NgbDatepickerNavigation)();
+_NgbDatepickerNavigation.\u0275fac = function NgbDatepickerNavigation_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDatepickerNavigation)();
 };
 _NgbDatepickerNavigation.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbDatepickerNavigation,
@@ -42901,29 +44433,29 @@ _NgbDatepickerNavigation.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent
   consts: () => {
     let i18n_8;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_8 = goog.getMsg("Previous month");
-      i18n_8 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_8;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_8 = goog.getMsg("Previous month");
+      i18n_8 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_8;
     } else {
       i18n_8 = $localize`:@@ngb.datepicker.previous-month:Previous month`;
     }
     let i18n_9;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_9 = goog.getMsg("Previous month");
-      i18n_9 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_9;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_9 = goog.getMsg("Previous month");
+      i18n_9 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_9;
     } else {
       i18n_9 = $localize`:@@ngb.datepicker.previous-month:Previous month`;
     }
     let i18n_10;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_10 = goog.getMsg("Next month");
-      i18n_10 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_10;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_10 = goog.getMsg("Next month");
+      i18n_10 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_10;
     } else {
       i18n_10 = $localize`:@@ngb.datepicker.next-month:Next month`;
     }
     let i18n_11;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_11 = goog.getMsg("Next month");
-      i18n_11 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_11;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_11 = goog.getMsg("Next month");
+      i18n_11 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_11;
     } else {
       i18n_11 = $localize`:@@ngb.datepicker.next-month:Next month`;
     }
@@ -42949,9 +44481,9 @@ _NgbDatepickerNavigation.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent
       \u0275\u0275advance();
       \u0275\u0275property("disabled", ctx.prevDisabled);
       \u0275\u0275advance(2);
-      \u0275\u0275conditional(3, ctx.showSelect ? 3 : -1);
+      \u0275\u0275conditional(ctx.showSelect ? 3 : -1);
       \u0275\u0275advance();
-      \u0275\u0275conditional(4, !ctx.showSelect ? 4 : -1);
+      \u0275\u0275conditional(!ctx.showSelect ? 4 : -1);
       \u0275\u0275advance(2);
       \u0275\u0275property("disabled", ctx.nextDisabled);
     }
@@ -43062,8 +44594,8 @@ var _NgbDatepickerContent = class _NgbDatepickerContent {
     this.templateRef = inject(TemplateRef);
   }
 };
-_NgbDatepickerContent.\u0275fac = function NgbDatepickerContent_Factory(t) {
-  return new (t || _NgbDatepickerContent)();
+_NgbDatepickerContent.\u0275fac = function NgbDatepickerContent_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDatepickerContent)();
 };
 _NgbDatepickerContent.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbDatepickerContent,
@@ -43105,8 +44637,8 @@ var _NgbDatepickerMonth = class _NgbDatepickerMonth {
     }
   }
 };
-_NgbDatepickerMonth.\u0275fac = function NgbDatepickerMonth_Factory(t) {
-  return new (t || _NgbDatepickerMonth)();
+_NgbDatepickerMonth.\u0275fac = function NgbDatepickerMonth_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDatepickerMonth)();
 };
 _NgbDatepickerMonth.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbDatepickerMonth,
@@ -43133,7 +44665,7 @@ _NgbDatepickerMonth.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
       \u0275\u0275repeaterCreate(1, NgbDatepickerMonth_For_2_Template, 1, 1, null, null, \u0275\u0275repeaterTrackByIdentity);
     }
     if (rf & 2) {
-      \u0275\u0275conditional(0, ctx.viewModel.weekdays.length > 0 ? 0 : -1);
+      \u0275\u0275conditional(ctx.viewModel.weekdays.length > 0 ? 0 : -1);
       \u0275\u0275advance();
       \u0275\u0275repeater(ctx.viewModel.weeks);
     }
@@ -43161,7 +44693,7 @@ var NgbDatepickerMonth = _NgbDatepickerMonth;
 				@if (datepicker.showWeekNumbers) {
 					<div class="ngb-dp-weekday ngb-dp-showweek small">{{ i18n.getWeekLabel() }}</div>
 				}
-				@for (weekday of viewModel.weekdays; track weekday) {
+				@for (weekday of viewModel.weekdays; track $index) {
 					<div class="ngb-dp-weekday small" role="columnheader">{{ weekday }}</div>
 				}
 			</div>
@@ -43407,8 +44939,8 @@ var _NgbDatepicker = class _NgbDatepicker {
     this._service.select(this._controlValue);
   }
 };
-_NgbDatepicker.\u0275fac = function NgbDatepicker_Factory(t) {
-  return new (t || _NgbDatepicker)();
+_NgbDatepicker.\u0275fac = function NgbDatepicker_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDatepicker)();
 };
 _NgbDatepicker.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbDatepicker,
@@ -43483,7 +45015,7 @@ _NgbDatepicker.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
     if (rf & 2) {
       const defaultContentTemplate_r9 = \u0275\u0275reference(3);
       \u0275\u0275advance(5);
-      \u0275\u0275conditional(5, ctx.navigation !== "none" ? 5 : -1);
+      \u0275\u0275conditional(ctx.navigation !== "none" ? 5 : -1);
       \u0275\u0275advance();
       \u0275\u0275classProp("ngb-dp-months", !ctx.contentTemplate);
       \u0275\u0275advance(2);
@@ -43532,7 +45064,7 @@ var NgbDatepicker = _NgbDatepicker;
 		</ng-template>
 
 		<ng-template #defaultContentTemplate>
-			@for (month of model.months; track month; let i = $index) {
+			@for (month of model.months; track month) {
 				<div class="ngb-dp-month">
 					@if (navigation === 'none' || (displayMonths > 1 && navigation === 'select')) {
 						<div class="ngb-dp-month-name">
@@ -43670,12 +45202,7 @@ function ngbAutoClose(zone, document2, type, close, closed$, insideElements, ign
           return matchesSelectorIfAny(element, insideSelector) || !isContainedIn(element, insideElements);
         }
       };
-      const escapes$ = fromEvent(document2, "keydown").pipe(
-        takeUntil(closed$),
-        /* eslint-disable-next-line deprecation/deprecation */
-        filter((e) => e.which === Key.Escape),
-        tap((e) => e.preventDefault())
-      );
+      const escapes$ = fromEvent(document2, "keydown").pipe(takeUntil(closed$), filter((e) => e.key === "Escape"), tap((e) => e.preventDefault()));
       const mouseDowns$ = fromEvent(document2, "mousedown").pipe(map(shouldCloseOnClick), takeUntil(closed$));
       const closeableClicks$ = fromEvent(document2, "mouseup").pipe(withLatestFrom(mouseDowns$), filter(([_, shouldClose]) => shouldClose), delay(0), takeUntil(closed$));
       race([escapes$.pipe(map(
@@ -43696,12 +45223,7 @@ function getFocusableBoundaryElements(element) {
 var ngbFocusTrap = (zone, element, stopFocusTrap$, refocusOnClick = false) => {
   zone.runOutsideAngular(() => {
     const lastFocusedElement$ = fromEvent(element, "focusin").pipe(takeUntil(stopFocusTrap$), map((e) => e.target));
-    fromEvent(element, "keydown").pipe(
-      takeUntil(stopFocusTrap$),
-      /* eslint-disable-next-line deprecation/deprecation */
-      filter((e) => e.which === Key.Tab),
-      withLatestFrom(lastFocusedElement$)
-    ).subscribe(([tabEvent, focusedElement]) => {
+    fromEvent(element, "keydown").pipe(takeUntil(stopFocusTrap$), filter((e) => e.key === "Tab"), withLatestFrom(lastFocusedElement$)).subscribe(([tabEvent, focusedElement]) => {
       const [first2, last2] = getFocusableBoundaryElements(element);
       if ((focusedElement === first2 || focusedElement === element) && tabEvent.shiftKey) {
         last2.focus();
@@ -43725,8 +45247,8 @@ var _NgbRTL = class _NgbRTL {
     return (this._element.getAttribute("dir") || "").toLowerCase() === "rtl";
   }
 };
-_NgbRTL.\u0275fac = function NgbRTL_Factory(t) {
-  return new (t || _NgbRTL)();
+_NgbRTL.\u0275fac = function NgbRTL_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbRTL)();
 };
 _NgbRTL.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbRTL,
@@ -43883,8 +45405,8 @@ function NGB_DATEPICKER_PARSER_FORMATTER_FACTORY() {
 }
 var _NgbDateParserFormatter = class _NgbDateParserFormatter {
 };
-_NgbDateParserFormatter.\u0275fac = function NgbDateParserFormatter_Factory(t) {
-  return new (t || _NgbDateParserFormatter)();
+_NgbDateParserFormatter.\u0275fac = function NgbDateParserFormatter_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDateParserFormatter)();
 };
 _NgbDateParserFormatter.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbDateParserFormatter,
@@ -43933,8 +45455,8 @@ var _NgbDateISOParserFormatter = class _NgbDateISOParserFormatter extends NgbDat
 };
 _NgbDateISOParserFormatter.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbDateISOParserFormatter_BaseFactory;
-  return function NgbDateISOParserFormatter_Factory(t) {
-    return (\u0275NgbDateISOParserFormatter_BaseFactory || (\u0275NgbDateISOParserFormatter_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDateISOParserFormatter)))(t || _NgbDateISOParserFormatter);
+  return function NgbDateISOParserFormatter_Factory(__ngFactoryType__) {
+    return (\u0275NgbDateISOParserFormatter_BaseFactory || (\u0275NgbDateISOParserFormatter_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDateISOParserFormatter)))(__ngFactoryType__ || _NgbDateISOParserFormatter);
   };
 })();
 _NgbDateISOParserFormatter.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -43958,8 +45480,8 @@ var _NgbInputDatepickerConfig = class _NgbInputDatepickerConfig extends NgbDatep
 };
 _NgbInputDatepickerConfig.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbInputDatepickerConfig_BaseFactory;
-  return function NgbInputDatepickerConfig_Factory(t) {
-    return (\u0275NgbInputDatepickerConfig_BaseFactory || (\u0275NgbInputDatepickerConfig_BaseFactory = \u0275\u0275getInheritedFactory(_NgbInputDatepickerConfig)))(t || _NgbInputDatepickerConfig);
+  return function NgbInputDatepickerConfig_Factory(__ngFactoryType__) {
+    return (\u0275NgbInputDatepickerConfig_BaseFactory || (\u0275NgbInputDatepickerConfig_BaseFactory = \u0275\u0275getInheritedFactory(_NgbInputDatepickerConfig)))(__ngFactoryType__ || _NgbInputDatepickerConfig);
   };
 })();
 _NgbInputDatepickerConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -44139,7 +45661,6 @@ var _NgbInputDatepicker = class _NgbInputDatepicker {
             hostElement,
             targetElement: this._cRef.location.nativeElement,
             placement: this.placement,
-            appendToBody: this.container === "body",
             updatePopperOptions: (options) => this.popperOptions(addPopperOffset([0, 2])(options))
           });
           this._zoneSubscription = this._ngZone.onStable.subscribe(() => this._positioning.update());
@@ -44153,7 +45674,7 @@ var _NgbInputDatepicker = class _NgbInputDatepicker {
    */
   close() {
     if (this.isOpen()) {
-      this._vcRef.remove(this._vcRef.indexOf(this._cRef.hostView));
+      this._cRef?.destroy();
       this._cRef = null;
       this._positioning.destroy();
       this._zoneSubscription?.unsubscribe();
@@ -44281,8 +45802,8 @@ var _NgbInputDatepicker = class _NgbInputDatepicker {
     ngbAutoClose(this._ngZone, this._document, this.autoClose, () => this.close(), this._destroyCloseHandlers$, [], [this._elRef.nativeElement, this._cRef.location.nativeElement]);
   }
 };
-_NgbInputDatepicker.\u0275fac = function NgbInputDatepicker_Factory(t) {
-  return new (t || _NgbInputDatepicker)();
+_NgbInputDatepicker.\u0275fac = function NgbInputDatepicker_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbInputDatepicker)();
 };
 _NgbInputDatepicker.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbInputDatepicker,
@@ -44539,8 +46060,8 @@ var _NgbCalendarHijri = class _NgbCalendarHijri extends NgbCalendar {
 };
 _NgbCalendarHijri.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbCalendarHijri_BaseFactory;
-  return function NgbCalendarHijri_Factory(t) {
-    return (\u0275NgbCalendarHijri_BaseFactory || (\u0275NgbCalendarHijri_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarHijri)))(t || _NgbCalendarHijri);
+  return function NgbCalendarHijri_Factory(__ngFactoryType__) {
+    return (\u0275NgbCalendarHijri_BaseFactory || (\u0275NgbCalendarHijri_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarHijri)))(__ngFactoryType__ || _NgbCalendarHijri);
   };
 })();
 _NgbCalendarHijri.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -44627,8 +46148,8 @@ var _NgbCalendarIslamicCivil = class _NgbCalendarIslamicCivil extends NgbCalenda
 };
 _NgbCalendarIslamicCivil.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbCalendarIslamicCivil_BaseFactory;
-  return function NgbCalendarIslamicCivil_Factory(t) {
-    return (\u0275NgbCalendarIslamicCivil_BaseFactory || (\u0275NgbCalendarIslamicCivil_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarIslamicCivil)))(t || _NgbCalendarIslamicCivil);
+  return function NgbCalendarIslamicCivil_Factory(__ngFactoryType__) {
+    return (\u0275NgbCalendarIslamicCivil_BaseFactory || (\u0275NgbCalendarIslamicCivil_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarIslamicCivil)))(__ngFactoryType__ || _NgbCalendarIslamicCivil);
   };
 })();
 _NgbCalendarIslamicCivil.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -45090,8 +46611,8 @@ var _NgbCalendarIslamicUmalqura = class _NgbCalendarIslamicUmalqura extends NgbC
 };
 _NgbCalendarIslamicUmalqura.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbCalendarIslamicUmalqura_BaseFactory;
-  return function NgbCalendarIslamicUmalqura_Factory(t) {
-    return (\u0275NgbCalendarIslamicUmalqura_BaseFactory || (\u0275NgbCalendarIslamicUmalqura_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarIslamicUmalqura)))(t || _NgbCalendarIslamicUmalqura);
+  return function NgbCalendarIslamicUmalqura_Factory(__ngFactoryType__) {
+    return (\u0275NgbCalendarIslamicUmalqura_BaseFactory || (\u0275NgbCalendarIslamicUmalqura_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarIslamicUmalqura)))(__ngFactoryType__ || _NgbCalendarIslamicUmalqura);
   };
 })();
 _NgbCalendarIslamicUmalqura.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -45295,8 +46816,8 @@ var _NgbCalendarPersian = class _NgbCalendarPersian extends NgbCalendar {
 };
 _NgbCalendarPersian.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbCalendarPersian_BaseFactory;
-  return function NgbCalendarPersian_Factory(t) {
-    return (\u0275NgbCalendarPersian_BaseFactory || (\u0275NgbCalendarPersian_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarPersian)))(t || _NgbCalendarPersian);
+  return function NgbCalendarPersian_Factory(__ngFactoryType__) {
+    return (\u0275NgbCalendarPersian_BaseFactory || (\u0275NgbCalendarPersian_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarPersian)))(__ngFactoryType__ || _NgbCalendarPersian);
   };
 })();
 _NgbCalendarPersian.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -45630,8 +47151,8 @@ var _NgbCalendarHebrew = class _NgbCalendarHebrew extends NgbCalendar {
 };
 _NgbCalendarHebrew.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbCalendarHebrew_BaseFactory;
-  return function NgbCalendarHebrew_Factory(t) {
-    return (\u0275NgbCalendarHebrew_BaseFactory || (\u0275NgbCalendarHebrew_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarHebrew)))(t || _NgbCalendarHebrew);
+  return function NgbCalendarHebrew_Factory(__ngFactoryType__) {
+    return (\u0275NgbCalendarHebrew_BaseFactory || (\u0275NgbCalendarHebrew_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarHebrew)))(__ngFactoryType__ || _NgbCalendarHebrew);
   };
 })();
 _NgbCalendarHebrew.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -45672,8 +47193,8 @@ var _NgbDatepickerI18nHebrew = class _NgbDatepickerI18nHebrew extends NgbDatepic
 };
 _NgbDatepickerI18nHebrew.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbDatepickerI18nHebrew_BaseFactory;
-  return function NgbDatepickerI18nHebrew_Factory(t) {
-    return (\u0275NgbDatepickerI18nHebrew_BaseFactory || (\u0275NgbDatepickerI18nHebrew_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDatepickerI18nHebrew)))(t || _NgbDatepickerI18nHebrew);
+  return function NgbDatepickerI18nHebrew_Factory(__ngFactoryType__) {
+    return (\u0275NgbDatepickerI18nHebrew_BaseFactory || (\u0275NgbDatepickerI18nHebrew_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDatepickerI18nHebrew)))(__ngFactoryType__ || _NgbDatepickerI18nHebrew);
   };
 })();
 _NgbDatepickerI18nHebrew.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -45758,8 +47279,8 @@ var _NgbCalendarBuddhist = class _NgbCalendarBuddhist extends NgbCalendarGregori
 };
 _NgbCalendarBuddhist.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbCalendarBuddhist_BaseFactory;
-  return function NgbCalendarBuddhist_Factory(t) {
-    return (\u0275NgbCalendarBuddhist_BaseFactory || (\u0275NgbCalendarBuddhist_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarBuddhist)))(t || _NgbCalendarBuddhist);
+  return function NgbCalendarBuddhist_Factory(__ngFactoryType__) {
+    return (\u0275NgbCalendarBuddhist_BaseFactory || (\u0275NgbCalendarBuddhist_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarBuddhist)))(__ngFactoryType__ || _NgbCalendarBuddhist);
   };
 })();
 _NgbCalendarBuddhist.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -45923,8 +47444,8 @@ var _NgbCalendarEthiopian = class _NgbCalendarEthiopian extends NgbCalendar {
 };
 _NgbCalendarEthiopian.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbCalendarEthiopian_BaseFactory;
-  return function NgbCalendarEthiopian_Factory(t) {
-    return (\u0275NgbCalendarEthiopian_BaseFactory || (\u0275NgbCalendarEthiopian_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarEthiopian)))(t || _NgbCalendarEthiopian);
+  return function NgbCalendarEthiopian_Factory(__ngFactoryType__) {
+    return (\u0275NgbCalendarEthiopian_BaseFactory || (\u0275NgbCalendarEthiopian_BaseFactory = \u0275\u0275getInheritedFactory(_NgbCalendarEthiopian)))(__ngFactoryType__ || _NgbCalendarEthiopian);
   };
 })();
 _NgbCalendarEthiopian.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -45955,8 +47476,8 @@ var _NgbDatepickerI18nAmharic = class _NgbDatepickerI18nAmharic extends NgbDatep
 };
 _NgbDatepickerI18nAmharic.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbDatepickerI18nAmharic_BaseFactory;
-  return function NgbDatepickerI18nAmharic_Factory(t) {
-    return (\u0275NgbDatepickerI18nAmharic_BaseFactory || (\u0275NgbDatepickerI18nAmharic_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDatepickerI18nAmharic)))(t || _NgbDatepickerI18nAmharic);
+  return function NgbDatepickerI18nAmharic_Factory(__ngFactoryType__) {
+    return (\u0275NgbDatepickerI18nAmharic_BaseFactory || (\u0275NgbDatepickerI18nAmharic_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDatepickerI18nAmharic)))(__ngFactoryType__ || _NgbDatepickerI18nAmharic);
   };
 })();
 _NgbDatepickerI18nAmharic.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -45997,8 +47518,8 @@ var _NgbDateNativeAdapter = class _NgbDateNativeAdapter extends NgbDateAdapter {
 };
 _NgbDateNativeAdapter.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbDateNativeAdapter_BaseFactory;
-  return function NgbDateNativeAdapter_Factory(t) {
-    return (\u0275NgbDateNativeAdapter_BaseFactory || (\u0275NgbDateNativeAdapter_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDateNativeAdapter)))(t || _NgbDateNativeAdapter);
+  return function NgbDateNativeAdapter_Factory(__ngFactoryType__) {
+    return (\u0275NgbDateNativeAdapter_BaseFactory || (\u0275NgbDateNativeAdapter_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDateNativeAdapter)))(__ngFactoryType__ || _NgbDateNativeAdapter);
   };
 })();
 _NgbDateNativeAdapter.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -46027,8 +47548,8 @@ var _NgbDateNativeUTCAdapter = class _NgbDateNativeUTCAdapter extends NgbDateNat
 };
 _NgbDateNativeUTCAdapter.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbDateNativeUTCAdapter_BaseFactory;
-  return function NgbDateNativeUTCAdapter_Factory(t) {
-    return (\u0275NgbDateNativeUTCAdapter_BaseFactory || (\u0275NgbDateNativeUTCAdapter_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDateNativeUTCAdapter)))(t || _NgbDateNativeUTCAdapter);
+  return function NgbDateNativeUTCAdapter_Factory(__ngFactoryType__) {
+    return (\u0275NgbDateNativeUTCAdapter_BaseFactory || (\u0275NgbDateNativeUTCAdapter_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDateNativeUTCAdapter)))(__ngFactoryType__ || _NgbDateNativeUTCAdapter);
   };
 })();
 _NgbDateNativeUTCAdapter.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -46044,8 +47565,8 @@ var NgbDateNativeUTCAdapter = _NgbDateNativeUTCAdapter;
 var NGB_DATEPICKER_DIRECTIVES = [NgbDatepicker, NgbDatepickerContent, NgbInputDatepicker, NgbDatepickerMonth];
 var _NgbDatepickerModule = class _NgbDatepickerModule {
 };
-_NgbDatepickerModule.\u0275fac = function NgbDatepickerModule_Factory(t) {
-  return new (t || _NgbDatepickerModule)();
+_NgbDatepickerModule.\u0275fac = function NgbDatepickerModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDatepickerModule)();
 };
 _NgbDatepickerModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbDatepickerModule
@@ -46069,8 +47590,8 @@ var _NgbDropdownConfig = class _NgbDropdownConfig {
     this.container = null;
   }
 };
-_NgbDropdownConfig.\u0275fac = function NgbDropdownConfig_Factory(t) {
-  return new (t || _NgbDropdownConfig)();
+_NgbDropdownConfig.\u0275fac = function NgbDropdownConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDropdownConfig)();
 };
 _NgbDropdownConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbDropdownConfig,
@@ -46099,8 +47620,8 @@ var _NgbDropdownItem = class _NgbDropdownItem {
     return this._disabled;
   }
 };
-_NgbDropdownItem.\u0275fac = function NgbDropdownItem_Factory(t) {
-  return new (t || _NgbDropdownItem)();
+_NgbDropdownItem.\u0275fac = function NgbDropdownItem_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDropdownItem)();
 };
 _NgbDropdownItem.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbDropdownItem,
@@ -46146,8 +47667,8 @@ var _NgbDropdownButtonItem = class _NgbDropdownButtonItem {
     this.item = inject(NgbDropdownItem);
   }
 };
-_NgbDropdownButtonItem.\u0275fac = function NgbDropdownButtonItem_Factory(t) {
-  return new (t || _NgbDropdownButtonItem)();
+_NgbDropdownButtonItem.\u0275fac = function NgbDropdownButtonItem_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDropdownButtonItem)();
 };
 _NgbDropdownButtonItem.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbDropdownButtonItem,
@@ -46179,8 +47700,8 @@ var _NgbDropdownMenu = class _NgbDropdownMenu {
     this.nativeElement = inject(ElementRef).nativeElement;
   }
 };
-_NgbDropdownMenu.\u0275fac = function NgbDropdownMenu_Factory(t) {
-  return new (t || _NgbDropdownMenu)();
+_NgbDropdownMenu.\u0275fac = function NgbDropdownMenu_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDropdownMenu)();
 };
 _NgbDropdownMenu.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbDropdownMenu,
@@ -46194,7 +47715,8 @@ _NgbDropdownMenu.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
       \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx.menuItems = _t);
     }
   },
-  hostVars: 4,
+  hostAttrs: [1, "dropdown-menu"],
+  hostVars: 2,
   hostBindings: function NgbDropdownMenu_HostBindings(rf, ctx) {
     if (rf & 1) {
       \u0275\u0275listener("keydown.ArrowUp", function NgbDropdownMenu_keydown_ArrowUp_HostBindingHandler($event) {
@@ -46216,7 +47738,7 @@ _NgbDropdownMenu.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
       });
     }
     if (rf & 2) {
-      \u0275\u0275classProp("dropdown-menu", true)("show", ctx.dropdown.isOpen());
+      \u0275\u0275classProp("show", ctx.dropdown.isOpen());
     }
   },
   standalone: true
@@ -46229,7 +47751,7 @@ var NgbDropdownMenu = _NgbDropdownMenu;
       selector: "[ngbDropdownMenu]",
       standalone: true,
       host: {
-        "[class.dropdown-menu]": "true",
+        class: "dropdown-menu",
         "[class.show]": "dropdown.isOpen()",
         "(keydown.ArrowUp)": "dropdown.onKeyDown($event)",
         "(keydown.ArrowDown)": "dropdown.onKeyDown($event)",
@@ -46254,8 +47776,8 @@ var _NgbDropdownAnchor = class _NgbDropdownAnchor {
     this.nativeElement = inject(ElementRef).nativeElement;
   }
 };
-_NgbDropdownAnchor.\u0275fac = function NgbDropdownAnchor_Factory(t) {
-  return new (t || _NgbDropdownAnchor)();
+_NgbDropdownAnchor.\u0275fac = function NgbDropdownAnchor_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDropdownAnchor)();
 };
 _NgbDropdownAnchor.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbDropdownAnchor,
@@ -46289,8 +47811,8 @@ var _NgbDropdownToggle = class _NgbDropdownToggle extends NgbDropdownAnchor {
 };
 _NgbDropdownToggle.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbDropdownToggle_BaseFactory;
-  return function NgbDropdownToggle_Factory(t) {
-    return (\u0275NgbDropdownToggle_BaseFactory || (\u0275NgbDropdownToggle_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDropdownToggle)))(t || _NgbDropdownToggle);
+  return function NgbDropdownToggle_Factory(__ngFactoryType__) {
+    return (\u0275NgbDropdownToggle_BaseFactory || (\u0275NgbDropdownToggle_BaseFactory = \u0275\u0275getInheritedFactory(_NgbDropdownToggle)))(__ngFactoryType__ || _NgbDropdownToggle);
   };
 })();
 _NgbDropdownToggle.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -46391,8 +47913,7 @@ var _NgbDropdown = class _NgbDropdown {
       this._positioning.setOptions({
         hostElement: this._anchor.nativeElement,
         targetElement: this._bodyContainer || this._menu.nativeElement,
-        placement: this.placement,
-        appendToBody: this.container === "body"
+        placement: this.placement
       });
       this._applyPlacementClasses();
     }
@@ -46431,7 +47952,6 @@ var _NgbDropdown = class _NgbDropdown {
               hostElement: this._anchor.nativeElement,
               targetElement: this._bodyContainer || this._menu.nativeElement,
               placement: this.placement,
-              appendToBody: this.container === "body",
               updatePopperOptions: (options) => this.popperOptions(addPopperOffset([0, 2])(options))
             });
             this._applyPlacementClasses();
@@ -46478,7 +47998,9 @@ var _NgbDropdown = class _NgbDropdown {
     this.close();
   }
   onKeyDown(event) {
-    const key = event.which;
+    const {
+      key
+    } = event;
     const itemElements = this._getMenuElements();
     let position = -1;
     let itemElement = null;
@@ -46493,13 +48015,13 @@ var _NgbDropdown = class _NgbDropdown {
         }
       });
     }
-    if (key === Key.Space || key === Key.Enter) {
+    if (key === " " || key === "Enter") {
       if (itemElement && (this.autoClose === true || this.autoClose === "inside")) {
         fromEvent(itemElement, "click").pipe(take(1)).subscribe(() => this.close());
       }
       return;
     }
-    if (key === Key.Tab) {
+    if (key === "Tab") {
       if (event.target && this.isOpen() && this.autoClose) {
         if (this._anchor.nativeElement === event.target) {
           if (this.container === "body" && !event.shiftKey) {
@@ -46535,20 +48057,20 @@ var _NgbDropdown = class _NgbDropdown {
       this.open();
       if (itemElements.length) {
         switch (key) {
-          case Key.ArrowDown:
+          case "ArrowDown":
             position = Math.min(position + 1, itemElements.length - 1);
             break;
-          case Key.ArrowUp:
+          case "ArrowUp":
             if (this._isDropup() && position === -1) {
               position = itemElements.length - 1;
               break;
             }
             position = Math.max(position - 1, 0);
             break;
-          case Key.Home:
+          case "Home":
             position = 0;
             break;
-          case Key.End:
+          case "End":
             position = itemElements.length - 1;
             break;
         }
@@ -46637,8 +48159,8 @@ var _NgbDropdown = class _NgbDropdown {
     }
   }
 };
-_NgbDropdown.\u0275fac = function NgbDropdown_Factory(t) {
-  return new (t || _NgbDropdown)();
+_NgbDropdown.\u0275fac = function NgbDropdown_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDropdown)();
 };
 _NgbDropdown.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbDropdown,
@@ -46663,7 +48185,7 @@ _NgbDropdown.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   inputs: {
     autoClose: "autoClose",
     dropdownClass: "dropdownClass",
-    _open: [InputFlags.None, "open", "_open"],
+    _open: [0, "open", "_open"],
     placement: "placement",
     popperOptions: "popperOptions",
     container: "container",
@@ -46731,8 +48253,8 @@ var NgbDropdown = _NgbDropdown;
 var NGB_DROPDOWN_DIRECTIVES = [NgbDropdown, NgbDropdownAnchor, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem];
 var _NgbDropdownModule = class _NgbDropdownModule {
 };
-_NgbDropdownModule.\u0275fac = function NgbDropdownModule_Factory(t) {
-  return new (t || _NgbDropdownModule)();
+_NgbDropdownModule.\u0275fac = function NgbDropdownModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbDropdownModule)();
 };
 _NgbDropdownModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbDropdownModule
@@ -46762,8 +48284,8 @@ var _NgbModalConfig = class _NgbModalConfig {
     this._animation = animation;
   }
 };
-_NgbModalConfig.\u0275fac = function NgbModalConfig_Factory(t) {
-  return new (t || _NgbModalConfig)();
+_NgbModalConfig.\u0275fac = function NgbModalConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbModalConfig)();
 };
 _NgbModalConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbModalConfig,
@@ -46829,15 +48351,10 @@ var PopupService = class {
       animation,
       runningTransition: "stop"
     }).pipe(tap(() => {
-      if (this._windowRef) {
-        this._viewContainerRef.remove(this._viewContainerRef.indexOf(this._windowRef.hostView));
-        this._windowRef = null;
-      }
-      if (this._contentRef?.viewRef) {
-        this._applicationRef.detachView(this._contentRef.viewRef);
-        this._contentRef.viewRef.destroy();
-        this._contentRef = null;
-      }
+      this._windowRef?.destroy();
+      this._contentRef?.viewRef?.destroy();
+      this._windowRef = null;
+      this._contentRef = null;
     }));
   }
   _getContentRef(content, templateContext) {
@@ -46885,8 +48402,8 @@ var _ScrollBar = class _ScrollBar {
     };
   }
 };
-_ScrollBar.\u0275fac = function ScrollBar_Factory(t) {
-  return new (t || _ScrollBar)();
+_ScrollBar.\u0275fac = function ScrollBar_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _ScrollBar)();
 };
 _ScrollBar.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _ScrollBar,
@@ -46929,8 +48446,8 @@ var _NgbModalBackdrop = class _NgbModalBackdrop {
     });
   }
 };
-_NgbModalBackdrop.\u0275fac = function NgbModalBackdrop_Factory(t) {
-  return new (t || _NgbModalBackdrop)();
+_NgbModalBackdrop.\u0275fac = function NgbModalBackdrop_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbModalBackdrop)();
 };
 _NgbModalBackdrop.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbModalBackdrop,
@@ -47153,9 +48670,7 @@ var NgbModalRef = class {
       } = this._windowCmptRef.location;
       nativeElement.parentNode.removeChild(nativeElement);
       this._windowCmptRef.destroy();
-      if (this._contentRef && this._contentRef.viewRef) {
-        this._contentRef.viewRef.destroy();
-      }
+      this._contentRef?.viewRef?.destroy();
       this._windowCmptRef = null;
       this._contentRef = null;
     });
@@ -47253,11 +48768,7 @@ var _NgbModalWindow = class _NgbModalWindow {
       nativeElement
     } = this._elRef;
     this._zone.runOutsideAngular(() => {
-      fromEvent(nativeElement, "keydown").pipe(
-        takeUntil(this._closed$),
-        /* eslint-disable-next-line deprecation/deprecation */
-        filter((e) => e.which === Key.Escape)
-      ).subscribe((event) => {
+      fromEvent(nativeElement, "keydown").pipe(takeUntil(this._closed$), filter((e) => e.key === "Escape")).subscribe((event) => {
         if (this.keyboard) {
           requestAnimationFrame(() => {
             if (!event.defaultPrevented) {
@@ -47330,8 +48841,8 @@ var _NgbModalWindow = class _NgbModalWindow {
     }
   }
 };
-_NgbModalWindow.\u0275fac = function NgbModalWindow_Factory(t) {
-  return new (t || _NgbModalWindow)();
+_NgbModalWindow.\u0275fac = function NgbModalWindow_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbModalWindow)();
 };
 _NgbModalWindow.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbModalWindow,
@@ -47669,8 +49180,8 @@ var _NgbModalStack = class _NgbModalStack {
     });
   }
 };
-_NgbModalStack.\u0275fac = function NgbModalStack_Factory(t) {
-  return new (t || _NgbModalStack)();
+_NgbModalStack.\u0275fac = function NgbModalStack_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbModalStack)();
 };
 _NgbModalStack.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbModalStack,
@@ -47730,8 +49241,8 @@ var _NgbModal = class _NgbModal {
     return this._modalStack.hasOpenModals();
   }
 };
-_NgbModal.\u0275fac = function NgbModal_Factory(t) {
-  return new (t || _NgbModal)();
+_NgbModal.\u0275fac = function NgbModal_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbModal)();
 };
 _NgbModal.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbModal,
@@ -47749,8 +49260,8 @@ var NgbModal = _NgbModal;
 })();
 var _NgbModalModule = class _NgbModalModule {
 };
-_NgbModalModule.\u0275fac = function NgbModalModule_Factory(t) {
-  return new (t || _NgbModalModule)();
+_NgbModalModule.\u0275fac = function NgbModalModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbModalModule)();
 };
 _NgbModalModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbModalModule
@@ -47782,8 +49293,8 @@ var _NgbNavConfig = class _NgbNavConfig {
     this._animation = animation;
   }
 };
-_NgbNavConfig.\u0275fac = function NgbNavConfig_Factory(t) {
-  return new (t || _NgbNavConfig)();
+_NgbNavConfig.\u0275fac = function NgbNavConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbNavConfig)();
 };
 _NgbNavConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbNavConfig,
@@ -47806,8 +49317,8 @@ var _NgbNavContent = class _NgbNavContent {
     this.templateRef = inject(TemplateRef);
   }
 };
-_NgbNavContent.\u0275fac = function NgbNavContent_Factory(t) {
-  return new (t || _NgbNavContent)();
+_NgbNavContent.\u0275fac = function NgbNavContent_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbNavContent)();
 };
 _NgbNavContent.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbNavContent,
@@ -47830,8 +49341,8 @@ var _NgbNavItemRole = class _NgbNavItemRole {
     this.nav = inject(NgbNav);
   }
 };
-_NgbNavItemRole.\u0275fac = function NgbNavItemRole_Factory(t) {
-  return new (t || _NgbNavItemRole)(\u0275\u0275injectAttribute("role"));
+_NgbNavItemRole.\u0275fac = function NgbNavItemRole_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbNavItemRole)(\u0275\u0275injectAttribute("role"));
 };
 _NgbNavItemRole.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbNavItemRole,
@@ -47858,7 +49369,7 @@ var NgbNavItemRole = _NgbNavItemRole;
   }], () => [{
     type: void 0,
     decorators: [{
-      type: Attribute,
+      type: Attribute2,
       args: ["role"]
     }]
   }], null);
@@ -47870,9 +49381,6 @@ var _NgbNavItem = class _NgbNavItem {
     this.disabled = false;
     this.shown = new EventEmitter();
     this.hidden = new EventEmitter();
-  }
-  ngAfterContentChecked() {
-    this.contentTpl = this.contentTpls.first;
   }
   ngOnInit() {
     if (!isDefined(this.domId)) {
@@ -47898,8 +49406,8 @@ var _NgbNavItem = class _NgbNavItem {
     return this._nativeElement.nodeType === Node.COMMENT_NODE;
   }
 };
-_NgbNavItem.\u0275fac = function NgbNavItem_Factory(t) {
-  return new (t || _NgbNavItem)();
+_NgbNavItem.\u0275fac = function NgbNavItem_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbNavItem)();
 };
 _NgbNavItem.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbNavItem,
@@ -47910,20 +49418,15 @@ _NgbNavItem.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
     }
     if (rf & 2) {
       let _t;
-      \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx.contentTpls = _t);
+      \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx.contentTpl = _t.first);
     }
   },
-  hostVars: 2,
-  hostBindings: function NgbNavItem_HostBindings(rf, ctx) {
-    if (rf & 2) {
-      \u0275\u0275classProp("nav-item", true);
-    }
-  },
+  hostAttrs: [1, "nav-item"],
   inputs: {
     destroyOnHide: "destroyOnHide",
     disabled: "disabled",
     domId: "domId",
-    _id: [InputFlags.None, "ngbNavItem", "_id"]
+    _id: [0, "ngbNavItem", "_id"]
   },
   outputs: {
     shown: "shown",
@@ -47941,7 +49444,7 @@ var NgbNavItem = _NgbNavItem;
       exportAs: "ngbNavItem",
       standalone: true,
       host: {
-        "[class.nav-item]": "true"
+        class: "nav-item"
       }
     }]
   }], null, {
@@ -47964,8 +49467,8 @@ var NgbNavItem = _NgbNavItem;
     hidden: [{
       type: Output
     }],
-    contentTpls: [{
-      type: ContentChildren,
+    contentTpl: [{
+      type: ContentChild,
       args: [NgbNavContent, {
         descendants: false
       }]
@@ -48008,7 +49511,6 @@ var _NgbNav = class _NgbNav {
     if (this.roles !== "tablist" || !this.keyboard) {
       return;
     }
-    const key = event.which;
     const enabledLinks = this.links.filter((link) => !link.navItem.disabled);
     const {
       length
@@ -48020,19 +49522,19 @@ var _NgbNav = class _NgbNav {
       }
     });
     if (length) {
-      switch (key) {
-        case Key.ArrowUp:
-        case Key.ArrowLeft:
+      switch (event.key) {
+        case "ArrowUp":
+        case "ArrowLeft":
           position = (position - 1 + length) % length;
           break;
-        case Key.ArrowRight:
-        case Key.ArrowDown:
+        case "ArrowRight":
+        case "ArrowDown":
           position = (position + 1) % length;
           break;
-        case Key.Home:
+        case "Home":
           position = 0;
           break;
-        case Key.End:
+        case "End":
           position = length - 1;
           break;
       }
@@ -48094,8 +49596,8 @@ var _NgbNav = class _NgbNav {
     return this.items && this.items.find((item) => item.id === itemId) || null;
   }
 };
-_NgbNav.\u0275fac = function NgbNav_Factory(t) {
-  return new (t || _NgbNav)(\u0275\u0275injectAttribute("role"));
+_NgbNav.\u0275fac = function NgbNav_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbNav)(\u0275\u0275injectAttribute("role"));
 };
 _NgbNav.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbNav,
@@ -48111,7 +49613,8 @@ _NgbNav.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
       \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx.links = _t);
     }
   },
-  hostVars: 6,
+  hostAttrs: [1, "nav"],
+  hostVars: 4,
   hostBindings: function NgbNav_HostBindings(rf, ctx) {
     if (rf & 1) {
       \u0275\u0275listener("keydown.arrowLeft", function NgbNav_keydown_arrowLeft_HostBindingHandler($event) {
@@ -48132,7 +49635,7 @@ _NgbNav.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
     }
     if (rf & 2) {
       \u0275\u0275attribute("aria-orientation", ctx.orientation === "vertical" && ctx.roles === "tablist" ? "vertical" : void 0)("role", ctx.role ? ctx.role : ctx.roles ? "tablist" : void 0);
-      \u0275\u0275classProp("nav", true)("flex-column", ctx.orientation === "vertical");
+      \u0275\u0275classProp("flex-column", ctx.orientation === "vertical");
     }
   },
   inputs: {
@@ -48162,7 +49665,7 @@ var NgbNav = _NgbNav;
       exportAs: "ngbNav",
       standalone: true,
       host: {
-        "[class.nav]": "true",
+        class: "nav",
         "[class.flex-column]": `orientation === 'vertical'`,
         "[attr.aria-orientation]": `orientation === 'vertical' && roles === 'tablist' ? 'vertical' : undefined`,
         "[attr.role]": `role ? role : roles ? 'tablist' : undefined`,
@@ -48178,7 +49681,7 @@ var NgbNav = _NgbNav;
   }], () => [{
     type: void 0,
     decorators: [{
-      type: Attribute,
+      type: Attribute2,
       args: ["role"]
     }]
   }], {
@@ -48241,18 +49744,19 @@ var _NgbNavLinkBase = class _NgbNavLinkBase {
     return this.navItem.disabled || !this.navItem.active ? -1 : void 0;
   }
 };
-_NgbNavLinkBase.\u0275fac = function NgbNavLinkBase_Factory(t) {
-  return new (t || _NgbNavLinkBase)(\u0275\u0275injectAttribute("role"));
+_NgbNavLinkBase.\u0275fac = function NgbNavLinkBase_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbNavLinkBase)(\u0275\u0275injectAttribute("role"));
 };
 _NgbNavLinkBase.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbNavLinkBase,
   selectors: [["", "ngbNavLink", ""]],
-  hostVars: 14,
+  hostAttrs: [1, "nav-link"],
+  hostVars: 12,
   hostBindings: function NgbNavLinkBase_HostBindings(rf, ctx) {
     if (rf & 2) {
       \u0275\u0275hostProperty("id", ctx.navItem.domId);
       \u0275\u0275attribute("role", ctx.role ? ctx.role : ctx.nav.roles ? "tab" : void 0)("tabindex", ctx.tabindex)("aria-controls", ctx.navItem.isPanelInDom() ? ctx.navItem.panelDomId : null)("aria-selected", ctx.navItem.active)("aria-disabled", ctx.navItem.disabled);
-      \u0275\u0275classProp("nav-link", true)("nav-item", ctx.navItem.isNgContainer())("active", ctx.navItem.active)("disabled", ctx.navItem.disabled);
+      \u0275\u0275classProp("nav-item", ctx.navItem.isNgContainer())("active", ctx.navItem.active)("disabled", ctx.navItem.disabled);
     }
   },
   standalone: true
@@ -48266,7 +49770,7 @@ var NgbNavLinkBase = _NgbNavLinkBase;
       standalone: true,
       host: {
         "[id]": "navItem.domId",
-        "[class.nav-link]": "true",
+        class: "nav-link",
         "[class.nav-item]": "navItem.isNgContainer()",
         "[attr.role]": `role ? role : nav.roles ? 'tab' : undefined`,
         "[class.active]": "navItem.active",
@@ -48280,7 +49784,7 @@ var NgbNavLinkBase = _NgbNavLinkBase;
   }], () => [{
     type: void 0,
     decorators: [{
-      type: Attribute,
+      type: Attribute2,
       args: ["role"]
     }]
   }], null);
@@ -48289,8 +49793,8 @@ var _NgbNavLinkButton = class _NgbNavLinkButton extends NgbNavLinkBase {
 };
 _NgbNavLinkButton.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbNavLinkButton_BaseFactory;
-  return function NgbNavLinkButton_Factory(t) {
-    return (\u0275NgbNavLinkButton_BaseFactory || (\u0275NgbNavLinkButton_BaseFactory = \u0275\u0275getInheritedFactory(_NgbNavLinkButton)))(t || _NgbNavLinkButton);
+  return function NgbNavLinkButton_Factory(__ngFactoryType__) {
+    return (\u0275NgbNavLinkButton_BaseFactory || (\u0275NgbNavLinkButton_BaseFactory = \u0275\u0275getInheritedFactory(_NgbNavLinkButton)))(__ngFactoryType__ || _NgbNavLinkButton);
   };
 })();
 _NgbNavLinkButton.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -48330,8 +49834,8 @@ var _NgbNavLink = class _NgbNavLink extends NgbNavLinkBase {
 };
 _NgbNavLink.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbNavLink_BaseFactory;
-  return function NgbNavLink_Factory(t) {
-    return (\u0275NgbNavLink_BaseFactory || (\u0275NgbNavLink_BaseFactory = \u0275\u0275getInheritedFactory(_NgbNavLink)))(t || _NgbNavLink);
+  return function NgbNavLink_Factory(__ngFactoryType__) {
+    return (\u0275NgbNavLink_BaseFactory || (\u0275NgbNavLink_BaseFactory = \u0275\u0275getInheritedFactory(_NgbNavLink)))(__ngFactoryType__ || _NgbNavLink);
   };
 })();
 _NgbNavLink.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
@@ -48380,8 +49884,8 @@ var _NgbNavPane = class _NgbNavPane {
     this.nativeElement = inject(ElementRef).nativeElement;
   }
 };
-_NgbNavPane.\u0275fac = function NgbNavPane_Factory(t) {
-  return new (t || _NgbNavPane)();
+_NgbNavPane.\u0275fac = function NgbNavPane_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbNavPane)();
 };
 _NgbNavPane.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbNavPane,
@@ -48472,8 +49976,7 @@ var _NgbNavOutlet = class _NgbNavOutlet {
   }
   _updateActivePane() {
     this._activePane = this._getActivePane();
-    this._activePane?.nativeElement.classList.add("show");
-    this._activePane?.nativeElement.classList.add("active");
+    this._activePane?.nativeElement.classList.add("show", "active");
   }
   _getPaneForItem(item) {
     return this._panes && this._panes.find((pane) => pane.item === item) || null;
@@ -48482,8 +49985,8 @@ var _NgbNavOutlet = class _NgbNavOutlet {
     return this._panes && this._panes.find((pane) => pane.item.active) || null;
   }
 };
-_NgbNavOutlet.\u0275fac = function NgbNavOutlet_Factory(t) {
-  return new (t || _NgbNavOutlet)();
+_NgbNavOutlet.\u0275fac = function NgbNavOutlet_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbNavOutlet)();
 };
 _NgbNavOutlet.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbNavOutlet,
@@ -48497,15 +50000,10 @@ _NgbNavOutlet.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
       \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._panes = _t);
     }
   },
-  hostVars: 2,
-  hostBindings: function NgbNavOutlet_HostBindings(rf, ctx) {
-    if (rf & 2) {
-      \u0275\u0275classProp("tab-content", true);
-    }
-  },
+  hostAttrs: [1, "tab-content"],
   inputs: {
     paneRole: "paneRole",
-    nav: [InputFlags.None, "ngbNavOutlet", "nav"]
+    nav: [0, "ngbNavOutlet", "nav"]
   },
   standalone: true,
   features: [\u0275\u0275StandaloneFeature],
@@ -48534,7 +50032,7 @@ var NgbNavOutlet = _NgbNavOutlet;
       standalone: true,
       imports: [NgbNavPane, NgTemplateOutlet],
       host: {
-        "[class.tab-content]": "true"
+        class: "tab-content"
       },
       encapsulation: ViewEncapsulation$1.None,
       changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48568,8 +50066,8 @@ var NgbNavOutlet = _NgbNavOutlet;
 var NGB_NAV_DIRECTIVES = [NgbNavContent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkButton, NgbNavLinkBase, NgbNavOutlet, NgbNavPane];
 var _NgbNavModule = class _NgbNavModule {
 };
-_NgbNavModule.\u0275fac = function NgbNavModule_Factory(t) {
-  return new (t || _NgbNavModule)();
+_NgbNavModule.\u0275fac = function NgbNavModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbNavModule)();
 };
 _NgbNavModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbNavModule
@@ -48596,8 +50094,8 @@ var _NgbPaginationConfig = class _NgbPaginationConfig {
     this.rotate = false;
   }
 };
-_NgbPaginationConfig.\u0275fac = function NgbPaginationConfig_Factory(t) {
-  return new (t || _NgbPaginationConfig)();
+_NgbPaginationConfig.\u0275fac = function NgbPaginationConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPaginationConfig)();
 };
 _NgbPaginationConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbPaginationConfig,
@@ -48618,8 +50116,8 @@ var _NgbPaginationEllipsis = class _NgbPaginationEllipsis {
     this.templateRef = inject(TemplateRef);
   }
 };
-_NgbPaginationEllipsis.\u0275fac = function NgbPaginationEllipsis_Factory(t) {
-  return new (t || _NgbPaginationEllipsis)();
+_NgbPaginationEllipsis.\u0275fac = function NgbPaginationEllipsis_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPaginationEllipsis)();
 };
 _NgbPaginationEllipsis.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbPaginationEllipsis,
@@ -48641,8 +50139,8 @@ var _NgbPaginationFirst = class _NgbPaginationFirst {
     this.templateRef = inject(TemplateRef);
   }
 };
-_NgbPaginationFirst.\u0275fac = function NgbPaginationFirst_Factory(t) {
-  return new (t || _NgbPaginationFirst)();
+_NgbPaginationFirst.\u0275fac = function NgbPaginationFirst_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPaginationFirst)();
 };
 _NgbPaginationFirst.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbPaginationFirst,
@@ -48664,8 +50162,8 @@ var _NgbPaginationLast = class _NgbPaginationLast {
     this.templateRef = inject(TemplateRef);
   }
 };
-_NgbPaginationLast.\u0275fac = function NgbPaginationLast_Factory(t) {
-  return new (t || _NgbPaginationLast)();
+_NgbPaginationLast.\u0275fac = function NgbPaginationLast_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPaginationLast)();
 };
 _NgbPaginationLast.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbPaginationLast,
@@ -48687,8 +50185,8 @@ var _NgbPaginationNext = class _NgbPaginationNext {
     this.templateRef = inject(TemplateRef);
   }
 };
-_NgbPaginationNext.\u0275fac = function NgbPaginationNext_Factory(t) {
-  return new (t || _NgbPaginationNext)();
+_NgbPaginationNext.\u0275fac = function NgbPaginationNext_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPaginationNext)();
 };
 _NgbPaginationNext.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbPaginationNext,
@@ -48710,8 +50208,8 @@ var _NgbPaginationNumber = class _NgbPaginationNumber {
     this.templateRef = inject(TemplateRef);
   }
 };
-_NgbPaginationNumber.\u0275fac = function NgbPaginationNumber_Factory(t) {
-  return new (t || _NgbPaginationNumber)();
+_NgbPaginationNumber.\u0275fac = function NgbPaginationNumber_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPaginationNumber)();
 };
 _NgbPaginationNumber.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbPaginationNumber,
@@ -48733,8 +50231,8 @@ var _NgbPaginationPrevious = class _NgbPaginationPrevious {
     this.templateRef = inject(TemplateRef);
   }
 };
-_NgbPaginationPrevious.\u0275fac = function NgbPaginationPrevious_Factory(t) {
-  return new (t || _NgbPaginationPrevious)();
+_NgbPaginationPrevious.\u0275fac = function NgbPaginationPrevious_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPaginationPrevious)();
 };
 _NgbPaginationPrevious.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbPaginationPrevious,
@@ -48756,8 +50254,8 @@ var _NgbPaginationPages = class _NgbPaginationPages {
     this.templateRef = inject(TemplateRef);
   }
 };
-_NgbPaginationPages.\u0275fac = function NgbPaginationPages_Factory(t) {
-  return new (t || _NgbPaginationPages)();
+_NgbPaginationPages.\u0275fac = function NgbPaginationPages_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPaginationPages)();
 };
 _NgbPaginationPages.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbPaginationPages,
@@ -48896,8 +50394,8 @@ var _NgbPagination = class _NgbPagination {
     }
   }
 };
-_NgbPagination.\u0275fac = function NgbPagination_Factory(t) {
-  return new (t || _NgbPagination)();
+_NgbPagination.\u0275fac = function NgbPagination_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPagination)();
 };
 _NgbPagination.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbPagination,
@@ -48946,61 +50444,61 @@ _NgbPagination.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   consts: () => {
     let i18n_12;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_12 = goog.getMsg("\xAB\xAB");
-      i18n_12 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_12;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_12 = goog.getMsg("\xAB\xAB");
+      i18n_12 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_12;
     } else {
       i18n_12 = $localize`:@@ngb.pagination.first:««`;
     }
     let i18n_13;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_13 = goog.getMsg("\xAB");
-      i18n_13 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_13;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_13 = goog.getMsg("\xAB");
+      i18n_13 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_13;
     } else {
       i18n_13 = $localize`:@@ngb.pagination.previous:«`;
     }
     let i18n_14;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_14 = goog.getMsg("\xBB");
-      i18n_14 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_14;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_14 = goog.getMsg("\xBB");
+      i18n_14 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_14;
     } else {
       i18n_14 = $localize`:@@ngb.pagination.next:»`;
     }
     let i18n_15;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_15 = goog.getMsg("\xBB\xBB");
-      i18n_15 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_15;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_15 = goog.getMsg("\xBB\xBB");
+      i18n_15 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_15;
     } else {
       i18n_15 = $localize`:@@ngb.pagination.last:»»`;
     }
     let i18n_16;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_16 = goog.getMsg("First");
-      i18n_16 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_16;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_16 = goog.getMsg("First");
+      i18n_16 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_16;
     } else {
       i18n_16 = $localize`:@@ngb.pagination.first-aria:First`;
     }
     let i18n_17;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_17 = goog.getMsg("Previous");
-      i18n_17 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_17;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_17 = goog.getMsg("Previous");
+      i18n_17 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_17;
     } else {
       i18n_17 = $localize`:@@ngb.pagination.previous-aria:Previous`;
     }
     let i18n_18;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_18 = goog.getMsg("Next");
-      i18n_18 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_18;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_18 = goog.getMsg("Next");
+      i18n_18 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_18;
     } else {
       i18n_18 = $localize`:@@ngb.pagination.next-aria:Next`;
     }
     let i18n_19;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_19 = goog.getMsg("Last");
-      i18n_19 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_19;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_19 = goog.getMsg("Last");
+      i18n_19 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_19;
     } else {
       i18n_19 = $localize`:@@ngb.pagination.last-aria:Last`;
     }
-    return [["first", ""], ["previous", ""], ["next", ""], ["last", ""], ["ellipsis", ""], ["defaultNumber", ""], ["defaultPages", ""], i18n_12, i18n_13, i18n_14, i18n_15, [1, "page-item", 3, "disabled"], [3, "ngTemplateOutlet", "ngTemplateOutletContext"], ["aria-hidden", "true"], [1, "page-item", 3, "active", "disabled"], [1, "page-item"], ["tabindex", "-1", "aria-disabled", "true", 1, "page-link"], ["href", "", 1, "page-link", 3, "click"], ["aria-label", i18n_16, "href", "", 1, "page-link", 3, "click"], ["aria-label", i18n_17, "href", "", 1, "page-link", 3, "click"], ["aria-label", i18n_18, "href", "", 1, "page-link", 3, "click"], ["aria-label", i18n_19, "href", "", 1, "page-link", 3, "click"]];
+    return [["first", ""], ["previous", ""], ["next", ""], ["last", ""], ["ellipsis", ""], ["defaultNumber", ""], ["defaultPages", ""], i18n_12, i18n_13, i18n_14, i18n_15, [1, "page-item", 3, "disabled"], [3, "ngTemplateOutlet", "ngTemplateOutletContext"], ["aria-hidden", "true"], [1, "page-item", 3, "active", "disabled"], [1, "page-item"], ["tabindex", "-1", "aria-disabled", "true", 1, "page-link"], ["href", "", 1, "page-link"], ["href", "", 1, "page-link", 3, "click"], ["aria-label", i18n_16, "href", "", 1, "page-link", 3, "click"], ["aria-label", i18n_17, "href", "", 1, "page-link", 3, "click"], ["aria-label", i18n_18, "href", "", 1, "page-link", 3, "click"], ["aria-label", i18n_19, "href", "", 1, "page-link", 3, "click"]];
   },
   template: function NgbPagination_Template(rf, ctx) {
     if (rf & 1) {
@@ -49014,15 +50512,15 @@ _NgbPagination.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
       \u0275\u0275advance(14);
       \u0275\u0275classMap("pagination" + (ctx.size ? " pagination-" + ctx.size : ""));
       \u0275\u0275advance();
-      \u0275\u0275conditional(15, ctx.boundaryLinks ? 15 : -1);
+      \u0275\u0275conditional(ctx.boundaryLinks ? 15 : -1);
       \u0275\u0275advance();
-      \u0275\u0275conditional(16, ctx.directionLinks ? 16 : -1);
+      \u0275\u0275conditional(ctx.directionLinks ? 16 : -1);
       \u0275\u0275advance();
       \u0275\u0275property("ngTemplateOutlet", (ctx.tplPages == null ? null : ctx.tplPages.templateRef) || defaultPages_r19)("ngTemplateOutletContext", \u0275\u0275pureFunction3(8, _c9, ctx.page, ctx.pages, ctx.disabled));
       \u0275\u0275advance();
-      \u0275\u0275conditional(18, ctx.directionLinks ? 18 : -1);
+      \u0275\u0275conditional(ctx.directionLinks ? 18 : -1);
       \u0275\u0275advance();
-      \u0275\u0275conditional(19, ctx.boundaryLinks ? 19 : -1);
+      \u0275\u0275conditional(ctx.boundaryLinks ? 19 : -1);
     }
   },
   dependencies: [NgTemplateOutlet],
@@ -49049,7 +50547,7 @@ var NgbPagination = _NgbPagination;
 		<ng-template #ellipsis>...</ng-template>
 		<ng-template #defaultNumber let-page let-currentPage="currentPage">{{ page }}</ng-template>
 		<ng-template #defaultPages let-page let-pages="pages" let-disabled="disabled">
-			@for (pageNumber of pages; track pageNumber) {
+			@for (pageNumber of pages; track $index) {
 				<li
 					class="page-item"
 					[class.active]="pageNumber === page"
@@ -49244,8 +50742,8 @@ var NgbPagination = _NgbPagination;
 var NGB_PAGINATION_DIRECTIVES = [NgbPagination, NgbPaginationEllipsis, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationNumber, NgbPaginationPrevious, NgbPaginationPages];
 var _NgbPaginationModule = class _NgbPaginationModule {
 };
-_NgbPaginationModule.\u0275fac = function NgbPaginationModule_Factory(t) {
-  return new (t || _NgbPaginationModule)();
+_NgbPaginationModule.\u0275fac = function NgbPaginationModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPaginationModule)();
 };
 _NgbPaginationModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbPaginationModule
@@ -49335,8 +50833,8 @@ var _NgbPopoverConfig = class _NgbPopoverConfig {
     this._animation = animation;
   }
 };
-_NgbPopoverConfig.\u0275fac = function NgbPopoverConfig_Factory(t) {
-  return new (t || _NgbPopoverConfig)();
+_NgbPopoverConfig.\u0275fac = function NgbPopoverConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPopoverConfig)();
 };
 _NgbPopoverConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbPopoverConfig,
@@ -49358,8 +50856,8 @@ var _NgbPopoverWindow = class _NgbPopoverWindow {
     return this.title instanceof TemplateRef;
   }
 };
-_NgbPopoverWindow.\u0275fac = function NgbPopoverWindow_Factory(t) {
-  return new (t || _NgbPopoverWindow)();
+_NgbPopoverWindow.\u0275fac = function NgbPopoverWindow_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPopoverWindow)();
 };
 _NgbPopoverWindow.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbPopoverWindow,
@@ -49397,7 +50895,7 @@ _NgbPopoverWindow.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
     }
     if (rf & 2) {
       \u0275\u0275advance();
-      \u0275\u0275conditional(1, ctx.title ? 1 : -1);
+      \u0275\u0275conditional(ctx.title ? 1 : -1);
     }
   },
   dependencies: [NgTemplateOutlet],
@@ -49508,7 +51006,6 @@ var _NgbPopover = class _NgbPopover {
           hostElement: this._getPositionTargetElement(),
           targetElement: this._windowRef.location.nativeElement,
           placement: this.placement,
-          appendToBody: this.container === "body",
           baseClass: "bs-popover",
           updatePopperOptions: (options) => this.popperOptions(addPopperOffset([0, 8])(options))
         });
@@ -49583,8 +51080,8 @@ var _NgbPopover = class _NgbPopover {
     return (isString(this.positionTarget) ? this._document.querySelector(this.positionTarget) : this.positionTarget) || this._nativeElement;
   }
 };
-_NgbPopover.\u0275fac = function NgbPopover_Factory(t) {
-  return new (t || _NgbPopover)();
+_NgbPopover.\u0275fac = function NgbPopover_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPopover)();
 };
 _NgbPopover.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbPopover,
@@ -49675,8 +51172,8 @@ var NgbPopover = _NgbPopover;
 })();
 var _NgbPopoverModule = class _NgbPopoverModule {
 };
-_NgbPopoverModule.\u0275fac = function NgbPopoverModule_Factory(t) {
-  return new (t || _NgbPopoverModule)();
+_NgbPopoverModule.\u0275fac = function NgbPopoverModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbPopoverModule)();
 };
 _NgbPopoverModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbPopoverModule
@@ -49701,8 +51198,8 @@ var _NgbProgressbarConfig = class _NgbProgressbarConfig {
     this.showValue = false;
   }
 };
-_NgbProgressbarConfig.\u0275fac = function NgbProgressbarConfig_Factory(t) {
-  return new (t || _NgbProgressbarConfig)();
+_NgbProgressbarConfig.\u0275fac = function NgbProgressbarConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbProgressbarConfig)();
 };
 _NgbProgressbarConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbProgressbarConfig,
@@ -49752,8 +51249,8 @@ var _NgbProgressbar = class _NgbProgressbar {
     return 100 * this.getValue() / this.max;
   }
 };
-_NgbProgressbar.\u0275fac = function NgbProgressbar_Factory(t) {
-  return new (t || _NgbProgressbar)();
+_NgbProgressbar.\u0275fac = function NgbProgressbar_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbProgressbar)();
 };
 _NgbProgressbar.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbProgressbar,
@@ -49785,14 +51282,14 @@ _NgbProgressbar.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   consts: () => {
     let i18n_20;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_20 = goog.getMsg("{$interpolation}", {
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_20 = goog.getMsg("{$interpolation}", {
         "interpolation": "\uFFFD0\uFFFD"
       }, {
         original_code: {
           "interpolation": "{{ getValue() / max | percent }}"
         }
       });
-      i18n_20 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_20;
+      i18n_20 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_20;
     } else {
       i18n_20 = $localize`:@@ngb.progressbar.value:${"\uFFFD0\uFFFD"}:INTERPOLATION:`;
     }
@@ -49811,7 +51308,7 @@ _NgbProgressbar.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
       \u0275\u0275styleProp("width", !ctx.stacked ? ctx.getPercentValue() : null, "%");
       \u0275\u0275classProp("progress-bar-animated", ctx.animated)("progress-bar-striped", ctx.striped);
       \u0275\u0275advance();
-      \u0275\u0275conditional(1, ctx.showValue ? 1 : -1);
+      \u0275\u0275conditional(ctx.showValue ? 1 : -1);
     }
   },
   dependencies: [PercentPipe],
@@ -49835,7 +51332,8 @@ var NgbProgressbar = _NgbProgressbar;
         "aria-valuemin": "0",
         "[attr.aria-valuemax]": "max",
         "[attr.aria-label]": "ariaLabel",
-        "[style.width.%]": "stacked ? getPercentValue() : null"
+        "[style.width.%]": "stacked ? getPercentValue() : null",
+        "[style.height]": "height"
       },
       template: `
 		<div
@@ -49883,16 +51381,13 @@ var NgbProgressbar = _NgbProgressbar;
     }],
     height: [{
       type: Input
-    }, {
-      type: HostBinding,
-      args: ["style.height"]
     }]
   });
 })();
 var _NgbProgressbarStacked = class _NgbProgressbarStacked {
 };
-_NgbProgressbarStacked.\u0275fac = function NgbProgressbarStacked_Factory(t) {
-  return new (t || _NgbProgressbarStacked)();
+_NgbProgressbarStacked.\u0275fac = function NgbProgressbarStacked_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbProgressbarStacked)();
 };
 _NgbProgressbarStacked.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbProgressbarStacked,
@@ -49930,8 +51425,8 @@ var NgbProgressbarStacked = _NgbProgressbarStacked;
 })();
 var _NgbProgressbarModule = class _NgbProgressbarModule {
 };
-_NgbProgressbarModule.\u0275fac = function NgbProgressbarModule_Factory(t) {
-  return new (t || _NgbProgressbarModule)();
+_NgbProgressbarModule.\u0275fac = function NgbProgressbarModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbProgressbarModule)();
 };
 _NgbProgressbarModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbProgressbarModule
@@ -49955,8 +51450,8 @@ var _NgbRatingConfig = class _NgbRatingConfig {
     this.tabindex = 0;
   }
 };
-_NgbRatingConfig.\u0275fac = function NgbRatingConfig_Factory(t) {
-  return new (t || _NgbRatingConfig)();
+_NgbRatingConfig.\u0275fac = function NgbRatingConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbRatingConfig)();
 };
 _NgbRatingConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbRatingConfig,
@@ -50016,19 +51511,19 @@ var _NgbRating = class _NgbRating {
     }
   }
   handleKeyDown(event) {
-    switch (event.which) {
-      case Key.ArrowDown:
-      case Key.ArrowLeft:
+    switch (event.key) {
+      case "ArrowDown":
+      case "ArrowLeft":
         this.update(this.rate - 1);
         break;
-      case Key.ArrowUp:
-      case Key.ArrowRight:
+      case "ArrowUp":
+      case "ArrowRight":
         this.update(this.rate + 1);
         break;
-      case Key.Home:
+      case "Home":
         this.update(0);
         break;
-      case Key.End:
+      case "End":
         this.update(this.max);
         break;
       default:
@@ -50096,8 +51591,8 @@ var _NgbRating = class _NgbRating {
     }));
   }
 };
-_NgbRating.\u0275fac = function NgbRating_Factory(t) {
-  return new (t || _NgbRating)();
+_NgbRating.\u0275fac = function NgbRating_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbRating)();
 };
 _NgbRating.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbRating,
@@ -50256,8 +51751,8 @@ var NgbRating = _NgbRating;
 })();
 var _NgbRatingModule = class _NgbRatingModule {
 };
-_NgbRatingModule.\u0275fac = function NgbRatingModule_Factory(t) {
-  return new (t || _NgbRatingModule)();
+_NgbRatingModule.\u0275fac = function NgbRatingModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbRatingModule)();
 };
 _NgbRatingModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbRatingModule
@@ -50351,8 +51846,8 @@ var _NgbScrollSpyConfig = class _NgbScrollSpyConfig {
     this.processChanges = defaultProcessChanges;
   }
 };
-_NgbScrollSpyConfig.\u0275fac = function NgbScrollSpyConfig_Factory(t) {
-  return new (t || _NgbScrollSpyConfig)();
+_NgbScrollSpyConfig.\u0275fac = function NgbScrollSpyConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbScrollSpyConfig)();
 };
 _NgbScrollSpyConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbScrollSpyConfig,
@@ -50541,8 +52036,8 @@ var _NgbScrollSpyService = class _NgbScrollSpyService {
     this._containerElement = null;
   }
 };
-_NgbScrollSpyService.\u0275fac = function NgbScrollSpyService_Factory(t) {
-  return new (t || _NgbScrollSpyService)();
+_NgbScrollSpyService.\u0275fac = function NgbScrollSpyService_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbScrollSpyService)();
 };
 _NgbScrollSpyService.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbScrollSpyService,
@@ -50633,8 +52128,8 @@ var _NgbScrollSpyItem = class _NgbScrollSpyItem {
     this._scrollSpyAPI.scrollTo(this.fragment, options);
   }
 };
-_NgbScrollSpyItem.\u0275fac = function NgbScrollSpyItem_Factory(t) {
-  return new (t || _NgbScrollSpyItem)();
+_NgbScrollSpyItem.\u0275fac = function NgbScrollSpyItem_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbScrollSpyItem)();
 };
 _NgbScrollSpyItem.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbScrollSpyItem,
@@ -50651,7 +52146,7 @@ _NgbScrollSpyItem.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
     }
   },
   inputs: {
-    data: [InputFlags.None, "ngbScrollSpyItem", "data"],
+    data: [0, "ngbScrollSpyItem", "data"],
     fragment: "fragment",
     parent: "parent"
   },
@@ -50725,8 +52220,8 @@ var _NgbScrollSpyMenu = class _NgbScrollSpyMenu {
     }
   }
 };
-_NgbScrollSpyMenu.\u0275fac = function NgbScrollSpyMenu_Factory(t) {
-  return new (t || _NgbScrollSpyMenu)();
+_NgbScrollSpyMenu.\u0275fac = function NgbScrollSpyMenu_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbScrollSpyMenu)();
 };
 _NgbScrollSpyMenu.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbScrollSpyMenu,
@@ -50741,7 +52236,7 @@ _NgbScrollSpyMenu.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
     }
   },
   inputs: {
-    scrollSpy: [InputFlags.None, "ngbScrollSpyMenu", "scrollSpy"]
+    scrollSpy: [0, "ngbScrollSpyMenu", "scrollSpy"]
   },
   standalone: true
 });
@@ -50821,8 +52316,8 @@ var _NgbScrollSpy = class _NgbScrollSpy {
     }), options));
   }
 };
-_NgbScrollSpy.\u0275fac = function NgbScrollSpy_Factory(t) {
-  return new (t || _NgbScrollSpy)();
+_NgbScrollSpy.\u0275fac = function NgbScrollSpy_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbScrollSpy)();
 };
 _NgbScrollSpy.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbScrollSpy,
@@ -50887,8 +52382,8 @@ var _NgbScrollSpyFragment = class _NgbScrollSpyFragment {
     this._destroyRef.onDestroy(() => this._scrollSpy._unregisterFragment(this));
   }
 };
-_NgbScrollSpyFragment.\u0275fac = function NgbScrollSpyFragment_Factory(t) {
-  return new (t || _NgbScrollSpyFragment)();
+_NgbScrollSpyFragment.\u0275fac = function NgbScrollSpyFragment_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbScrollSpyFragment)();
 };
 _NgbScrollSpyFragment.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbScrollSpyFragment,
@@ -50900,7 +52395,7 @@ _NgbScrollSpyFragment.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
     }
   },
   inputs: {
-    id: [InputFlags.None, "ngbScrollSpyFragment", "id"]
+    id: [0, "ngbScrollSpyFragment", "id"]
   },
   standalone: true
 });
@@ -50924,8 +52419,8 @@ var NgbScrollSpyFragment = _NgbScrollSpyFragment;
 })();
 var _NgbScrollSpyModule = class _NgbScrollSpyModule {
 };
-_NgbScrollSpyModule.\u0275fac = function NgbScrollSpyModule_Factory(t) {
-  return new (t || _NgbScrollSpyModule)();
+_NgbScrollSpyModule.\u0275fac = function NgbScrollSpyModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbScrollSpyModule)();
 };
 _NgbScrollSpyModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbScrollSpyModule
@@ -50999,8 +52494,8 @@ var _NgbTimepickerConfig = class _NgbTimepickerConfig {
     this.size = "medium";
   }
 };
-_NgbTimepickerConfig.\u0275fac = function NgbTimepickerConfig_Factory(t) {
-  return new (t || _NgbTimepickerConfig)();
+_NgbTimepickerConfig.\u0275fac = function NgbTimepickerConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTimepickerConfig)();
 };
 _NgbTimepickerConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbTimepickerConfig,
@@ -51021,8 +52516,8 @@ function NGB_DATEPICKER_TIME_ADAPTER_FACTORY() {
 }
 var _NgbTimeAdapter = class _NgbTimeAdapter {
 };
-_NgbTimeAdapter.\u0275fac = function NgbTimeAdapter_Factory(t) {
-  return new (t || _NgbTimeAdapter)();
+_NgbTimeAdapter.\u0275fac = function NgbTimeAdapter_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTimeAdapter)();
 };
 _NgbTimeAdapter.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbTimeAdapter,
@@ -51063,8 +52558,8 @@ var _NgbTimeStructAdapter = class _NgbTimeStructAdapter extends NgbTimeAdapter {
 };
 _NgbTimeStructAdapter.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbTimeStructAdapter_BaseFactory;
-  return function NgbTimeStructAdapter_Factory(t) {
-    return (\u0275NgbTimeStructAdapter_BaseFactory || (\u0275NgbTimeStructAdapter_BaseFactory = \u0275\u0275getInheritedFactory(_NgbTimeStructAdapter)))(t || _NgbTimeStructAdapter);
+  return function NgbTimeStructAdapter_Factory(__ngFactoryType__) {
+    return (\u0275NgbTimeStructAdapter_BaseFactory || (\u0275NgbTimeStructAdapter_BaseFactory = \u0275\u0275getInheritedFactory(_NgbTimeStructAdapter)))(__ngFactoryType__ || _NgbTimeStructAdapter);
   };
 })();
 _NgbTimeStructAdapter.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -51079,8 +52574,8 @@ var NgbTimeStructAdapter = _NgbTimeStructAdapter;
 })();
 var _NgbTimepickerI18n = class _NgbTimepickerI18n {
 };
-_NgbTimepickerI18n.\u0275fac = function NgbTimepickerI18n_Factory(t) {
-  return new (t || _NgbTimepickerI18n)();
+_NgbTimepickerI18n.\u0275fac = function NgbTimepickerI18n_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTimepickerI18n)();
 };
 _NgbTimepickerI18n.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbTimepickerI18n,
@@ -51100,7 +52595,8 @@ var NgbTimepickerI18n = _NgbTimepickerI18n;
 var _NgbTimepickerI18nDefault = class _NgbTimepickerI18nDefault extends NgbTimepickerI18n {
   constructor() {
     super(...arguments);
-    this._periods = getLocaleDayPeriods(inject(LOCALE_ID), FormStyle.Standalone, TranslationWidth.Narrow);
+    this._locale = inject(LOCALE_ID);
+    this._periods = [formatDate(/* @__PURE__ */ new Date(36e5), "a", this._locale, "UTC"), formatDate(new Date(36e5 * 13), "a", this._locale, "UTC")];
   }
   getMorningPeriod() {
     return this._periods[0];
@@ -51111,8 +52607,8 @@ var _NgbTimepickerI18nDefault = class _NgbTimepickerI18nDefault extends NgbTimep
 };
 _NgbTimepickerI18nDefault.\u0275fac = /* @__PURE__ */ (() => {
   let \u0275NgbTimepickerI18nDefault_BaseFactory;
-  return function NgbTimepickerI18nDefault_Factory(t) {
-    return (\u0275NgbTimepickerI18nDefault_BaseFactory || (\u0275NgbTimepickerI18nDefault_BaseFactory = \u0275\u0275getInheritedFactory(_NgbTimepickerI18nDefault)))(t || _NgbTimepickerI18nDefault);
+  return function NgbTimepickerI18nDefault_Factory(__ngFactoryType__) {
+    return (\u0275NgbTimepickerI18nDefault_BaseFactory || (\u0275NgbTimepickerI18nDefault_BaseFactory = \u0275\u0275getInheritedFactory(_NgbTimepickerI18nDefault)))(__ngFactoryType__ || _NgbTimepickerI18nDefault);
   };
 })();
 _NgbTimepickerI18nDefault.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
@@ -51290,8 +52786,8 @@ var _NgbTimepicker = class _NgbTimepicker {
     }
   }
 };
-_NgbTimepicker.\u0275fac = function NgbTimepicker_Factory(t) {
-  return new (t || _NgbTimepicker)(\u0275\u0275directiveInject(NgbTimepickerConfig), \u0275\u0275directiveInject(NgbTimeAdapter), \u0275\u0275directiveInject(ChangeDetectorRef), \u0275\u0275directiveInject(NgbTimepickerI18n));
+_NgbTimepicker.\u0275fac = function NgbTimepicker_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTimepicker)(\u0275\u0275directiveInject(NgbTimepickerConfig), \u0275\u0275directiveInject(NgbTimeAdapter), \u0275\u0275directiveInject(ChangeDetectorRef), \u0275\u0275directiveInject(NgbTimepickerI18n));
 };
 _NgbTimepicker.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbTimepicker,
@@ -51318,98 +52814,98 @@ _NgbTimepicker.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   consts: () => {
     let i18n_21;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_21 = goog.getMsg("HH");
-      i18n_21 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_21;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_21 = goog.getMsg("HH");
+      i18n_21 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_21;
     } else {
       i18n_21 = $localize`:@@ngb.timepicker.HH:HH`;
     }
     let i18n_22;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_22 = goog.getMsg("Hours");
-      i18n_22 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_22;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_22 = goog.getMsg("Hours");
+      i18n_22 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_22;
     } else {
       i18n_22 = $localize`:@@ngb.timepicker.hours:Hours`;
     }
     let i18n_23;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_23 = goog.getMsg("MM");
-      i18n_23 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_23;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_23 = goog.getMsg("MM");
+      i18n_23 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_23;
     } else {
       i18n_23 = $localize`:@@ngb.timepicker.MM:MM`;
     }
     let i18n_24;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_24 = goog.getMsg("Minutes");
-      i18n_24 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_24;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_24 = goog.getMsg("Minutes");
+      i18n_24 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_24;
     } else {
       i18n_24 = $localize`:@@ngb.timepicker.minutes:Minutes`;
     }
     let i18n_25;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_25 = goog.getMsg("Increment hours");
-      i18n_25 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_25;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_25 = goog.getMsg("Increment hours");
+      i18n_25 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_25;
     } else {
       i18n_25 = $localize`:@@ngb.timepicker.increment-hours:Increment hours`;
     }
     let i18n_26;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_26 = goog.getMsg("Decrement hours");
-      i18n_26 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_26;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_26 = goog.getMsg("Decrement hours");
+      i18n_26 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_26;
     } else {
       i18n_26 = $localize`:@@ngb.timepicker.decrement-hours:Decrement hours`;
     }
     let i18n_27;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_27 = goog.getMsg("Increment minutes");
-      i18n_27 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_27;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_27 = goog.getMsg("Increment minutes");
+      i18n_27 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_27;
     } else {
       i18n_27 = $localize`:@@ngb.timepicker.increment-minutes:Increment minutes`;
     }
     let i18n_28;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_28 = goog.getMsg("Decrement minutes");
-      i18n_28 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_28;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_28 = goog.getMsg("Decrement minutes");
+      i18n_28 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_28;
     } else {
       i18n_28 = $localize`:@@ngb.timepicker.decrement-minutes:Decrement minutes`;
     }
     let i18n_29;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_29 = goog.getMsg("SS");
-      i18n_29 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_29;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_29 = goog.getMsg("SS");
+      i18n_29 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_29;
     } else {
       i18n_29 = $localize`:@@ngb.timepicker.SS:SS`;
     }
     let i18n_30;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_30 = goog.getMsg("Seconds");
-      i18n_30 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_30;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_30 = goog.getMsg("Seconds");
+      i18n_30 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_30;
     } else {
       i18n_30 = $localize`:@@ngb.timepicker.seconds:Seconds`;
     }
     let i18n_31;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_31 = goog.getMsg("Increment seconds");
-      i18n_31 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_31;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_31 = goog.getMsg("Increment seconds");
+      i18n_31 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_31;
     } else {
       i18n_31 = $localize`:@@ngb.timepicker.increment-seconds:Increment seconds`;
     }
     let i18n_32;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_32 = goog.getMsg("Decrement seconds");
-      i18n_32 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_32;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_32 = goog.getMsg("Decrement seconds");
+      i18n_32 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_32;
     } else {
       i18n_32 = $localize`:@@ngb.timepicker.decrement-seconds:Decrement seconds`;
     }
     let i18n_33;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_33 = goog.getMsg("{$interpolation}", {
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_33 = goog.getMsg("{$interpolation}", {
         "interpolation": "\uFFFD0\uFFFD"
       }, {
         original_code: {
           "interpolation": "{{ i18n.getAfternoonPeriod() }}"
         }
       });
-      i18n_33 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_33;
+      i18n_33 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_33;
     } else {
       i18n_33 = $localize`:@@ngb.timepicker.PM:${"\uFFFD0\uFFFD"}:INTERPOLATION:`;
     }
@@ -51465,23 +52961,23 @@ _NgbTimepicker.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
       \u0275\u0275classProp("disabled", ctx.disabled);
       \u0275\u0275property("disabled", ctx.disabled);
       \u0275\u0275advance(3);
-      \u0275\u0275conditional(3, ctx.spinners ? 3 : -1);
+      \u0275\u0275conditional(ctx.spinners ? 3 : -1);
       \u0275\u0275advance();
       \u0275\u0275classProp("form-control-sm", ctx.isSmallSize)("form-control-lg", ctx.isLargeSize);
       \u0275\u0275property("value", ctx.formatHour(ctx.model == null ? null : ctx.model.hour))("readOnly", ctx.readonlyInputs)("disabled", ctx.disabled);
       \u0275\u0275advance();
-      \u0275\u0275conditional(5, ctx.spinners ? 5 : -1);
+      \u0275\u0275conditional(ctx.spinners ? 5 : -1);
       \u0275\u0275advance(4);
-      \u0275\u0275conditional(9, ctx.spinners ? 9 : -1);
+      \u0275\u0275conditional(ctx.spinners ? 9 : -1);
       \u0275\u0275advance();
       \u0275\u0275classProp("form-control-sm", ctx.isSmallSize)("form-control-lg", ctx.isLargeSize);
       \u0275\u0275property("value", ctx.formatMinSec(ctx.model == null ? null : ctx.model.minute))("readOnly", ctx.readonlyInputs)("disabled", ctx.disabled);
       \u0275\u0275advance();
-      \u0275\u0275conditional(11, ctx.spinners ? 11 : -1);
+      \u0275\u0275conditional(ctx.spinners ? 11 : -1);
       \u0275\u0275advance();
-      \u0275\u0275conditional(12, ctx.seconds ? 12 : -1);
+      \u0275\u0275conditional(ctx.seconds ? 12 : -1);
       \u0275\u0275advance();
-      \u0275\u0275conditional(13, ctx.meridian ? 13 : -1);
+      \u0275\u0275conditional(ctx.meridian ? 13 : -1);
     }
   },
   styles: ['ngb-timepicker{font-size:1rem}.ngb-tp{display:flex;align-items:center}.ngb-tp-input-container{width:4em}.ngb-tp-chevron:before{border-style:solid;border-width:.29em .29em 0 0;content:"";display:inline-block;height:.69em;left:.05em;position:relative;top:.15em;transform:rotate(-45deg);vertical-align:middle;width:.69em}.ngb-tp-chevron.bottom:before{top:-.3em;transform:rotate(135deg)}.ngb-tp-input{text-align:center}.ngb-tp-hour,.ngb-tp-minute,.ngb-tp-second,.ngb-tp-meridian{display:flex;flex-direction:column;align-items:center;justify-content:space-around}.ngb-tp-spacer{width:1em;text-align:center}\n'],
@@ -51726,8 +53222,8 @@ var NgbTimepicker = _NgbTimepicker;
 })();
 var _NgbTimepickerModule = class _NgbTimepickerModule {
 };
-_NgbTimepickerModule.\u0275fac = function NgbTimepickerModule_Factory(t) {
-  return new (t || _NgbTimepickerModule)();
+_NgbTimepickerModule.\u0275fac = function NgbTimepickerModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTimepickerModule)();
 };
 _NgbTimepickerModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbTimepickerModule
@@ -51757,8 +53253,8 @@ var _NgbToastConfig = class _NgbToastConfig {
     this._animation = animation;
   }
 };
-_NgbToastConfig.\u0275fac = function NgbToastConfig_Factory(t) {
-  return new (t || _NgbToastConfig)();
+_NgbToastConfig.\u0275fac = function NgbToastConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbToastConfig)();
 };
 _NgbToastConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbToastConfig,
@@ -51800,8 +53296,8 @@ var ngbToastFadeOutTransition = ({
 };
 var _NgbToastHeader = class _NgbToastHeader {
 };
-_NgbToastHeader.\u0275fac = function NgbToastHeader_Factory(t) {
-  return new (t || _NgbToastHeader)();
+_NgbToastHeader.\u0275fac = function NgbToastHeader_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbToastHeader)();
 };
 _NgbToastHeader.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbToastHeader,
@@ -51897,8 +53393,8 @@ var _NgbToast = class _NgbToast {
     }
   }
 };
-_NgbToast.\u0275fac = function NgbToast_Factory(t) {
-  return new (t || _NgbToast)(\u0275\u0275injectAttribute("aria-live"));
+_NgbToast.\u0275fac = function NgbToast_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbToast)(\u0275\u0275injectAttribute("aria-live"));
 };
 _NgbToast.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbToast,
@@ -51939,8 +53435,8 @@ _NgbToast.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   consts: () => {
     let i18n_34;
     if (false) {
-      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_34 = goog.getMsg("Close");
-      i18n_34 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_DOCS_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_34;
+      const MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_34 = goog.getMsg("Close");
+      i18n_34 = MSG__HOME_MTOBISCH_DEV_NGX_DYNAMIC_HOOKS_REPOS_V3_STANDALONE_CLI_NODE_MODULES__NG_BOOTSTRAP_NG_BOOTSTRAP_FESM2022_NG_BOOTSTRAP_MJS_34;
     } else {
       i18n_34 = $localize`:@@ngb.toast.close-aria:Close`;
     }
@@ -51956,7 +53452,7 @@ _NgbToast.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
     }
     if (rf & 2) {
       \u0275\u0275advance(2);
-      \u0275\u0275conditional(2, ctx.contentHeaderTpl || ctx.header ? 2 : -1);
+      \u0275\u0275conditional(ctx.contentHeaderTpl || ctx.header ? 2 : -1);
     }
   },
   dependencies: [NgTemplateOutlet],
@@ -52006,7 +53502,7 @@ var NgbToast = _NgbToast;
   }], () => [{
     type: void 0,
     decorators: [{
-      type: Attribute,
+      type: Attribute2,
       args: ["aria-live"]
     }]
   }], {
@@ -52039,8 +53535,8 @@ var NgbToast = _NgbToast;
 })();
 var _NgbToastModule = class _NgbToastModule {
 };
-_NgbToastModule.\u0275fac = function NgbToastModule_Factory(t) {
-  return new (t || _NgbToastModule)();
+_NgbToastModule.\u0275fac = function NgbToastModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbToastModule)();
 };
 _NgbToastModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbToastModule
@@ -52074,8 +53570,8 @@ var _NgbTooltipConfig = class _NgbTooltipConfig {
     this._animation = animation;
   }
 };
-_NgbTooltipConfig.\u0275fac = function NgbTooltipConfig_Factory(t) {
-  return new (t || _NgbTooltipConfig)();
+_NgbTooltipConfig.\u0275fac = function NgbTooltipConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTooltipConfig)();
 };
 _NgbTooltipConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbTooltipConfig,
@@ -52094,8 +53590,8 @@ var NgbTooltipConfig = _NgbTooltipConfig;
 var nextId = 0;
 var _NgbTooltipWindow = class _NgbTooltipWindow {
 };
-_NgbTooltipWindow.\u0275fac = function NgbTooltipWindow_Factory(t) {
-  return new (t || _NgbTooltipWindow)();
+_NgbTooltipWindow.\u0275fac = function NgbTooltipWindow_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTooltipWindow)();
 };
 _NgbTooltipWindow.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbTooltipWindow,
@@ -52233,7 +53729,6 @@ var _NgbTooltip = class _NgbTooltip {
           hostElement: this._getPositionTargetElement(),
           targetElement: this._windowRef.location.nativeElement,
           placement: this.placement,
-          appendToBody: this.container === "body",
           baseClass: "bs-tooltip",
           updatePopperOptions: (options) => this.popperOptions(addPopperOffset([0, 6])(options))
         });
@@ -52299,8 +53794,8 @@ var _NgbTooltip = class _NgbTooltip {
     return (isString(this.positionTarget) ? this._document.querySelector(this.positionTarget) : this.positionTarget) || this._nativeElement;
   }
 };
-_NgbTooltip.\u0275fac = function NgbTooltip_Factory(t) {
-  return new (t || _NgbTooltip)();
+_NgbTooltip.\u0275fac = function NgbTooltip_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTooltip)();
 };
 _NgbTooltip.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbTooltip,
@@ -52387,8 +53882,8 @@ var NgbTooltip = _NgbTooltip;
 })();
 var _NgbTooltipModule = class _NgbTooltipModule {
 };
-_NgbTooltipModule.\u0275fac = function NgbTooltipModule_Factory(t) {
-  return new (t || _NgbTooltipModule)();
+_NgbTooltipModule.\u0275fac = function NgbTooltipModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTooltipModule)();
 };
 _NgbTooltipModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbTooltipModule
@@ -52428,8 +53923,8 @@ var _NgbHighlight = class _NgbHighlight {
     }
   }
 };
-_NgbHighlight.\u0275fac = function NgbHighlight_Factory(t) {
-  return new (t || _NgbHighlight)();
+_NgbHighlight.\u0275fac = function NgbHighlight_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbHighlight)();
 };
 _NgbHighlight.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbHighlight,
@@ -52447,7 +53942,7 @@ _NgbHighlight.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   consts: [[3, "class"]],
   template: function NgbHighlight_Template(rf, ctx) {
     if (rf & 1) {
-      \u0275\u0275repeaterCreate(0, NgbHighlight_For_1_Template, 2, 1, null, null, \u0275\u0275repeaterTrackByIdentity);
+      \u0275\u0275repeaterCreate(0, NgbHighlight_For_1_Template, 2, 1, null, null, \u0275\u0275repeaterTrackByIndex);
     }
     if (rf & 2) {
       \u0275\u0275repeater(ctx.parts);
@@ -52467,8 +53962,8 @@ var NgbHighlight = _NgbHighlight;
       changeDetection: ChangeDetectionStrategy.OnPush,
       encapsulation: ViewEncapsulation$1.None,
       template: `
-		@for (part of parts; track part; let odd = $odd) {
-			@if (odd) {
+		@for (part of parts; track $index) {
+			@if ($odd) {
 				<span class="{{ highlightClass }}">{{ part }}</span>
 			} @else {
 				<ng-container>{{ part }}</ng-container>
@@ -52539,8 +54034,8 @@ var _Live = class _Live {
     }
   }
 };
-_Live.\u0275fac = function Live_Factory(t) {
-  return new (t || _Live)();
+_Live.\u0275fac = function Live_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _Live)();
 };
 _Live.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _Live,
@@ -52566,8 +54061,8 @@ var _NgbTypeaheadConfig = class _NgbTypeaheadConfig {
     this.popperOptions = (options) => options;
   }
 };
-_NgbTypeaheadConfig.\u0275fac = function NgbTypeaheadConfig_Factory(t) {
-  return new (t || _NgbTypeaheadConfig)();
+_NgbTypeaheadConfig.\u0275fac = function NgbTypeaheadConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTypeaheadConfig)();
 };
 _NgbTypeaheadConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbTypeaheadConfig,
@@ -52633,8 +54128,8 @@ var _NgbTypeaheadWindow = class _NgbTypeaheadWindow {
     this.activeChangeEvent.emit(this.activeIdx >= 0 ? this.id + "-" + this.activeIdx : void 0);
   }
 };
-_NgbTypeaheadWindow.\u0275fac = function NgbTypeaheadWindow_Factory(t) {
-  return new (t || _NgbTypeaheadWindow)();
+_NgbTypeaheadWindow.\u0275fac = function NgbTypeaheadWindow_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTypeaheadWindow)();
 };
 _NgbTypeaheadWindow.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbTypeaheadWindow,
@@ -52674,7 +54169,7 @@ _NgbTypeaheadWindow.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   template: function NgbTypeaheadWindow_Template(rf, ctx) {
     if (rf & 1) {
       \u0275\u0275template(0, NgbTypeaheadWindow_ng_template_0_Template, 1, 2, "ng-template", null, 0, \u0275\u0275templateRefExtractor);
-      \u0275\u0275repeaterCreate(2, NgbTypeaheadWindow_For_3_Template, 2, 9, "button", 1, \u0275\u0275repeaterTrackByIdentity);
+      \u0275\u0275repeaterCreate(2, NgbTypeaheadWindow_For_3_Template, 2, 9, "button", 1, \u0275\u0275repeaterTrackByIndex);
     }
     if (rf & 2) {
       \u0275\u0275advance(2);
@@ -52704,14 +54199,14 @@ var NgbTypeaheadWindow = _NgbTypeaheadWindow;
 		<ng-template #rt let-result="result" let-term="term" let-formatter="formatter">
 			<ngb-highlight [result]="formatter(result)" [term]="term" />
 		</ng-template>
-		@for (result of results; track result; let idx = $index) {
+		@for (result of results; track $index) {
 			<button
 				type="button"
 				class="dropdown-item"
 				role="option"
-				[id]="id + '-' + idx"
-				[class.active]="idx === activeIdx"
-				(mouseenter)="markActive(idx)"
+				[id]="id + '-' + $index"
+				[class.active]="$index === activeIdx"
+				(mouseenter)="markActive($index)"
 				(click)="select(result)"
 			>
 				<ng-template
@@ -52845,19 +54340,19 @@ var _NgbTypeahead = class _NgbTypeahead {
     if (!this.isPopupOpen()) {
       return;
     }
-    switch (event.which) {
-      case Key.ArrowDown:
+    switch (event.key) {
+      case "ArrowDown":
         event.preventDefault();
         this._windowRef.instance.next();
         this._showHint();
         break;
-      case Key.ArrowUp:
+      case "ArrowUp":
         event.preventDefault();
         this._windowRef.instance.prev();
         this._showHint();
         break;
-      case Key.Enter:
-      case Key.Tab: {
+      case "Enter":
+      case "Tab": {
         const result = this._windowRef.instance.getActive();
         if (isDefined(result)) {
           event.preventDefault();
@@ -52891,7 +54386,6 @@ var _NgbTypeahead = class _NgbTypeahead {
             hostElement: this._nativeElement,
             targetElement: this._windowRef.location.nativeElement,
             placement: this.placement,
-            appendToBody: this.container === "body",
             updatePopperOptions: (options) => this.popperOptions(addPopperOffset([0, 2])(options))
           });
           this._zoneSubscription = this._ngZone.onStable.subscribe(() => this._positioning.update());
@@ -52985,8 +54479,8 @@ var _NgbTypeahead = class _NgbTypeahead {
     this._subscription = null;
   }
 };
-_NgbTypeahead.\u0275fac = function NgbTypeahead_Factory(t) {
-  return new (t || _NgbTypeahead)();
+_NgbTypeahead.\u0275fac = function NgbTypeahead_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTypeahead)();
 };
 _NgbTypeahead.\u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
   type: _NgbTypeahead,
@@ -53107,8 +54601,8 @@ var NgbTypeahead = _NgbTypeahead;
 })();
 var _NgbTypeaheadModule = class _NgbTypeaheadModule {
 };
-_NgbTypeaheadModule.\u0275fac = function NgbTypeaheadModule_Factory(t) {
-  return new (t || _NgbTypeaheadModule)();
+_NgbTypeaheadModule.\u0275fac = function NgbTypeaheadModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbTypeaheadModule)();
 };
 _NgbTypeaheadModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbTypeaheadModule
@@ -53139,8 +54633,8 @@ var _NgbOffcanvasConfig = class _NgbOffcanvasConfig {
     this._animation = animation;
   }
 };
-_NgbOffcanvasConfig.\u0275fac = function NgbOffcanvasConfig_Factory(t) {
-  return new (t || _NgbOffcanvasConfig)();
+_NgbOffcanvasConfig.\u0275fac = function NgbOffcanvasConfig_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbOffcanvasConfig)();
 };
 _NgbOffcanvasConfig.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbOffcanvasConfig,
@@ -53292,9 +54786,7 @@ var NgbOffcanvasRef = class {
       } = this._panelCmptRef.location;
       nativeElement.parentNode.removeChild(nativeElement);
       this._panelCmptRef.destroy();
-      if (this._contentRef && this._contentRef.viewRef) {
-        this._contentRef.viewRef.destroy();
-      }
+      this._contentRef?.viewRef?.destroy();
       this._panelCmptRef = null;
       this._contentRef = null;
     });
@@ -53352,8 +54844,8 @@ var _NgbOffcanvasBackdrop = class _NgbOffcanvasBackdrop {
     }
   }
 };
-_NgbOffcanvasBackdrop.\u0275fac = function NgbOffcanvasBackdrop_Factory(t) {
-  return new (t || _NgbOffcanvasBackdrop)();
+_NgbOffcanvasBackdrop.\u0275fac = function NgbOffcanvasBackdrop_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbOffcanvasBackdrop)();
 };
 _NgbOffcanvasBackdrop.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbOffcanvasBackdrop,
@@ -53485,11 +54977,7 @@ var _NgbOffcanvasPanel = class _NgbOffcanvasPanel {
       nativeElement
     } = this._elRef;
     this._zone.runOutsideAngular(() => {
-      fromEvent(nativeElement, "keydown").pipe(
-        takeUntil(this._closed$),
-        /* eslint-disable-next-line deprecation/deprecation */
-        filter((e) => e.which === Key.Escape)
-      ).subscribe((event) => {
+      fromEvent(nativeElement, "keydown").pipe(takeUntil(this._closed$), filter((e) => e.key === "Escape")).subscribe((event) => {
         if (this.keyboard) {
           requestAnimationFrame(() => {
             if (!event.defaultPrevented) {
@@ -53529,8 +55017,8 @@ var _NgbOffcanvasPanel = class _NgbOffcanvasPanel {
     });
   }
 };
-_NgbOffcanvasPanel.\u0275fac = function NgbOffcanvasPanel_Factory(t) {
-  return new (t || _NgbOffcanvasPanel)();
+_NgbOffcanvasPanel.\u0275fac = function NgbOffcanvasPanel_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbOffcanvasPanel)();
 };
 _NgbOffcanvasPanel.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
   type: _NgbOffcanvasPanel,
@@ -53776,8 +55264,8 @@ var _NgbOffcanvasStack = class _NgbOffcanvasStack {
     });
   }
 };
-_NgbOffcanvasStack.\u0275fac = function NgbOffcanvasStack_Factory(t) {
-  return new (t || _NgbOffcanvasStack)();
+_NgbOffcanvasStack.\u0275fac = function NgbOffcanvasStack_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbOffcanvasStack)();
 };
 _NgbOffcanvasStack.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbOffcanvasStack,
@@ -53834,8 +55322,8 @@ var _NgbOffcanvas = class _NgbOffcanvas {
     return this._offcanvasStack.hasOpenOffcanvas();
   }
 };
-_NgbOffcanvas.\u0275fac = function NgbOffcanvas_Factory(t) {
-  return new (t || _NgbOffcanvas)();
+_NgbOffcanvas.\u0275fac = function NgbOffcanvas_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbOffcanvas)();
 };
 _NgbOffcanvas.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
   token: _NgbOffcanvas,
@@ -53853,8 +55341,8 @@ var NgbOffcanvas = _NgbOffcanvas;
 })();
 var _NgbOffcanvasModule = class _NgbOffcanvasModule {
 };
-_NgbOffcanvasModule.\u0275fac = function NgbOffcanvasModule_Factory(t) {
-  return new (t || _NgbOffcanvasModule)();
+_NgbOffcanvasModule.\u0275fac = function NgbOffcanvasModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbOffcanvasModule)();
 };
 _NgbOffcanvasModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbOffcanvasModule
@@ -53870,8 +55358,8 @@ var NgbOffcanvasModule = _NgbOffcanvasModule;
 var NGB_MODULES = [NgbAccordionModule, NgbAlertModule, NgbCarouselModule, NgbCollapseModule, NgbDatepickerModule, NgbDropdownModule, NgbModalModule, NgbNavModule, NgbOffcanvasModule, NgbPaginationModule, NgbPopoverModule, NgbProgressbarModule, NgbRatingModule, NgbScrollSpyModule, NgbTimepickerModule, NgbToastModule, NgbTooltipModule, NgbTypeaheadModule];
 var _NgbModule = class _NgbModule {
 };
-_NgbModule.\u0275fac = function NgbModule_Factory(t) {
-  return new (t || _NgbModule)();
+_NgbModule.\u0275fac = function NgbModule_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _NgbModule)();
 };
 _NgbModule.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
   type: _NgbModule
@@ -53933,8 +55421,8 @@ function CarouselComponent_Conditional_1_Template(rf, ctx) {
 }
 var _CarouselComponent = class _CarouselComponent {
 };
-_CarouselComponent.\u0275fac = function CarouselComponent_Factory(t) {
-  return new (t || _CarouselComponent)();
+_CarouselComponent.\u0275fac = function CarouselComponent_Factory(__ngFactoryType__) {
+  return new (__ngFactoryType__ || _CarouselComponent)();
 };
 _CarouselComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _CarouselComponent, selectors: [["app-carousel"]], inputs: { images: "images" }, standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 2, vars: 1, consts: [[1, "carousel-component"], ["ngbSlide", ""], [1, "picsum-img-wrapper"], [3, "src"], [1, "carousel-caption"]], template: function CarouselComponent_Template(rf, ctx) {
   if (rf & 1) {
@@ -53944,7 +55432,7 @@ _CarouselComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ typ
   }
   if (rf & 2) {
     \u0275\u0275advance();
-    \u0275\u0275conditional(1, ctx.images ? 1 : -1);
+    \u0275\u0275conditional(ctx.images ? 1 : -1);
   }
 }, dependencies: [NgbCarousel, NgbSlide], styles: ["\n\n.carousel-component[_ngcontent-%COMP%] {\n  width: 400px;\n  border-radius: 5px;\n  overflow: hidden;\n}\n.carousel-component[_ngcontent-%COMP%]   img[_ngcontent-%COMP%] {\n  width: 100%;\n}\n/*# sourceMappingURL=carousel.component.css.map */"] });
 var CarouselComponent = _CarouselComponent;
@@ -53974,14 +55462,21 @@ observeElement(document.body, (parentElement) => {
 
 @angular/core/fesm2022/primitives/signals.mjs:
   (**
-   * @license Angular v17.3.12
+   * @license Angular v18.1.4
+   * (c) 2010-2024 Google LLC. https://angular.io/
+   * License: MIT
+   *)
+
+@angular/core/fesm2022/primitives/event-dispatch.mjs:
+  (**
+   * @license Angular v18.1.4
    * (c) 2010-2024 Google LLC. https://angular.io/
    * License: MIT
    *)
 
 @angular/core/fesm2022/core.mjs:
   (**
-   * @license Angular v17.3.12
+   * @license Angular v18.1.4
    * (c) 2010-2024 Google LLC. https://angular.io/
    * License: MIT
    *)
@@ -54033,28 +55528,28 @@ observeElement(document.body, (parentElement) => {
 
 @angular/common/fesm2022/common.mjs:
   (**
-   * @license Angular v17.3.12
+   * @license Angular v18.1.4
    * (c) 2010-2024 Google LLC. https://angular.io/
    * License: MIT
    *)
 
 @angular/platform-browser/fesm2022/platform-browser.mjs:
   (**
-   * @license Angular v17.3.12
+   * @license Angular v18.1.4
    * (c) 2010-2024 Google LLC. https://angular.io/
    * License: MIT
    *)
 
 @angular/core/fesm2022/rxjs-interop.mjs:
   (**
-   * @license Angular v17.3.12
+   * @license Angular v18.1.4
    * (c) 2010-2024 Google LLC. https://angular.io/
    * License: MIT
    *)
 
 @angular/forms/fesm2022/forms.mjs:
   (**
-   * @license Angular v17.3.12
+   * @license Angular v18.1.4
    * (c) 2010-2024 Google LLC. https://angular.io/
    * License: MIT
    *)

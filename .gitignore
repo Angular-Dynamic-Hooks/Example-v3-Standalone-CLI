@@ -1,7 +1,9 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # Compiled output
-/www/assets
+# For some reason, Stackblitz webcontainer never terminate "ng build", so can't build and then start dev server. It works fine locally.
+# The only solution I've found is the prebuild it locally, then upload with built files.
+# /www/assets
 /tmp
 /out-tsc
 /bazel-out
