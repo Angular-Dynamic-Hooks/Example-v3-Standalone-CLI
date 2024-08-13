@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["src/components/carousel/carousel.component.scss"],
-  "sourcesContent": [".carousel-component {\r\n    width: 400px;\r\n    border-radius: 5px;\r\n    overflow: hidden;\r\n\r\n    img {\r\n        width: 100%;\r\n    }\r\n}"],
-  "mappings": ";AAAA,CAAA;AACI,SAAA;AACA,iBAAA;AACA,YAAA;;AAEA,CALJ,mBAKI;AACI,SAAA;;",
+  "sourcesContent": [".carousel-component {\r\n    max-width: 400px;\r\n    border-radius: 5px;\r\n    overflow: hidden;\r\n\r\n    img {\r\n        width: 100%;\r\n    }\r\n}"],
+  "mappings": ";AAAA,CAAA;AACI,aAAA;AACA,iBAAA;AACA,YAAA;;AAEA,CALJ,mBAKI;AACI,SAAA;;",
   "names": []
 }

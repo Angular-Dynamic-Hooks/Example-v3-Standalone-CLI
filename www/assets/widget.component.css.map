@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["src/components/widget/widget.component.scss"],
-  "sourcesContent": [".widget-component {\r\n    display: flex;\r\n    flex-direction: column;\r\n    justify-content: center;\r\n    align-items: center;\r\n    width: 400px;\r\n    margin: 15px 0px 0px 0px;\r\n    padding: 10px;\r\n    color: white;\r\n    background-color: #1f8968;\r\n    border-radius: 5px;\r\n\r\n    h3 {\r\n        margin: 0px 0px 10px 0px;\r\n        font-size: 16px;\r\n    }\r\n\r\n    p {\r\n        margin: 0px 0px 10px 0px;\r\n    }\r\n\r\n    img {\r\n        width: 100%;\r\n    }\r\n}"],
-  "mappings": ";AAAA,CAAA;AACI,WAAA;AACA,kBAAA;AACA,mBAAA;AACA,eAAA;AACA,SAAA;AACA,UAAA,KAAA,IAAA,IAAA;AACA,WAAA;AACA,SAAA;AACA,oBAAA;AACA,iBAAA;;AAEA,CAZJ,iBAYI;AACI,UAAA,IAAA,IAAA,KAAA;AACA,aAAA;;AAGJ,CAjBJ,iBAiBI;AACI,UAAA,IAAA,IAAA,KAAA;;AAGJ,CArBJ,iBAqBI;AACI,SAAA;;",
+  "sourcesContent": [".widget-component {\r\n    display: flex;\r\n    flex-direction: column;\r\n    justify-content: center;\r\n    align-items: center;\r\n    max-width: 400px;\r\n    margin: 15px 0px 0px 0px;\r\n    padding: 10px;\r\n    color: white;\r\n    background-color: #1f8968;\r\n    border-radius: 5px;\r\n\r\n    h3 {\r\n        margin: 0px 0px 10px 0px;\r\n        font-size: 16px;\r\n    }\r\n\r\n    p {\r\n        margin: 0px 0px 10px 0px;\r\n    }\r\n\r\n    img {\r\n        width: 100%;\r\n    }\r\n}"],
+  "mappings": ";AAAA,CAAA;AACI,WAAA;AACA,kBAAA;AACA,mBAAA;AACA,eAAA;AACA,aAAA;AACA,UAAA,KAAA,IAAA,IAAA;AACA,WAAA;AACA,SAAA;AACA,oBAAA;AACA,iBAAA;;AAEA,CAZJ,iBAYI;AACI,UAAA,IAAA,IAAA,KAAA;AACA,aAAA;;AAGJ,CAjBJ,iBAiBI;AACI,UAAA,IAAA,IAAA,KAAA;;AAGJ,CArBJ,iBAqBI;AACI,SAAA;;",
   "names": []
 }

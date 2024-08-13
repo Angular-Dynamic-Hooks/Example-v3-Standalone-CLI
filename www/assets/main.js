@@ -32794,7 +32794,7 @@ _ExampleComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type
     \u0275\u0275advance();
     \u0275\u0275textInterpolate(ctx.customMessage);
   }
-}, styles: ["\n\n.example-component[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  width: 300px;\n  margin: 15px 0px 0px 0px;\n  padding: 10px;\n  border-radius: 10px;\n  background:\n    linear-gradient(\n      90deg,\n      rgb(201, 46, 46) 0%,\n      rgb(147, 0, 212) 33%,\n      rgb(201, 46, 46) 66%,\n      rgb(147, 0, 212) 100%);\n  background-size: 400% 400%;\n  color: white;\n  animation: _ngcontent-%COMP%_gradient 12s linear infinite;\n}\n@keyframes _ngcontent-%COMP%_gradient {\n  0% {\n    background-position: 0% 50%;\n  }\n  50% {\n    background-position: 100% 50%;\n  }\n  100% {\n    background-position: 0% 50%;\n  }\n}\n/*# sourceMappingURL=example.component.css.map */"] });
+}, styles: ["\n\n.example-component[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  max-width: 300px;\n  margin: 15px 0px 0px 0px;\n  padding: 10px;\n  border-radius: 10px;\n  background:\n    linear-gradient(\n      90deg,\n      rgb(201, 46, 46) 0%,\n      rgb(147, 0, 212) 33%,\n      rgb(201, 46, 46) 66%,\n      rgb(147, 0, 212) 100%);\n  background-size: 400% 400%;\n  color: white;\n  line-height: 1.5rem;\n  animation: _ngcontent-%COMP%_gradient 12s linear infinite;\n}\n@keyframes _ngcontent-%COMP%_gradient {\n  0% {\n    background-position: 0% 50%;\n  }\n  50% {\n    background-position: 100% 50%;\n  }\n  100% {\n    background-position: 0% 50%;\n  }\n}\n/*# sourceMappingURL=example.component.css.map */"] });
 var ExampleComponent = _ExampleComponent;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(ExampleComponent, { className: "ExampleComponent", filePath: "src/components/example/example.component.ts", lineNumber: 9 });
@@ -32884,7 +32884,7 @@ _WidgetComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type:
     \u0275\u0275advance(8);
     \u0275\u0275propertyInterpolate("src", ctx.imgUrl, \u0275\u0275sanitizeUrl);
   }
-}, styles: ["\n\n.widget-component[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  width: 400px;\n  margin: 15px 0px 0px 0px;\n  padding: 10px;\n  color: white;\n  background-color: #1f8968;\n  border-radius: 5px;\n}\n.widget-component[_ngcontent-%COMP%]   h3[_ngcontent-%COMP%] {\n  margin: 0px 0px 10px 0px;\n  font-size: 16px;\n}\n.widget-component[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 0px 0px 10px 0px;\n}\n.widget-component[_ngcontent-%COMP%]   img[_ngcontent-%COMP%] {\n  width: 100%;\n}\n/*# sourceMappingURL=widget.component.css.map */"] });
+}, styles: ["\n\n.widget-component[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  max-width: 400px;\n  margin: 15px 0px 0px 0px;\n  padding: 10px;\n  color: white;\n  background-color: #1f8968;\n  border-radius: 5px;\n}\n.widget-component[_ngcontent-%COMP%]   h3[_ngcontent-%COMP%] {\n  margin: 0px 0px 10px 0px;\n  font-size: 16px;\n}\n.widget-component[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 0px 0px 10px 0px;\n}\n.widget-component[_ngcontent-%COMP%]   img[_ngcontent-%COMP%] {\n  width: 100%;\n}\n/*# sourceMappingURL=widget.component.css.map */"] });
 var WidgetComponent = _WidgetComponent;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(WidgetComponent, { className: "WidgetComponent", filePath: "src/components/widget/widget.component.ts", lineNumber: 9 });
@@ -55434,7 +55434,7 @@ _CarouselComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ typ
     \u0275\u0275advance();
     \u0275\u0275conditional(ctx.images ? 1 : -1);
   }
-}, dependencies: [NgbCarousel, NgbSlide], styles: ["\n\n.carousel-component[_ngcontent-%COMP%] {\n  width: 400px;\n  border-radius: 5px;\n  overflow: hidden;\n}\n.carousel-component[_ngcontent-%COMP%]   img[_ngcontent-%COMP%] {\n  width: 100%;\n}\n/*# sourceMappingURL=carousel.component.css.map */"] });
+}, dependencies: [NgbCarousel, NgbSlide], styles: ["\n\n.carousel-component[_ngcontent-%COMP%] {\n  max-width: 400px;\n  border-radius: 5px;\n  overflow: hidden;\n}\n.carousel-component[_ngcontent-%COMP%]   img[_ngcontent-%COMP%] {\n  width: 100%;\n}\n/*# sourceMappingURL=carousel.component.css.map */"] });
 var CarouselComponent = _CarouselComponent;
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(CarouselComponent, { className: "CarouselComponent", filePath: "src/components/carousel/carousel.component.ts", lineNumber: 17 });
