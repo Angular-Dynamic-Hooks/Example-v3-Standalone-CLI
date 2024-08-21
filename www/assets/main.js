@@ -31304,7 +31304,11 @@ var _ContentSanitizer = class _ContentSanitizer {
     }
     let innerHTML = this.platformService.getInnerContent(contentElement);
     innerHTML = this.findAndEncodeTags(innerHTML, sanitizerPlaceholderRegex);
+    const consoleWarnFn = console.warn;
+    console.warn = () => {
+    };
     let sanitizedInnerHtml = this.platformService.sanitize(innerHTML);
+    console.warn = consoleWarnFn;
     sanitizedInnerHtml = this.decodeTagString(sanitizedInnerHtml);
     contentElement.innerHTML = sanitizedInnerHtml || "";
     for (const [hookId, anchorElement] of Object.entries(originalHookAnchors)) {
@@ -32351,10 +32355,10 @@ var ProvidersScope = class {
   * @param targetHookIndex - An optional object to fill with the programmatic hook data. If none is provided, one is created and returned for you.
   * @param environmentInjector - An optional environmentInjector to use for the dynamically-loaded components. If none is provided, the default environmentInjector is used.
   */
-  parseHooks(_0, _1) {
+  parse(_0, _1) {
     return __async(this, arguments, function* (content, parsers2, context2 = null, options = null, targetElement = null, targetHookIndex = {}, environmentInjector = null) {
       this.checkIfDestroyed();
-      return parseHooks(content, parsers2, context2, options, targetElement, targetHookIndex, environmentInjector || (yield this.resolveInjector())).then((parseResult) => {
+      return parse(content, parsers2, context2, options, targetElement, targetHookIndex, environmentInjector || (yield this.resolveInjector())).then((parseResult) => {
         this.parseResults.push(parseResult);
         return parseResult;
       });
@@ -32394,7 +32398,7 @@ var ProvidersScope = class {
     }
   }
 };
-var parseHooks = (_0, _1, ..._2) => __async(void 0, [_0, _1, ..._2], function* (content, parsers2, context2 = null, options = null, targetElement = null, targetHookIndex = {}, environmentInjector = null) {
+var parse = (_0, _1, ..._2) => __async(void 0, [_0, _1, ..._2], function* (content, parsers2, context2 = null, options = null, targetElement = null, targetHookIndex = {}, environmentInjector = null) {
   if (!environmentInjector) {
     if (!sharedInjector) {
       sharedInjector = yield createInjector2();
@@ -32778,13 +32782,13 @@ var DynamicSingleComponent = _DynamicSingleComponent;
 // src/components/example/example.component.ts
 var _ExampleComponent = class _ExampleComponent {
   constructor() {
-    this.customMessage = "\u{1F680} Hello from ExampleComponent!";
+    this.message = "\u{1F680} Hello from ExampleComponent!";
   }
 };
 _ExampleComponent.\u0275fac = function ExampleComponent_Factory(__ngFactoryType__) {
   return new (__ngFactoryType__ || _ExampleComponent)();
 };
-_ExampleComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _ExampleComponent, selectors: [["app-example"]], inputs: { customMessage: "customMessage" }, standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 2, vars: 1, consts: [[1, "example-component"]], template: function ExampleComponent_Template(rf, ctx) {
+_ExampleComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _ExampleComponent, selectors: [["app-example"]], inputs: { message: "message" }, standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 2, vars: 1, consts: [[1, "example-component"]], template: function ExampleComponent_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 0);
     \u0275\u0275text(1);
@@ -32792,7 +32796,7 @@ _ExampleComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type
   }
   if (rf & 2) {
     \u0275\u0275advance();
-    \u0275\u0275textInterpolate(ctx.customMessage);
+    \u0275\u0275textInterpolate(ctx.message);
   }
 }, styles: ["\n\n.example-component[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  max-width: 300px;\n  margin: 15px 0px 0px 0px;\n  padding: 10px;\n  border-radius: 10px;\n  background:\n    linear-gradient(\n      90deg,\n      rgb(201, 46, 46) 0%,\n      rgb(147, 0, 212) 33%,\n      rgb(201, 46, 46) 66%,\n      rgb(147, 0, 212) 100%);\n  background-size: 400% 400%;\n  color: white;\n  line-height: 1.5rem;\n  animation: _ngcontent-%COMP%_gradient 12s linear infinite;\n}\n@keyframes _ngcontent-%COMP%_gradient {\n  0% {\n    background-position: 0% 50%;\n  }\n  50% {\n    background-position: 100% 50%;\n  }\n  100% {\n    background-position: 0% 50%;\n  }\n}\n/*# sourceMappingURL=example.component.css.map */"] });
 var ExampleComponent = _ExampleComponent;
@@ -55451,12 +55455,12 @@ var parsers = [
   CarouselComponent
   // For example 5
 ];
-parseHooks(document.body, parsers);
+parse(document.body, parsers);
 var scope = createProviders([CounterService]);
-scope.parseHooks(document.body, [CounterWriteComponent, CounterReadComponent]);
+scope.parse(document.body, [CounterWriteComponent, CounterReadComponent]);
 observeElement(document.body, (parentElement) => {
-  parseHooks(parentElement, parsers);
-  scope.parseHooks(parentElement, [CounterWriteComponent, CounterReadComponent]);
+  parse(parentElement, parsers);
+  scope.parse(parentElement, [CounterWriteComponent, CounterReadComponent]);
 });
 /*! Bundled license information:
 
